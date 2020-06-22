@@ -1,0 +1,9 @@
+{
+    "path" : "~/Documents/PackagesR/digitalDLSorterPackageR",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}
