@@ -29,7 +29,7 @@ library(Matrix)
 }
 
 
-.readCountsFile <- function(counts.file) {
+.readCountsFile <- function(counts.file, gene.column = 1) {
   if (grepl(".tsv", counts.file) | grepl(".rds$", counts.file)) {
     counts <- .readTabFiles(counts.file)
     return(counts)
@@ -37,7 +37,7 @@ library(Matrix)
     if (!file.exists(counts.file)) {
       stop("File provided does not exists")
     }
-    message("Sparse Matrix Market format")
+    # message("Sparse Matrix Market format")
     base.dir <- dirname(counts.file)
     if (!file.exists(file.path(base.dir, "genes.tsv"))) {
       stop("No genes.tsv file with the matrix.mtx")
@@ -48,7 +48,7 @@ library(Matrix)
     counts <- Matrix::readMM(counts.file)
     gene.names <- read.delim(file.path(base.dir, "genes.tsv"), header = F,
                              sep = "\t", stringsAsFactors = F)
-    rownames(counts) <- gene.names$V1
+    rownames(counts) <- gene.names[, gene.column]
     cell.names <- read.delim(file.path(base.dir, "barcodes.tsv"), header = F,
                              sep = "\t", stringsAsFactors = F)
     colnames(counts) <- cell.names$V1
@@ -69,17 +69,44 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
+.checkIDcolumn <- function(metadata, ID.column, type.metadata) {
+  if (type.metadata == "cells.metadata") arg <- "cell.ID.column"
+  else if (type.metadata == "genes.metadata") arg <- "gene.ID.column"
+
+  if (class(ID.column) == "numeric") {
+    if (!ID.column %in% seq(ncol(metadata))) {
+      stop(paste(ID.column, "column number is not present in", type.metadata))
+    }
+  } else if (class(ID.column) == "character") {
+    if (!ID.column %in% ncol(metadata)) {
+      stop(paste(ID.column, "column is not present in", type.metadata))
+    }
+  } else {
+    stop(paste(arg, "argument is not recognizable"))
+  }
+}
+
+
+## se puede evitar repetir código
 .processData <- function(counts, cells.metadata, cell.ID.column,
                          genes.metadata, gene.ID.column,
                          min.counts, min.cells) {
+  # check if IDs given exist in metadata
+  .checkIDcolumn(metadata = cells.metadata,
+                 ID.column = cell.ID.column,
+                 type.metadata = "cells.metadata")
+  .checkIDcolumn(metadata = genes.metadata,
+                 ID.column = gene.ID.column,
+                 type.metadata = "genes.metadata")
+
   # intersect between cells ----------------------------------------------------
   common.cells <- intersect(colnames(counts), cells.metadata[, cell.ID.column])
   diff <- abs(dim(counts)[2] - length(common.cells))
   disc <- abs(length(cells.metadata[, cell.ID.column]) - length(common.cells))
-  if (length(common.cells) < min(dim(counts)[2], dim(cells.metadata)[1]))
+  if (length(common.cells) < min(dim(counts)[2], dim(cells.metadata)[1])) {
     stop(paste("There are", diff, "cells that don't match between counts matrix and metadata"))
-  else if (diff != 0){
-    warning(paste("There are", diff, "cells that don't match between counts matrix and metadata")) # preguntar
+  } else if (diff != 0){
+    warning(paste("There are", diff, "cells that don't match between counts matrix and metadata")) # this check includes the last
   } else if (disc != 0) {
     message(paste(disc, "cells have been discarded from cells.metadata"))
   }
@@ -111,6 +138,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   return(list(filtered.genes[[1]], cells.metadata, filtered.genes[[2]]))
 }
 
+
 .filterGenes <- function(counts, genes.metadata, gene.ID.column,
                          min.counts, min.cells) {
   if (min.counts == 0 & min.cells == 0) {
@@ -119,7 +147,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     stop("min.counts and min.cells must be greater than or equal to zero")
   }
   dim.bef <- dim(counts)
-  counts <- counts[rowSums(counts > min.counts) >= min.cells, ]
+  counts <- counts[rowSums(as.matrix(counts) > min.counts) >= min.cells, ]
   if (dim(counts)[1] == 0) {
     stop(paste("Resulting counts matrix after filtering with min.genes = ",
                min.counts, "and min.cells = ", min.cells,
@@ -136,34 +164,45 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-.extractDataFromSCE <- function(SCEobject, gene.ID.column,
-                                min.counts, min.cells) {
+.extractDataFromSCE <- function(SCEobject, cell.ID.column = 1, gene.ID.column = 1,
+                                min.counts = 0, min.cells = 0, filtering = TRUE) {
   # extract cells.metadata
   cells.metadata <- SingleCellExperiment::colData(SCEobject)
   if (any(dim(cells.metadata) == 0)) {
-    stop("colData slot is empty. Metadata about cells is needed. Please look ?CreateDigitalDLSorterObject")
+    stop("No data provided in colData slot. Metadata about cells is needed, please look ?CreateDigitalDLSorterObject")
   }
   # extract count matrix
   if (length(SummarizedExperiment::assays(SCEobject)) == 0) {
-    stop("No data in SingleCellExperiment object")
+    stop("No data in SingleCellExperiment object provided")
   } else if (length(SummarizedExperiment::assays(SCEobject)) > 1) {
-    warning("There are more than one assay, so only the first will be used. Remember it must be the original data and not log-transformed data")
+    warning("There are more than one assay, only the first will be used. Remember it must be the original data and not log-transformed data")
   }
   counts <- SummarizedExperiment::assay(SCEobject)
   # extract genes.metadata
   genes.metadata <- SingleCellExperiment::rowData(SCEobject)
   if (any(dim(genes.metadata) == 0)) {
-    warning("No data provided in rowData slot Building a rowData from rownames of data assay")
-    if (is.null(gene.ID.column)) gene.ID.column <- "gene_names"
+    warning("No data provided in rowData slot. Building a rowData from rownames of counts matrix")
+    if (class(gene.ID.column) == "numeric") gene.ID.column <- "gene_names"
     genes.metadata <- DataFrame(gene.ID.column = rownames(counts))
   }
-  # filter genes by min.counts and min.cells
-  filtered.genes <- .filterGenes(counts = counts,
-                                 genes.metadata = genes.metadata,
-                                 gene.ID.column = gene.ID.column,
-                                 min.counts = min.counts,
-                                 min.cells = min.cells)
-  return(list(filtered.genes[[1]], cells.metadata, filtered.genes[[2]]))
+
+  # check if IDs given exist in genes.metadata. In cells.metadata is not
+  # neccesary because the data are provided from an SCE object
+  .checkIDcolumn(metadata = genes.metadata,
+                 ID.column = gene.ID.column,
+                 type.metadata = "genes.metadata")
+
+  # filter genes by min.counts and min.cells only when proccess data
+  if (isTRUE(filtering)) {
+    filtered.genes <- .filterGenes(counts = counts,
+                                   genes.metadata = genes.metadata,
+                                   gene.ID.column = gene.ID.column,
+                                   min.counts = min.counts,
+                                   min.cells = min.cells)
+    return(list(filtered.genes[[1]], cells.metadata, filtered.genes[[2]]))
+  } else {
+    return(list(counts, cells.metadata, genes.metadata))
+  }
 }
 
 
@@ -175,7 +214,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     if (is.null(single.cell)) {
       stop("single.cell.real cannot be NULL")
     } else if (is.null(cell.ID.column) | is.null(gene.ID.column)) {
-      stop(paste("cell.ID.column and gene.ID.column are needed. Please look ?CreateDigitalDLSorterObject"))
+      stop("cell.ID.column and gene.ID.column are needed. Please look ?CreateDigitalDLSorterObject")
     }
   } else {
     arg <- "single.cell.sim"
@@ -185,16 +224,20 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   if (class(single.cell) == "SingleCellExperiment") {
     # extract data and filter by min.counts and min.cells
     list.data <- .extractDataFromSCE(SCEobject = single.cell,
-                                    gene.ID.column = gene.ID.column,
-                                    min.counts = min.counts,
-                                    min.cells = min.cells)
-    single.cell <- CreateSCEObject(list.data[[1]], list.data[[2]], list.data[[3]])
+                                     cell.ID.column = cell.ID.column,
+                                     gene.ID.column = gene.ID.column,
+                                     min.counts = min.counts,
+                                     min.cells = min.cells)
+    single.cell <- CreateSCEObject(counts = list.data[[1]],
+                                   cells.metadata = list.data[[2]],
+                                   genes.metadata = list.data[[3]])
     return(single.cell)
   } else if (length(single.cell) == 0) {
     stop(paste(arg, "argument is empty"))
   } else if (length(single.cell) == 1) {
     if (grepl(".mtx$", single.cell[[1]])) {
-      list.data <- .readCountsFile(single.cell[[1]])
+      list.data <- .readCountsFile(single.cell[[1]],
+                                   gene.column = gene.ID.column)
     } else {
       stop(paste(arg, "argument is not recognizable. Please look at the allowed data for",
                  arg, "in ?CreateDigitalDLSorterObject"))
@@ -224,8 +267,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 
 CreateDigitalDLSorterObject <- function(
   single.cell.real,
-  cell.ID.column = NULL,
-  gene.ID.column = NULL,
+  cell.ID.column = 1,
+  gene.ID.column = 1,
   min.cells = 0,
   min.counts = 0,
   project = "DigitalDLSorterProject",
