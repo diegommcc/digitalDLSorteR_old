@@ -16,7 +16,6 @@ DigitalDLSorter <- setClass(
   slots = c(
     single.cell.real = "SingleCellExperimentOrNULL",
     zinb.params = "ZINBParamsOrNULL",
-    selected.genes = "character",
     single.cell.sim = "SingleCellExperimentOrNULL",
     project = "character",
     version = "package_version"
