@@ -147,7 +147,7 @@ setMethod(f = "show",
             if (!is.null(object@single.cell.sim)) {
               .sceShow(object@single.cell.sim)
             }
-            cat("Project:", object@project)
+            cat("Project:", object@project, "\n")
           })
 
 

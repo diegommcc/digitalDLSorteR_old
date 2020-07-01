@@ -52,7 +52,7 @@ library(Matrix)
     cell.names <- read.delim(file.path(base.dir, "barcodes.tsv"), header = F,
                              sep = "\t", stringsAsFactors = F)
     colnames(counts) <- cell.names$V1
-    return(list(counts, cell.names, gene.names))
+    return(counts)
   } else {
     stop("File format is not recognizable. Please look at the allowed data for in ?CreateDigitalDLSorterObject")
   }
@@ -61,7 +61,7 @@ library(Matrix)
 
 CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   sce <- SingleCellExperiment(
-    assays = list(counts = counts),
+    assays = list(counts = Matrix(as.matrix(counts), sparse = TRUE)),
     colData = cells.metadata,
     rowData = genes.metadata
   )
@@ -70,6 +70,9 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 
 
 .checkColumn <- function(metadata, ID.column, type.metadata, arg) {
+  tryCatch(expr = ID.column <- as.numeric(ID.column),
+           error = function(e) invisible(x = NULL),
+           warning = function(e) invisible(x = NULL))
   if (class(ID.column) == "numeric") {
     if (!ID.column %in% seq(ncol(metadata))) {
       stop(paste(ID.column, "column number is not present in", type.metadata))
@@ -84,20 +87,41 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-## se puede evitar repetir código
+# .duplicatedIDs <- function(counts, cells.metadata, cell.ID.column,
+#                            genes.metadata, gene.ID.column) {
+#   ## duplicated ID cells
+#   if (any(duplicated(cells.metadata[, cell.ID.column]))) {
+#     warning(paste0("There are duplicated IDs in genes.metadata (",
+#                    gene.ID.column, ") column. Making unique"))
+#     cells.metadata[, cell.ID.column] <- make.unique(names = cells.metadata[, cell.ID.column])
+#   }
+#   ## duplicated ID genes
+#   if (any(duplicated(genes.metadata[, gene.ID.column]))) {
+#     warning(paste0("There are duplicated IDs in genes.metadata (",
+#                    gene.ID.column, ") column. Removing duplicated IDs"))
+#     genes.metadata <- genes.metadata[!duplicated(genes.metadata[, gene.ID.column]), ]
+#   }
+# }
+
+
 .processData <- function(counts, cells.metadata, cell.ID.column,
                          genes.metadata, gene.ID.column,
                          min.counts, min.cells) {
   # check if IDs given exist in metadata
   .checkColumn(metadata = cells.metadata,
-                 ID.column = cell.ID.column,
-                 type.metadata = "cells.metadata",
-                 arg = "cell.ID.column")
+               ID.column = cell.ID.column,
+               type.metadata = "cells.metadata",
+               arg = "cell.ID.column")
   .checkColumn(metadata = genes.metadata,
-                 ID.column = gene.ID.column,
-                 type.metadata = "genes.metadata",
-                 arg = "gene.ID.column")
-
+               ID.column = gene.ID.column,
+               type.metadata = "genes.metadata",
+               arg = "gene.ID.column")
+  # duplicated ID cells --------------------------------------------------------
+  if (any(duplicated(cells.metadata[, cell.ID.column]))) {
+    warning(paste0("There are duplicated IDs in genes.metadata (column ",
+                   gene.ID.column, "). Making unique"))
+    cells.metadata[, cell.ID.column] <- make.unique(names = cells.metadata[, cell.ID.column])
+  }
   # intersect between cells ----------------------------------------------------
   common.cells <- intersect(colnames(counts), cells.metadata[, cell.ID.column])
   diff <- abs(dim(counts)[2] - length(common.cells))
@@ -111,7 +135,12 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   }
   cells.metadata <- cells.metadata[cells.metadata[, cell.ID.column] %in%
                                      common.cells, , drop = FALSE]
-
+  # duplicated ID genes --------------------------------------------------------
+  if (any(duplicated(genes.metadata[, gene.ID.column]))) {
+    warning(paste0("There are duplicated IDs in genes.metadata (column ",
+                   gene.ID.column, "). Duplicated IDs have been removed"))
+    genes.metadata <- genes.metadata[!duplicated(genes.metadata[, gene.ID.column]), ]
+  }
   # intersect between genes ----------------------------------------------------
   common.genes <- intersect(rownames(counts), genes.metadata[, gene.ID.column])
   diff <- abs(dim(counts)[1] - length(common.genes))
@@ -234,20 +263,12 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     return(single.cell)
   } else if (length(single.cell) == 0) {
     stop(paste(arg, "argument is empty"))
-  } else if (length(single.cell) == 1) {
-    if (grepl(".mtx$", single.cell[[1]])) {
-      list.data <- .readCountsFile(single.cell[[1]],
-                                   gene.column = gene.ID.column)
-    } else {
-      stop(paste(arg, "argument is not recognizable. Please look at the allowed data for",
-                 arg, "in ?CreateDigitalDLSorterObject"))
-    }
   } else if (length(single.cell) == 3) {
     list.data <- list(.readCountsFile(single.cell[[1]]),
                       .readTabFiles(single.cell[[2]]),
                       .readTabFiles(single.cell[[3]]))
   } else {
-    stop(paste("Incorrect data elements given. Please look at the allowed data for",
+    stop(paste("Incorrect number of data elements given. Please look at the allowed data for",
                arg, "in ?CreateDigitalDLSorterObject"))
   }
   # process data only for real single-cell profiles from files (not SCE)
@@ -260,9 +281,9 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                               min.counts = min.counts,
                               min.cells = min.cells)
   }
-  message(lapply(list.data, dim))
-  single.cell <- CreateSCEObject(list.data[[1]], list.data[[2]], list.data[[3]])
-  return(single.cell)
+  return(CreateSCEObject(counts = list.data[[1]],
+                         cells.metadata = list.data[[2]],
+                         genes.metadata = list.data[[3]]))
 }
 
 
