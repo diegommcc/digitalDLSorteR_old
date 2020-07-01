@@ -69,16 +69,13 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-.checkIDcolumn <- function(metadata, ID.column, type.metadata) {
-  if (type.metadata == "cells.metadata") arg <- "cell.ID.column"
-  else if (type.metadata == "genes.metadata") arg <- "gene.ID.column"
-
+.checkColumn <- function(metadata, ID.column, type.metadata, arg) {
   if (class(ID.column) == "numeric") {
     if (!ID.column %in% seq(ncol(metadata))) {
       stop(paste(ID.column, "column number is not present in", type.metadata))
     }
   } else if (class(ID.column) == "character") {
-    if (!ID.column %in% ncol(metadata)) {
+    if (!ID.column %in% colnames(metadata)) {
       stop(paste(ID.column, "column is not present in", type.metadata))
     }
   } else {
@@ -92,12 +89,14 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                          genes.metadata, gene.ID.column,
                          min.counts, min.cells) {
   # check if IDs given exist in metadata
-  .checkIDcolumn(metadata = cells.metadata,
+  .checkColumn(metadata = cells.metadata,
                  ID.column = cell.ID.column,
-                 type.metadata = "cells.metadata")
-  .checkIDcolumn(metadata = genes.metadata,
+                 type.metadata = "cells.metadata",
+                 arg = "cell.ID.column")
+  .checkColumn(metadata = genes.metadata,
                  ID.column = gene.ID.column,
-                 type.metadata = "genes.metadata")
+                 type.metadata = "genes.metadata",
+                 arg = "gene.ID.column")
 
   # intersect between cells ----------------------------------------------------
   common.cells <- intersect(colnames(counts), cells.metadata[, cell.ID.column])
@@ -188,9 +187,10 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 
   # check if IDs given exist in genes.metadata. In cells.metadata is not
   # neccesary because the data are provided from an SCE object
-  .checkIDcolumn(metadata = genes.metadata,
+  .checkColumn(metadata = genes.metadata,
                  ID.column = gene.ID.column,
-                 type.metadata = "genes.metadata")
+                 type.metadata = "genes.metadata",
+                 arg = "gene.ID.column")
 
   # filter genes by min.counts and min.cells only when proccess data
   if (isTRUE(filtering)) {
@@ -260,6 +260,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                               min.counts = min.counts,
                               min.cells = min.cells)
   }
+  message(lapply(list.data, dim))
   single.cell <- CreateSCEObject(list.data[[1]], list.data[[2]], list.data[[3]])
   return(single.cell)
 }
