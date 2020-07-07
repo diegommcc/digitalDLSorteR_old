@@ -6,9 +6,45 @@
 library(SingleCellExperiment)
 library(splatter)
 
+
+# ProbMatrixCellTypes class ----------------------------------------------------
+
+setClassUnion("MatrixOrNULL", c("matrix", "NULL"))
+setClassUnion("ListOrNULL", c("list", "NULL"))
 setOldClass(Classes = 'package_version')
 setClassUnion("SingleCellExperimentOrNULL", c("SingleCellExperiment", "NULL"))
 setClassUnion("ZINBParamsOrNULL", c("ZINBParams", "NULL"))
+
+
+ProbMatrixCellTypes <- setClass(
+  Class = "ProbMatrixCellTypes",
+  slots = c(
+    prob.matrix = "MatrixOrNULL",
+    cell.names = "MatrixOrNULL",
+    set.list = "ListOrNULL",
+    plots = "ListOrNULL"
+  )
+)
+
+setMethod(
+  f = "initialize", signature = "ProbMatrixCellTypes",
+  definition = function(.Object,
+                        prob.matrix = NULL,
+                        cell.names = NULL,
+                        set.list = NULL,
+                        plots = "DigitalDLSorterProject") {
+    .Object@prob.matrix <- prob.matrix
+    .Object@cell.names <- cell.names
+    .Object@set.list <- set.list
+    .Object@plots <- plots
+    return(.Object)
+  }
+)
+
+
+
+
+# DigitalDLSorter class --------------------------------------------------------
 
 ## devuelve un warning porque hay que definir la clase package_version
 DigitalDLSorter <- setClass(
@@ -17,6 +53,7 @@ DigitalDLSorter <- setClass(
     single.cell.real = "SingleCellExperimentOrNULL",
     zinb.params = "ZINBParamsOrNULL",
     single.cell.sim = "SingleCellExperimentOrNULL",
+    prob.matrix = "ProbMatrixCellTypes",
     project = "character",
     version = "package_version"
   )
@@ -106,8 +143,7 @@ setMethod(f = "project<-",
 # show method for display the content of the object ----------------------------
 # setGeneric("show", function(obj) standardGeneric("show"))
 .sceShow <- function(sce) {
-  cat("Real single-cell profiles:\n ", dim(sce)[1],
-      "features and", dim(sce)[2], "cells\n")
+  cat(" ", dim(sce)[1], "features and", dim(sce)[2], "cells\n")
   if (is.null(rownames(sce))) rownames.sce <- "---"
   else rownames.sce <- S4Vectors:::selectSome(rownames(sce), 6)
   if (identical(colnames(sce), character(0))) colnames.sce <- "---"
@@ -137,17 +173,21 @@ setMethod(f = "show",
           definition = function(object) {
             cat("An object of class", class(object), "\n")
             if (!is.null(object@single.cell.real)) {
+              cat("Real single-cell profiles:\n")
               .sceShow(object@single.cell.real)
             } else {
+              cat("Real single-cell profiles:\n")
               .sceShow(DataFrame())
             }
             if (!is.null(object@zinb.params)) {
               .zinbModelShow(object@zinb.params@model)
             }
             if (!is.null(object@single.cell.sim)) {
+              cat("Simulated single-cell profiles:\n")
               .sceShow(object@single.cell.sim)
             }
             cat("Project:", object@project, "\n")
           })
+
 
 

@@ -1,10 +1,13 @@
 {
     "activeTab" : 3,
     "activeTabSourceWindow1" : 0,
+    "activeTabSourceWindow10" : 0,
     "activeTabSourceWindow2" : 0,
     "activeTabSourceWindow3" : 0,
     "activeTabSourceWindow4" : 0,
     "activeTabSourceWindow5" : 0,
     "activeTabSourceWindow6" : 1,
-    "activeTabSourceWindow7" : 1
+    "activeTabSourceWindow7" : 1,
+    "activeTabSourceWindow8" : 0,
+    "activeTabSourceWindow9" : -1
 }
