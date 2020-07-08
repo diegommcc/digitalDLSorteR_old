@@ -14,7 +14,9 @@ library(ggplot2)
 generateTrainAndTestBulkProbMatrix <- function(object,
                                                cell.type.column,
                                                prob.design,
-                                               train.freq = 2/3) {
+                                               train.freq = 2/3,
+                                               num.bulk.samples = NULL,
+                                               verbose = TRUE) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
   } else if (is.null(single.cell.sim(object))) {
@@ -27,6 +29,11 @@ generateTrainAndTestBulkProbMatrix <- function(object,
                "from: frequency from which the cell type can appear",
                "to: frequency up to which the cell type can appear", sep = "\n   - "))
   }
+  if (!is.null(prob.matrix(object)) | !length(prob.matrix(object)) == 0) {
+    warning("prob.matrix slot already has the probability matrices. Note that it will be overwritten\n",
+            call. = FALSE, immediate. = TRUE)
+  }
+
   # extract data from SCE to list
   list.data <- .extractDataFromSCE(SCEobject = single.cell.sim(object),
                                    filtering = FALSE)
@@ -59,30 +66,45 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   } else if (any(prob.design$from > prob.design$to)) {
     stop("'from' entries must be lesser than 'to' entries")
   }
+
+  s.cells <- dim(list.data[[1]])[2]
+
+  if (!is.null(num.bulk.samples)) {
+    if (s.cells > num.bulk.samples) {
+      stop(paste0("If num.bulk.samples is provided, it must be greater than or equal to the total of simulated cells (",
+                  s.cells, " in this case)"))
+    }
+    s.cells <- round(num.bulk.samples / 17.65) # hay un márgen de error por el número. Preguntar para cambiar
+  }
+
   # split data into training and test sets
   cells <- colnames(list.data[[1]])
   names(cells) <- list.data[[2]][, cell.type.column]
+
+  # train set
   train.set <- sample(cells, size = round(dim(list.data[[1]])[2] * train.freq))
   train.types <- names(train.set)
-  # train.types <- sub("_\\w+", "", train.set, perl = T)
   train.set.list <- list()
   for (ts in levels(factor(train.types))) {
     train.set.list[[ts]] <- train.set[train.types == ts]
   }
-  message("Train Set cells by type\n")
-  tb <- unlist(lapply(train.set.list, length))
-  print(tb)
 
+  # test set
   test.set <- cells[!cells %in% train.set]
   test.types <- names(test.set)
-  # test.types <- sub("_\\w+", "", test.set, perl = T)
   test.set.list <- list()
   for (ts in levels(factor(test.types))) {
     test.set.list[[ts]] <- test.set[test.types == ts]
   }
-  message("Test Set cells by type\n")
-  tb <- unlist(lapply(test.set.list, length))
-  print(tb)
+
+  if (verbose) {
+    message("=== Train Set cells by type:")
+    tb <- unlist(lapply(train.set.list, length))
+    message(paste0("  - ", names(tb), ": ", tb, collapse = "\n"), "\n")
+    message("=== Test Set cells by type:")
+    tb <- unlist(lapply(test.set.list, length))
+    message(paste0("  - ", names(tb), ": ", tb, collapse = "\n"), "\n")
+  }
 
   prob.list <- apply(X = prob.design,
                       MARGIN = 1,
@@ -90,21 +112,19 @@ generateTrainAndTestBulkProbMatrix <- function(object,
                         return(seq(from = x['from'], to = x['to']))
                         }
  )
-
   names(prob.list) <- prob.design[, cell.type.column]
 
   ## predefined range od cell types
-
   df <- reshape::melt(prob.list)
   colnames(df) <- c("Perc","CellType")
   df$CellType <- factor(df$CellType, levels = names(prob.list))
   plot.prob <- .boxPlot(df = df, title = "Predefine Range of cell fractions",
                         y = Perc)
-  s.cells <- dim(list.data[[1]])[2]
+
   n.cell.types <- length(unique(train.types))
 
   # TRAIN SETS -----------------------------------------------------------------
-
+  train.plots <- list()
   ## train set 1 ---------------------------------------------------------------
   train.prob.matrix <- .generateSet1(prob.list = prob.list,
                                      num = 1000,
@@ -112,9 +132,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
                                      n.cell.types = n.cell.types)
 
   ## plots
-  train.plots.1 <- .plotsQCSets(probs = train.prob.matrix,
-                                title = "Bulk Probability Dist. Set 1",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[1]] <- .plotsQCSets(probs = train.prob.matrix,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "1",
+                                   set = "train")
 
   ## train set 2 ---------------------------------------------------------------
   train.probs <- .generateSet2(prob.matrix = train.prob.matrix,
@@ -125,9 +146,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   train.prob.matrix <- rbind(train.prob.matrix, train.probs)
 
   ## plots (antes los plots se hacían antes de actualizar train.prob.matrix)
-  train.plots.2 <- .plotsQCSets(probs = train.probs,
-                                title = "Bulk Probability Dist. Set 2",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[2]] <- .plotsQCSets(probs = train.probs,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "2",
+                                   set = "train")
 
   ## train set 3 ---------------------------------------------------------------
 
@@ -150,9 +172,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   train.prob.matrix <- rbind(train.prob.matrix, train.probs)
 
   ## plots
-  train.plots.3 <- .plotsQCSets(probs = train.probs,
-                                title = "Bulk Probability Dist. Set 3",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[3]] <- .plotsQCSets(probs = train.probs,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "3",
+                                   set = "train")
 
 
   ## train set 4 ---------------------------------------------------------------
@@ -165,9 +188,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   train.prob.matrix <- rbind(train.prob.matrix, train.probs)
 
   ## plots
-  train.plots.4 <- .plotsQCSets(probs = train.probs,
-                                title = "Bulk Probability Dist. Set 4",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[4]] <- .plotsQCSets(probs = train.probs,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "4",
+                                   set = "train")
 
 
   ## train set 5 ---------------------------------------------------------------
@@ -179,9 +203,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   train.prob.matrix <- rbind(train.prob.matrix, train.probs)
 
   ## plots
-  train.plots.5 <- .plotsQCSets(probs = train.probs,
-                                title = "Bulk Probability Dist. Set 5",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[5]] <- .plotsQCSets(probs = train.probs,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "5",
+                                   set = "train")
 
 
   ## train set 6 ---------------------------------------------------------------
@@ -193,17 +218,20 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   train.prob.matrix <- rbind(train.prob.matrix, train.probs)
 
   ## plots
-  train.plots.6 <- .plotsQCSets(probs = train.probs,
-                                title = "Bulk Probability Dist. Set 6",
-                                prob.matrix = train.prob.matrix)
+  train.plots[[6]] <- .plotsQCSets(probs = train.probs,
+                                   prob.matrix = train.prob.matrix,
+                                   n = "6",
+                                   set = "train")
 
-  train.plots <- list(train.plots.1, train.plots.2, train.plots.3,
-                      train.plots.4, train.plots.5, train.plots.6)
-
-  print(paste(c("bulks","types"),dim(trainProbsMatrix)))
+  if (verbose) {
+    message("=== Probability matrix for training data:")
+    message(paste(c("  - Bulk samples:", "  - Cell types:"),
+                  dim(train.prob.matrix),
+                  collapse = "\n"), "\n")
+  }
 
   # TEST SETS ------------------------------------------------------------------
-
+  test.plots <- list()
   ## test set 1 ---------------------------------------------------------------
   test.prob.matrix <- .generateSet1(prob.list = prob.list,
                                     num = 700,
@@ -211,9 +239,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
                                     n.cell.types = n.cell.types)
 
   ## plots
-  test.plots.1 <- .plotsQCSets(probs = test.prob.matrix,
-                               title = "Bulk Probability Dist. Set 1",
-                               prob.matrix = test.prob.matrix)
+  test.plots[[1]] <- .plotsQCSets(probs = test.prob.matrix,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "1",
+                                  set = "test")
 
   ## test set 2 ---------------------------------------------------------------
   test.probs <- .generateSet2(prob.matrix = test.prob.matrix,
@@ -224,9 +253,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   test.prob.matrix <- rbind(test.prob.matrix, test.probs)
 
   ## plots (antes los plots se hacían antes de actualizar train.prob.matrix)
-  test.plots.2 <- .plotsQCSets(probs = test.probs,
-                               title = "Bulk Probability Dist. Set 2",
-                               prob.matrix = test.prob.matrix)
+  test.plots[[2]] <- .plotsQCSets(probs = test.probs,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "2",
+                                  set = "test")
 
   ## test set 3 ---------------------------------------------------------------
   test.probs <- .generateSet3(prob.list = prob.list,
@@ -238,10 +268,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   test.prob.matrix <- rbind(test.prob.matrix, test.probs)
 
   ## plots
-  test.plots.3 <- .plotsQCSets(probs = test.probs,
-                                title = "Bulk Probability Dist. Set 3",
-                                prob.matrix = test.prob.matrix)
-
+  test.plots[[3]] <- .plotsQCSets(probs = test.probs,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "3",
+                                  set = "test")
 
   ## test set 4 ---------------------------------------------------------------
   test.probs <- .generateSet4(prob.list = prob.list,
@@ -253,9 +283,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   test.prob.matrix <- rbind(test.prob.matrix, test.probs)
 
   ## plots
-  test.plots.4 <- .plotsQCSets(probs = test.probs,
-                                title = "Bulk Probability Dist. Set 4",
-                                prob.matrix = test.prob.matrix)
+  test.plots[[4]] <- .plotsQCSets(probs = test.probs,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "4",
+                                  set = "test")
 
 
   ## test set 5 ---------------------------------------------------------------
@@ -267,9 +298,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   test.prob.matrix <- rbind(test.prob.matrix, test.probs)
 
   ## plots
-  test.plots.5 <- .plotsQCSets(probs = test.probs,
-                               title = "Bulk Probability Dist. Set 5",
-                               prob.matrix = test.prob.matrix)
+  test.plots[[5]] <- .plotsQCSets(probs = test.probs,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "5",
+                                  set = "test")
 
 
   ## test set 6 ---------------------------------------------------------------
@@ -281,30 +313,30 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   test.prob.matrix <- rbind(test.prob.matrix, test.probs)
 
   ## plots
-  test.plots.6 <- .plotsQCSets(probs = test.probs,
-                                title = "Bulk Probability Dist. Set 6",
-                                prob.matrix = test.prob.matrix)
+  test.plots[[6]] <- .plotsQCSets(probs = test.probs,
+                                  prob.matrix = test.prob.matrix,
+                                  n = "6",
+                                  set = "test")
 
-  print(paste(c("bulks","types"),dim(testProbsMatrix)))
-
-  test.plots <- list(test.plots.1, test.plots.2, test.plots.3,
-                     test.plots.4, test.plots.5, test.plots.6)
+  if (verbose) {
+    message("=== Probability matrix for test data:")
+    message(paste(c("  - Bulk samples:", "  - Cell types:"),
+                  dim(test.prob.matrix),
+                  collapse = "\n"), "\n")
+  }
 
   # GENERATE PROBS MATRIX NAMES ------------------------------------------------
-  cat(paste(names(train.set.list)),"\n")
-
   setCount <- function (x, setList, sn) {
     names(x) <- sn
     sc <- c()
     for (cType in names(x)) {
       n <- ceiling(x[cType])
       if (n > 0) {
-        # if (cType == "Tumour") {cType <- sample(c("HER2","luminalA","luminalB","TNBC"),1)}
         repl <- ifelse(n > length(setList[[cType]]), TRUE, FALSE)
         sc <- c(sc, sample(setList[[cType]], size = n, replace = repl))
       }
     }
-    return(sc[seq(100)]) ## por qué 100? --< número de células por bulk sample?
+    return(sc[seq(100)]) ## por qué 100? --> número de células por bulk sample?
   }
 
   train.prob.matrix.names <- t(apply(X = train.prob.matrix,
@@ -319,10 +351,32 @@ generateTrainAndTestBulkProbMatrix <- function(object,
                                     setList = test.set.list,
                                     sn = colnames(test.prob.matrix)))
 
+  # generate object of ProbMatrixCellTypes class
+  train.prob.matrix.object <- new(
+    Class = "ProbMatrixCellTypes",
+    prob.matrix = train.prob.matrix,
+    cell.names = train.prob.matrix.names,
+    set.list = train.set.list,
+    set = train.set,
+    plots = train.plots,
+    type.data = "train"
+  )
 
+  test.prob.matrix.object <- new(
+    Class = "ProbMatrixCellTypes",
+    prob.matrix = test.prob.matrix,
+    cell.names = test.prob.matrix.names,
+    set.list = test.set.list,
+    set = test.set,
+    plots = test.plots,
+    type.data = "test"
+  )
+  object@prob.matrix <- list(train = train.prob.matrix.object,
+                             test = test.prob.matrix.object)
+
+  message("DONE")
+  return(object)
 }
-
-
 
 
 .violinPlot <- function(df, title, x = CellType, y = Prob) {
@@ -343,7 +397,8 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   return(plot)
 }
 
-.plotsQCSets <- function(probs, prob.matrix, title) {
+.plotsQCSets <- function(probs, prob.matrix, n, set) {
+  title <- paste0("Bulk Probability Dist. Set ", n, " (", set, ")")
   plots.functions <- list(.violinPlot, .boxPlot, .linesPlot)
   df <- reshape::melt(probs)
   colnames(df) <- c("Sample", "CellType", "Prob")
@@ -355,6 +410,7 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   colnames(df) <- c("Sample", "MaxProb", "Prob")
   df$MaxProb <- factor(df$MaxProb)
   plot.list[[4]] <- .boxPlot(df = df, x = MaxProb, title = title)
+  names(plot.list) <- c("violinplot", "boxplot", "linesplot", "maxprob")
   return(plot.list)
 }
 
@@ -371,8 +427,6 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   probs.matrix <- t(apply(X = probs.matrix, MARGIN = 1, FUN = .adjustHundred))
   return(probs.matrix)
 }
-
-
 
 .generateSet2 <- function(prob.matrix, num, s.cells, n.cell.types) {
   probs <- list()

@@ -22,7 +22,9 @@ ProbMatrixCellTypes <- setClass(
     prob.matrix = "MatrixOrNULL",
     cell.names = "MatrixOrNULL",
     set.list = "ListOrNULL",
-    plots = "ListOrNULL"
+    set = "character",
+    plots = "ListOrNULL",
+    type.data = "character"
   )
 )
 
@@ -32,14 +34,151 @@ setMethod(
                         prob.matrix = NULL,
                         cell.names = NULL,
                         set.list = NULL,
-                        plots = "DigitalDLSorterProject") {
+                        set = "",
+                        plots = NULL,
+                        type.data = "") {
     .Object@prob.matrix <- prob.matrix
     .Object@cell.names <- cell.names
     .Object@set.list <- set.list
+    .Object@set <- set
     .Object@plots <- plots
+    .Object@type.data <- type.data
     return(.Object)
   }
 )
+
+
+## setValidity <-- para el typedata es necesario por ejemplo
+setValidity(Class = "ProbMatrixCellTypes",
+            method = function(object) {
+              if (all(object@type.data != c("train", "test"))) {
+                return(FALSE)
+              } else {
+                return(TRUE)
+              }
+            })
+
+
+setMethod(f = "show",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) {
+            # cat("An object of class", class(object), "\n")
+            if (is.null(object@prob.matrix)) {
+              cat("ProbMatrixCellTypes object empty")
+            } else {
+              cat(paste("  Probability matrix of cell types for",
+                        object@type.data, "data\n"))
+              cat(paste(c("    Number of bulk samples:",
+                          "    Number of cell types:"),
+                        dim(object@prob.matrix),
+                        collapse = "\n"))
+            }
+          })
+
+# aquí quizás sea recomendable hacer que puedas pasarle tanto un objeto DigitalDLSorter
+# como un objeto ProbMatrix
+
+## DigitalDLSorteR
+showProbPlot <- function(object, type.data, set, type.plot = "maxprob") {
+  if (class(object) != "DigitalDLSorter") {
+    stop("The object provided is not of DigitalDLSorter class")
+  } else if (is.null(object@prob.matrix) | (length(object@prob.matrix) == 0)) {
+    stop("prob.matrix slot is empty")
+  } else if (!any(type.data == c("train", "test"))) {
+    stop("type.data argument must be 'train' or 'test'")
+  } else if (length(object@prob.matrix[[type.data]]) == 0) {
+    stop("ProbMatrixCellTypes object has not saved plots")
+  } else if (set < 1 | set > 6) {
+    stop("set argument must be a number from 1 to 6")
+  } else if (!any(type.plot == c("violinplot", "boxplot", "linesplot", "maxprob"))) {
+    stop("type.plot argument must be one of the next options: violinplot, boxplot, linesplot or maxprob")
+  }
+  return(object@prob.matrix[[type.data]]@plots[[set]][[type.plot]])
+}
+
+
+getProbMatrix <- function(object, type.data) {
+  if (class(object) != "DigitalDLSorter") {
+    stop("The object provided is not of DigitalDLSorter class")
+  } else if (!any(type.data == c("train", "test"))) {
+    stop("type.data argument must be 'train' or 'test'")
+  }
+  return(object@prob.matrix[[type.data]]@prob.matrix)
+}
+
+# getters and setters --> en R no existen los atributos privados, pero igual
+# no me interesa generar getters y setters para este objeto, ya que no es algo
+# que el usuario debiera tocar
+
+## prob.matrix
+setGeneric("prob.matrix", function(object) standardGeneric("prob.matrix"))
+setMethod(f = "prob.matrix",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) object@prob.matrix)
+
+setGeneric("prob.matrix<-", function(object, value) standardGeneric("prob.matrix<-"))
+setMethod(f = "prob.matrix<-",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object, value) {
+            object@prob.matrix <- value
+            return(object)
+          })
+
+## cell.names
+setGeneric("cell.names", function(object) standardGeneric("cell.names"))
+setMethod(f = "cell.names",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) object@cell.names)
+
+setGeneric("cell.names<-", function(object, value) standardGeneric("cell.names<-"))
+setMethod(f = "cell.names<-",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object, value) {
+            object@cell.names <- value
+            return(object)
+          })
+
+## set.list
+setGeneric("set.list", function(object) standardGeneric("set.list"))
+setMethod(f = "set.list",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) object@set.list)
+
+setGeneric("set.list<-", function(object, value) standardGeneric("set.list<-"))
+setMethod(f = "set.list<-",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object, value) {
+            object@set.list <- value
+            return(object)
+          })
+
+## set
+setGeneric("set", function(object) standardGeneric("set"))
+setMethod(f = "set",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) object@set)
+
+setGeneric("set<-", function(object, value) standardGeneric("set<-"))
+setMethod(f = "set<-",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object, value) {
+            object@set <- value
+            return(object)
+          })
+
+## plots
+setGeneric("plots", function(object) standardGeneric("plots"))
+setMethod(f = "plots",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object) object@plots)
+
+setGeneric("plots<-", function(object, value) standardGeneric("plots<-"))
+setMethod(f = "plots<-",
+          signature = "ProbMatrixCellTypes",
+          definition = function(object, value) {
+            object@plots <- value
+            return(object)
+          })
 
 
 
@@ -53,7 +192,7 @@ DigitalDLSorter <- setClass(
     single.cell.real = "SingleCellExperimentOrNULL",
     zinb.params = "ZINBParamsOrNULL",
     single.cell.sim = "SingleCellExperimentOrNULL",
-    prob.matrix = "ProbMatrixCellTypes",
+    prob.matrix = "ListOrNULL", # puede ser una lista vacía
     project = "character",
     version = "package_version"
   )
@@ -66,11 +205,13 @@ setMethod(
                         single.cell.real = NULL,
                         zinb.params = NULL,
                         single.cell.sim = NULL,
+                        prob.matrix = NULL,
                         project = "DigitalDLSorterProject",
                         version = packageVersion(pkg = "Seurat")) {
     .Object@single.cell.real <- single.cell.real
     .Object@zinb.params <- zinb.params
     .Object@single.cell.sim <- single.cell.sim
+    .Object@prob.matrix <- prob.matrix
     .Object@project <- project
     .Object@version <- version
     return(.Object)
@@ -123,6 +264,20 @@ setMethod(f = "single.cell.sim<-",
           signature = "DigitalDLSorter",
           definition = function(object, value) {
             object@single.cell.sim <- value
+            return(object)
+          })
+
+## prob.matrix
+setGeneric("prob.matrix", function(object) standardGeneric("prob.matrix"))
+setMethod(f = "prob.matrix",
+          signature = "DigitalDLSorter",
+          definition = function(object) object@prob.matrix)
+
+setGeneric("prob.matrix<-", function(object, value) standardGeneric("prob.matrix<-"))
+setMethod(f = "prob.matrix<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value) {
+            object@prob.matrix <- value
             return(object)
           })
 
@@ -186,8 +341,10 @@ setMethod(f = "show",
               cat("Simulated single-cell profiles:\n")
               .sceShow(object@single.cell.sim)
             }
+            if (!is.null(object@prob.matrix)) {
+              cat("Probability matrices:\n")
+              cat(show(object@prob.matrix$train), "\n")
+              cat(show(object@prob.matrix$test), "\n")
+            }
             cat("Project:", object@project, "\n")
           })
-
-
-
