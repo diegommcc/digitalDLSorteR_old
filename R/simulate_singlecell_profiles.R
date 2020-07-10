@@ -178,7 +178,7 @@ estimateZinbwaveParams <- function(object,
                                 , verbose = verbose
   )
 
-  # update slots || cuidado porque al cambiar el sce, cambian cosas y no puedes volver a calcular zinbParams
+  # update slots
   sce <- CreateSCEObject(counts = list.data[[1]],
                          cells.metadata = list.data[[2]],
                          genes.metadata = list.data[[3]])
@@ -231,8 +231,8 @@ simSingleCellProfiles <- function(object,
   # del cells.metadata. además hay un rowSums > 0 que puede cambiar el número de genes.
   # Lo mejor será quitar esas filas al cargar los datos
   dim.scr <- dim(list.data[[1]])
-  if (!zinb.params(DDLS.toy)@nGenes == dim.scr[1] |
-      !zinb.params(DDLS.toy)@nCells == dim.scr[2]) {
+  if (!zinb.params(object)@nGenes == dim.scr[1] |
+      !zinb.params(object)@nCells == dim.scr[2]) {
     stop("zinb.params slot and single.cell.real slot are not compatible,",
          "the number of dimensions are not equal")
   }
@@ -264,9 +264,8 @@ simSingleCellProfiles <- function(object,
   names(cell.type.names) <- model.cell.types
 
   if (verbose) {
-    message("=== Cell Types in Model:")
-    message(paste0("   ", paste(cell.type.names, collapse = " - "), " (",
-                  length(cell.type.names), " cell types)"))
+    message(paste0("=== Cell Types in Model (", length(cell.type.names), " cell types):"))
+    message(paste0("  - ", cell.type.names, collapse = "\n"))
     message()
   }
 

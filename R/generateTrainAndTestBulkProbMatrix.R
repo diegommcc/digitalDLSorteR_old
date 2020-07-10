@@ -534,8 +534,7 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   probs <- list()
   n <- ceiling(num * s.cells/1000)
   while (length(probs) < n) {
-    probs[[length(probs) + 1]] <- unlist(lapply(X = prob.list,
-                                                FUN = sample, 1))
+    probs[[length(probs) + 1]] <- unlist(lapply(X = prob.list, FUN = sample, 1))
   }
   probs <- lapply(X = probs, FUN = function(x) return(round(x * 100 / sum(x))))
   probs <- lapply(X = probs, FUN = sample)
