@@ -180,6 +180,14 @@ setMethod(f = "plots<-",
           })
 
 
+# DigitalDLSorterNetwork class ---------------------------------------------------
+
+# DigitalDLSorterNetwork <- setClass(
+#   Class = "DigitalDLSorterNetwork",
+#   slots = c(
+#     model
+#   )
+# )
 
 
 # DigitalDLSorter class --------------------------------------------------------
@@ -352,6 +360,19 @@ setMethod(f = "project<-",
   cat("    colnames:", colnames.se, "\n")
 }
 
+.finalShow <- function(se) {
+  cat("   ", dim(se)[2], "features and", dim(se)[1], "samples\n")
+  n.bulk <- sum(grepl("Bulk\\.*", rowData(se)[[1]]))
+  n.sc <- abs(n.bulk - dim(se)[1])
+  cat("   ", n.bulk, "bulk samples and", n.sc, "single-cell samples\n")
+  if (is.null(rowData(se)[[1]])) rownames.se <- "---"
+  else rownames.se <- S4Vectors:::selectSome(rowData(se)[[1]], 6)
+  if (identical(colnames(se), character(0))) colnames.se <- "---"
+  else colnames.se <- S4Vectors:::selectSome(colData(se)[[1]], 6)
+  cat("    rownames:", rownames.se, "\n")
+  cat("    colnames:", colnames.se, "\n")
+}
+
 
 .zinbModelShow <- function(zinb.model) {
   cat(paste0("ZinbParams object:\n",
@@ -398,6 +419,15 @@ setMethod(f = "show",
                 if (x %in% names(object@bulk.sim)) {
                   cat(paste(" ", x, "bulk samples:\n"))
                   .bulkShow(object@bulk.sim[[x]])
+                }
+              })
+            }
+            if (!is.null(object@final.data)) {
+              cat("Final data samples:\n")
+              lapply(X = c("train", "test"), FUN = function(x) {
+                if (x %in% names(object@final.data)) {
+                  cat(paste(" ", x, "data samples:\n"))
+                  .finalShow(object@final.data[[x]])
                 }
               })
             }

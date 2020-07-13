@@ -151,7 +151,7 @@ generateCombinedScaledShuffledSet <- function(object,
     combined.counts <- lapply(X = c("train", "test"),
                           FUN = function(x) {
                             if (verbose) {
-                              message(paste("\n=== Combining, scaling and shuffling", x, "counts:"))
+                              message(paste("\n=== Combining, scaling and shuffling", x, "counts"))
                             }
                             combineBulkSCProfiles(object = object,
                                                   type.data = x,
@@ -161,7 +161,7 @@ generateCombinedScaledShuffledSet <- function(object,
     names(combined.counts) <- c("train", "test")
   } else {
     if (verbose) {
-      message(paste("\n=== Combining, scaling and shuffling", type.data, "counts:"))
+      message(paste("\n=== Combining, scaling and shuffling", type.data, "counts"))
     }
     combined.counts <- combineBulkSCProfiles(object = object,
                                              type.data = type.data,
