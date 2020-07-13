@@ -1,2 +1,4 @@
 export(CreateDigitalDLSorterObject)
 export(CreateSCEObject)
+export(.combineBulkSCProfilesHDF5)
+useDynLib(digitalDLSorterPackageR)

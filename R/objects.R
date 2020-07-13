@@ -11,10 +11,9 @@ library(splatter)
 
 setClassUnion("MatrixOrNULL", c("matrix", "NULL"))
 setClassUnion("ListOrNULL", c("list", "NULL"))
-setOldClass(Classes = 'package_version')
 setClassUnion("SingleCellExperimentOrNULL", c("SingleCellExperiment", "NULL"))
 setClassUnion("ZINBParamsOrNULL", c("ZINBParams", "NULL"))
-
+setOldClass(Classes = 'package_version')
 
 ProbMatrixCellTypes <- setClass(
   Class = "ProbMatrixCellTypes",
@@ -192,7 +191,9 @@ DigitalDLSorter <- setClass(
     single.cell.real = "SingleCellExperimentOrNULL",
     zinb.params = "ZINBParamsOrNULL",
     single.cell.sim = "SingleCellExperimentOrNULL",
-    prob.matrix = "ListOrNULL", # puede ser una lista vacía
+    prob.matrix = "ListOrNULL",
+    bulk.sim = "ListOrNULL",
+    final.data = "ListOrNULL",
     project = "character",
     version = "package_version"
   )
@@ -206,12 +207,16 @@ setMethod(
                         zinb.params = NULL,
                         single.cell.sim = NULL,
                         prob.matrix = NULL,
+                        bulk.sim = NULL,
+                        final.data = NULL,
                         project = "DigitalDLSorterProject",
                         version = packageVersion(pkg = "Seurat")) {
     .Object@single.cell.real <- single.cell.real
     .Object@zinb.params <- zinb.params
     .Object@single.cell.sim <- single.cell.sim
     .Object@prob.matrix <- prob.matrix
+    .Object@bulk.sim <- bulk.sim
+    .Object@final.data <- final.data
     .Object@project <- project
     .Object@version <- version
     return(.Object)
@@ -281,6 +286,36 @@ setMethod(f = "prob.matrix<-",
             return(object)
           })
 
+## bulk.sim
+setGeneric("bulk.sim", function(object) standardGeneric("bulk.sim"))
+setMethod(f = "bulk.sim",
+          signature = "DigitalDLSorter",
+          definition = function(object) object@bulk.sim)
+
+setGeneric("bulk.sim<-", function(object, value) standardGeneric("bulk.sim<-"))
+setMethod(f = "bulk.sim<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value) {
+            object@bulk.sim <- value
+            return(object)
+          })
+
+## final.data
+setGeneric("final.data", function(object) standardGeneric("final.data"))
+setMethod(f = "final.data",
+          signature = "DigitalDLSorter",
+          definition = function(object) object@final.data)
+
+setGeneric("final.data<-", function(object, value) standardGeneric("final.data<-"))
+setMethod(f = "final.data<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value) {
+            object@final.data <- value
+            return(object)
+          })
+
+
+
 ## project
 setGeneric("project", function(object) standardGeneric("project"))
 setMethod(f = "project",
@@ -306,6 +341,17 @@ setMethod(f = "project<-",
   cat("  rownames:", rownames.sce, "\n")
   cat("  colnames:", colnames.sce, "\n")
 }
+
+.bulkShow <- function(se) {
+  cat("   ", dim(se)[1], "features and", dim(se)[2], "samples\n")
+  if (is.null(rowData(se)[[1]])) rownames.se <- "---"
+  else rownames.se <- S4Vectors:::selectSome(rowData(se)[[1]], 6)
+  if (identical(colnames(se), character(0))) colnames.se <- "---"
+  else colnames.se <- S4Vectors:::selectSome(colData(se)[[1]], 6)
+  cat("    rownames:", rownames.se, "\n")
+  cat("    colnames:", colnames.se, "\n")
+}
+
 
 .zinbModelShow <- function(zinb.model) {
   cat(paste0("ZinbParams object:\n",
@@ -345,6 +391,15 @@ setMethod(f = "show",
               cat("Probability matrices:\n")
               cat(show(object@prob.matrix$train), "\n")
               cat(show(object@prob.matrix$test), "\n")
+            }
+            if (!is.null(object@bulk.sim)) {
+              cat("Synthetic bulk samples:\n")
+              lapply(X = c("train", "test"), FUN = function(x) {
+                if (x %in% names(object@bulk.sim)) {
+                  cat(paste(" ", x, "bulk samples:\n"))
+                  .bulkShow(object@bulk.sim[[x]])
+                }
+              })
             }
             cat("Project:", object@project, "\n")
           })

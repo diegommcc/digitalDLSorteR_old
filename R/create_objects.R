@@ -137,7 +137,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                                      common.cells, , drop = FALSE]
   # duplicated ID genes --------------------------------------------------------
   if (any(duplicated(genes.metadata[, gene.ID.column]))) {
-    warning(paste0("There are duplicated IDs in genes.metadata (column ",
+    message(paste0("There are duplicated IDs in genes.metadata (column ",
                    gene.ID.column, "). Duplicated IDs have been removed"))
     genes.metadata <- genes.metadata[!duplicated(genes.metadata[, gene.ID.column]), ]
   }

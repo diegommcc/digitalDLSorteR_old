@@ -10,12 +10,13 @@ library(ggplot2)
   return(x)
 }
 
-# generateTrainAndTestBulkProbMatrix: meter opción para seed
+
 generateTrainAndTestBulkProbMatrix <- function(object,
                                                cell.type.column,
                                                prob.design,
                                                train.freq = 2/3,
                                                num.bulk.samples = NULL,
+                                               seed = NULL,
                                                verbose = TRUE) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
@@ -32,6 +33,10 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   if (!is.null(prob.matrix(object)) | !length(prob.matrix(object)) == 0) {
     warning("prob.matrix slot already has the probability matrices. Note that it will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
+  }
+
+  if (!is.null(seed)) {
+    set.seed(seed)
   }
 
   # extract data from SCE to list
@@ -161,8 +166,7 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   ## varios tipos celulares que en el set 3 tienen 0. No sé qué es lo correcto, preguntar
   ## de momento lo he corregido, coge todos los tipos celulares. Con esta corrección,
   ## de hecho, es probable que no sea necesario lo de limitar el número de veces, porque la
-  ## condición sum(p) > 99 se cumplirá. En cualquier caso, creo que está bien dejarlo porque
-  ## es curar en salud
+  ## condición sum(p) > 99 se cumplirá. En cualquier caso, creo que está bien dejarlo por si acaso
   train.probs <- .generateSet3(prob.list = prob.list,
                                prob.matrix = train.prob.matrix,
                                num = 500,
