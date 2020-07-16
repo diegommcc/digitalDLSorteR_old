@@ -286,37 +286,27 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                          genes.metadata = list.data[[3]]))
 }
 
-
+## cargar datos reales
 CreateDigitalDLSorterObject <- function(
   single.cell.real,
   cell.ID.column = 1,
   gene.ID.column = 1,
   min.cells = 0,
   min.counts = 0,
-  project = "DigitalDLSorterProject",
-  zinb.params.object = NULL,
-  single.cell.sim = NULL
+  project = "DigitalDLSorterProject"
 ) {
   single.cell.real <- .loadSingleCellData(
-    single.cell.real,
-    cell.ID.column,
-    gene.ID.column,
-    min.cells,
-    min.counts
+    single.cell = single.cell.real,
+    cell.ID.column = cell.ID.column,
+    gene.ID.column = gene.ID.column,
+    min.cells = min.cells,
+    min.counts = min.counts
   )
-  single.cell.sim <- .loadSingleCellData(
-    single.cell.sim,
-    real = FALSE
-  )
-
   ddls.object <- new(
     Class = "DigitalDLSorter",
     single.cell.real = single.cell.real,
-    zinb.params = zinb.params.object,
-    single.cell.sim = single.cell.sim,
     project = project,
     version = packageVersion(pkg = "digitalDLSorterPackageR")
   )
   return(ddls.object)
 }
-

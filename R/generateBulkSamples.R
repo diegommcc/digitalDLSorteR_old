@@ -139,14 +139,6 @@ generateCombinedScaledShuffledSet <- function(object,
     combineBulkSCProfiles <- .combineBulkSCProfilesHDF5
   }
 
-  ## 1- Coger los datos: bulk.sim.counts, bulk,probs.matrix, cell.set.list
-  ## 2- Combinar bulkCounts y scCounts: intersect entre genes y cbind de ambas matrices
-  ## 3- Generar SC probs matrix: genera matrices de probabilidad y lo combina con
-  # las probabilidades anteriores
-  ## 4- Escalar los datos y escribirlo todo en disco
-
-
-  ### COMBINE bulkCounts and scCounts
   if (type.data == "both") {
     combined.counts <- lapply(X = c("train", "test"),
                           FUN = function(x) {
@@ -191,14 +183,12 @@ generateCombinedScaledShuffledSet <- function(object,
                          rownames(assay(object@single.cell.sim)))
   counts <- assay(bulk.sim(object)[[type.data]])
   .setConfigHDF5(file.backend = file.backend, name = "tpm")
-  counts <- DelayedArray::cbind(counts, DelayedArray(assay(object@single.cell.sim)[,
-                                 unlist(object@prob.matrix[[type.data]]@set.list)]))
-
-  # no funciona, es para reestablecer el directorio por defecto
-  # .setConfigHDF5(file.backend = getHDF5DumpDir(), name = "tpm")
-  sample.names <- c(colData(object@bulk.sim[[type.data]])[[1]],
-                    colnames(assay(object@single.cell.sim)[,
-                                   unlist(object@prob.matrix[[type.data]]@set.list)]))
+  counts <- DelayedArray::cbind(DelayedArray(assay(object@single.cell.sim)[,
+                                 unlist(object@prob.matrix[[type.data]]@set.list)]),
+                                counts)
+  sample.names <- c(colnames(assay(object@single.cell.sim)[,
+                                   unlist(object@prob.matrix[[type.data]]@set.list)]),
+                    colData(object@bulk.sim[[type.data]])[[1]])
   tpsm <- matrix(unlist(sapply(X = names(object@prob.matrix[[type.data]]@set.list),
                                FUN = function (x, l) {
                                  v <- rep(0,length(l))
@@ -220,9 +210,8 @@ generateCombinedScaledShuffledSet <- function(object,
 
   ## scale counts matrix
   # cpms
-  prior <- 1L
   lib.sizes <- DelayedArray::colSums(counts)
-  prior.count.scaled <- prior * length(lib.sizes) * lib.sizes / sum(lib.sizes)
+  prior.count.scaled <- 1L * length(lib.sizes) * lib.sizes / sum(lib.sizes)
   counts <- t(log2((t(counts) + prior.count.scaled) /
                      (lib.sizes +  2 * prior.count.scaled) * 1e+06 ))
   # scale
@@ -240,8 +229,6 @@ generateCombinedScaledShuffledSet <- function(object,
                                       filepath = file.backend,
                                       name = type.data,
                                       verbose = verbose)
-  ## remove tpm
-  rhdf5::h5delete(file = file.backend, name = "tpm")
 
   return(SummarizedExperiment(assays = list(sim.counts = counts),
                               rowData = sample.names,
@@ -262,11 +249,13 @@ generateCombinedScaledShuffledSet <- function(object,
   } else {
     counts <- assay(bulk.sim(object)[[type.data]])
   }
-  counts <- cbind(counts,
-                  assay(object@single.cell.sim)[, unlist(object@prob.matrix[[type.data]]@set.list)])
+  counts <- cbind(assay(object@single.cell.sim)[,
+                              unlist(object@prob.matrix[[type.data]]@set.list)],
+                  counts)
 
-  sample.names <- c(colData(object@bulk.sim[[type.data]])[[1]],
-                    colnames(assay(object@single.cell.sim)[, unlist(object@prob.matrix[[type.data]]@set.list)]))
+  sample.names <- c(colnames(assay(object@single.cell.sim)[,
+                             unlist(object@prob.matrix[[type.data]]@set.list)]),
+                    colData(object@bulk.sim[[type.data]])[[1]])
   tpsm <- matrix(unlist(sapply(X = names(object@prob.matrix[[type.data]]@set.list),
                                FUN = function (x, l) {
                                  v <- rep(0,length(l))
@@ -285,8 +274,7 @@ generateCombinedScaledShuffledSet <- function(object,
 
   ## scale counts matrix
   # cpms
-  prior <- 1L
-  counts <- edgeR::cpm.default(counts)
+  counts <- edgeR::cpm.default(y = counts, log = TRUE, prior.count = 1)
   # scaling
   counts <- scale(counts)
   # shuffling
