@@ -7,20 +7,17 @@ library(Matrix)
 
 .readTabFiles <- function(file) {
   if (!file.exists(file)) {
-    stop("File provided does not exists")
+    stop(paste(file, "file provided does not exists"))
   }
   if (grepl(".tsv", file)) {
     if (grepl(".tsv.gz$", file)) {
-      # message("Tab Gzipped format")
       file.obj <- read.delim(file = gzfile(file), sep = "\t",
                              header = T, stringsAsFactors = F)
     } else {
-      # message("Tab plain format")
       file.obj <- read.delim(file = file, sep = "\t", header = T,
                              stringsAsFactors = F)
     }
   } else if (grepl(".rds$", file)) {
-    # message("RDS R object")
     file.obj <- readRDS(file = file)
   } else {
     stop("File format is not recognizable. Please look at the allowed data for in ?CreateDigitalDLSorterObject")
@@ -35,9 +32,8 @@ library(Matrix)
     return(counts)
   } else if (grepl(".mtx$", counts.file)) {
     if (!file.exists(counts.file)) {
-      stop("File provided does not exists")
+      stop(paste(counts.file, "file provided does not exists"))
     }
-    # message("Sparse Matrix Market format")
     base.dir <- dirname(counts.file)
     if (!file.exists(file.path(base.dir, "genes.tsv"))) {
       stop("No genes.tsv file with the matrix.mtx")

@@ -68,7 +68,7 @@ generateBulkSamples <- function(object,
   return(object)
 }
 
-setBulks <- function (x, c, i) { # para qué vale i
+setBulks <- function (x, c, i) {
   return(rowSums(c[, x]))
 }
 

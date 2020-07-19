@@ -64,13 +64,6 @@ estimateZinbwaveParams <- function(object,
            }
          })
 
-  ## preguntar por qué. Al cambiar los colnames, no puedes volver a
-  ## ejecutar la función porque hay missing values debido a que el cell.ID
-  ## ahora no es el mismo
-  # rownames(list.data[[2]]) <- paste(list.data[[2]][, cell.type.column],
-  #                                   list.data[[2]][, cell.ID.column],
-  #                                   sep = "_")
-
   # set configuration of parallel computations
   if (threads <= 0) {
     threads <- 1
@@ -83,8 +76,6 @@ estimateZinbwaveParams <- function(object,
   if (set.type == "All") {
     list.data[[1]] <- as.matrix(list.data[[1]])
     list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0, ]
-    # message(dim(counts))
-    # message("Estimate parameters for experiment with model matrix")
     formula.cell.model <- as.formula(paste("~", paste(c(cell.cov.columns,
                                                    cell.type.column),
                                                  collapse = "+")))
@@ -95,14 +86,12 @@ estimateZinbwaveParams <- function(object,
                     "and", cell.type.column, "columns:"))
       message("\t", formula.cell.model, "\n")
     }
-    # no coge siempre un tipo celular menos
+    # coge siempre un tipo celular menos !!!!!!!!!!!!
     sdm <- model.matrix(formula.cell.model,
                         data = list.data[[2]][match(colnames(list.data[[1]]),
                                                     list.data[[2]][, cell.ID.column]), ])
     sdm.ncol <- ncol(sdm)
     sdm.colnames <- colnames(sdm)
-    # message(dim(sdm))
-    # message(head(sdm))
   } else {
       message(paste("=== Estimate parameters for", set.type, "from the experiment\n"))
       message(paste("=== Collect counts for", set.type, "cells\n"))
@@ -111,7 +100,6 @@ estimateZinbwaveParams <- function(object,
       list.data [[1]] <- list.data[[1]][, cell.IDs]
       list.data[[1]] <- as.matrix(list.data[[1]])
       list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0,]
-      # message(paste(c("Genes","Cells"), dim(list.data[[1]])))
       sdm <- NULL
       sdm.ncol <- 1
       sdm.colnames <- seq(1)
@@ -134,8 +122,6 @@ estimateZinbwaveParams <- function(object,
                                                     list.data[[3]][, gene.ID.column]), ])
   }
   rownames(gdm) <- rownames(list.data[[1]])
-  # message(dim(gdm))
-  # message(head(gdm))
   start_time <- Sys.time()
   if (verbose) {
     message("=== Run estimation process ",
@@ -177,7 +163,6 @@ estimateZinbwaveParams <- function(object,
                                 )
                                 , verbose = verbose
   )
-
   # update slots
   sce <- CreateSCEObject(counts = list.data[[1]],
                          cells.metadata = list.data[[2]],
@@ -271,7 +256,6 @@ simSingleCellProfiles <- function(object,
 
   for (s in model.cell.types) {
     cell.type.name <- cell.type.names[s]
-    # message(paste(s, cell.type.name), "\n")
     cell.index <- rownames(zinb.object@model@X)[which(zinb.object@model@X[, s] == 1)]
     nams <- sample(cell.index, size = n.cells, replace = T)
     if (is.null(cell.set.names)) {
@@ -285,11 +269,8 @@ simSingleCellProfiles <- function(object,
               seq(from = length(ns) + 1, to = length(ns) + n.cells), sep = ""))
     }
   }
-
-  # no entiendo esto
   inter.cell.type <- setdiff(levels(factor(list.data[[2]][, cell.type.column])),
                              cell.type.names)
-  # cat(inter.cell.type, "\n")
   # To get the intercept cell type the rowSum of all FinalCellType columns should be 0
   cell.index <- rownames(zinb.object@model@X)[rowSums(zinb.object@model@X[,
                          grep(cell.type.column,
@@ -349,7 +330,7 @@ simSingleCellProfiles <- function(object,
   # new sim cells.metadata
   sim.cells.metadata <- rbind(list.data[[2]], sim.cells.metadata)
 
-  # bind simmulated and real counts
+  # join simmulated and real counts
   sim.counts <- Matrix::Matrix(as.matrix(sim.counts), sparse = T)
   sim.counts <- cbind(list.data[[1]][rownames(sim.counts), ], sim.counts)
 

@@ -180,19 +180,122 @@ setMethod(f = "plots<-",
           })
 
 
-# DigitalDLSorterNetwork class ---------------------------------------------------
+# DigitalDLSorterDNN class ---------------------------------------------------
+setOldClass("keras.engine.sequential.Sequential")
+setOldClass("keras_training_history")
 
-# DigitalDLSorterNetwork <- setClass(
-#   Class = "DigitalDLSorterNetwork",
-#   slots = c(
-#     model
-#   )
-# )
+DigitalDLSorterDNN <- setClass(
+  Class = "DigitalDLSorterDNN",
+  slots = c(
+    trained.model = "keras.engine.sequential.Sequential",
+    training.history = "keras_training_history",
+    eval.stats = "ListOrNULL",
+    predict.results = "matrix"
+  )
+)
+
+setMethod(
+  f = "initialize", signature = "DigitalDLSorterDNN",
+  definition = function(
+    .Object,
+    trained.model = "keras.engine.sequential.Sequential",
+    training.history = "keras_training_history",
+    eval.stats = "ListOrNULL",
+    predict.results = "MatrixOrNULL"
+  ) {
+    .Object@trained.model <- trained.model
+    .Object@training.history <- training.history
+    .Object@eval.stats <- eval.stats
+    .Object@predict.results <- predict.results
+    return(.Object)
+  }
+)
+
+setMethod(f = "show",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) {
+            # cat("An object of class", class(object), "\n")
+            if (is.null(object@trained.model)) {
+              cat("DigitalDLSorterDNN object empty")
+            } else {
+              train.metrics <- lapply(object@training.history$metrics,
+                                      function(x) x[length(x)])
+              cat("  Training metrics (last epoch):\n")
+              cat(paste0("    ", names(train.metrics), ": ",
+                         lapply(train.metrics, round, 4),
+                         collapse = "\n"))
+              cat("\n  Evaluation metrics (on test data):\n")
+              cat(paste0("    ", names(object@eval.stats), ": ",
+                         lapply(object@eval.stats, round, 4),
+                         collapse = "\n"))
+            }
+          })
+
+
+
+test.metrics <- test.eval
+
+
+setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
+
+# getters and setters for slots ------------------------------------------------
+## trained.model
+setGeneric("trained.model", function(object) standardGeneric("trained.model"))
+setMethod(f = "trained.model",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@trained.model)
+
+setGeneric("trained.model<-", function(object, value) standardGeneric("trained.model<-"))
+setMethod(f = "trained.model<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@trained.model <- value
+            return(object)
+          })
+
+## training.history
+setGeneric("training.history", function(object) standardGeneric("training.history"))
+setMethod(f = "training.history",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@training.history)
+setGeneric("training.history<-", function(object, value) standardGeneric("training.history<-"))
+setMethod(f = "training.history<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@training.history <- value
+            return(object)
+          })
+
+## eval.stats
+setGeneric("eval.stats", function(object) standardGeneric("eval.stats"))
+setMethod(f = "eval.stats",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@eval.stats)
+
+setGeneric("eval.stats<-", function(object, value) standardGeneric("eval.stats<-"))
+setMethod(f = "eval.stats<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@eval.stats <- value
+            return(object)
+          })
+
+## predict.results
+setGeneric("predict.results", function(object) standardGeneric("predict.results"))
+setMethod(f = "predict.results",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@predict.results)
+
+setGeneric("predict.results<-", function(object, value) standardGeneric("predict.results<-"))
+setMethod(f = "predict.results<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@predict.results <- value
+            return(object)
+          })
 
 
 # DigitalDLSorter class --------------------------------------------------------
-
-## devuelve un warning porque hay que definir la clase package_version
 DigitalDLSorter <- setClass(
   Class = "DigitalDLSorter",
   slots = c(
@@ -202,12 +305,13 @@ DigitalDLSorter <- setClass(
     prob.matrix = "ListOrNULL",
     bulk.sim = "ListOrNULL",
     final.data = "ListOrNULL",
+    trained.model = "DigitalDLSorterDNNOrNULL",
     project = "character",
     version = "package_version"
   )
 )
 
-# initial constructor (prototype argument is deprecated)
+
 setMethod(
   f = "initialize", signature = "DigitalDLSorter",
   definition = function(.Object,
@@ -217,6 +321,7 @@ setMethod(
                         prob.matrix = NULL,
                         bulk.sim = NULL,
                         final.data = NULL,
+                        trained.model = NULL,
                         project = "DigitalDLSorterProject",
                         version = packageVersion(pkg = "digitalDLSorterPackageR")) {
     .Object@single.cell.real <- single.cell.real
@@ -225,6 +330,7 @@ setMethod(
     .Object@prob.matrix <- prob.matrix
     .Object@bulk.sim <- bulk.sim
     .Object@final.data <- final.data
+    .Object@trained.model <- trained.model
     .Object@project <- project
     .Object@version <- version
     return(.Object)
@@ -322,7 +428,19 @@ setMethod(f = "final.data<-",
             return(object)
           })
 
+## trained.model
+setGeneric("trained.model", function(object) standardGeneric("trained.model"))
+setMethod(f = "trained.model",
+          signature = "DigitalDLSorter",
+          definition = function(object) object@trained.model)
 
+setGeneric("trained.model<-", function(object, value) standardGeneric("trained.model<-"))
+setMethod(f = "trained.model<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value) {
+            object@trained.model <- value
+            return(object)
+          })
 
 ## project
 setGeneric("project", function(object) standardGeneric("project"))
@@ -337,6 +455,7 @@ setMethod(f = "project<-",
             object@project <- value
             return(object)
           })
+
 
 # show method for display the content of the object ----------------------------
 # setGeneric("show", function(obj) standardGeneric("show"))
@@ -431,5 +550,9 @@ setMethod(f = "show",
                 }
               })
             }
-            cat("Project:", object@project, "\n")
+            if (!is.null(object@trained.model)) {
+              cat("Trained model:\n")
+              show(object@trained.model)
+            }
+            cat("\nProject:", object@project, "\n")
           })

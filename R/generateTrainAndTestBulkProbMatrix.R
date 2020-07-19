@@ -1,23 +1,18 @@
 library(ggplot2)
 
-.adjustHundred <- function (x) {
-  d <- abs(sum(x)-100)
-  if (sum(x) > 100) {
-    x[which(x >= d)[1]] <- x[which(x >= d)[1]] - d
-  } else if (sum(x) < 100) {
-    x[which(x < (100 - d))[1]] <- x[which(x < (100-d))[1]] + d
-  }
-  return(x)
-}
 
 
-generateTrainAndTestBulkProbMatrix <- function(object,
-                                               cell.type.column,
-                                               prob.design,
-                                               train.freq = 2/3,
-                                               num.bulk.samples = NULL,
-                                               seed = NULL,
-                                               verbose = TRUE) {
+
+generateTrainAndTestBulkProbMatrix <- function(
+  object,
+  cell.type.column,
+  prob.design,
+  train.freq = 2/3,
+  exclusive.types = NULL,
+  num.bulk.samples = NULL,
+  seed = NULL,
+  verbose = TRUE
+) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
   } else if (is.null(single.cell.sim(object))) {
@@ -45,9 +40,9 @@ generateTrainAndTestBulkProbMatrix <- function(object,
 
   # check if cell.type.column is correct
   .checkColumn(metadata = list.data[[2]],
-                        ID.column = cell.type.column,
-                        type.metadata = "cells.metadata",
-                        arg = "cell.type.column")
+               ID.column = cell.type.column,
+               type.metadata = "cells.metadata",
+               arg = "cell.type.column")
 
   # check if prob.design is correctly built
   lapply(X = c(cell.type.column, "from", "to"),
@@ -59,7 +54,7 @@ generateTrainAndTestBulkProbMatrix <- function(object,
          }
   )
   if (any(duplicated(prob.design[, cell.type.column]))) {
-    stop(paste("prob.design must not contain repeated cell types in",
+    stop(paste("prob.design must not contain duplicated cell types in",
                cell.type.column, "column"))
   } else if (!any(prob.design[, cell.type.column] %in%
               unique(list.data[[2]][, cell.type.column]))) {
@@ -72,14 +67,15 @@ generateTrainAndTestBulkProbMatrix <- function(object,
     stop("'from' entries must be lesser than 'to' entries")
   }
 
+  ## set new s.cells if num.bulk.samples is provided
   s.cells <- dim(list.data[[1]])[2]
-
   if (!is.null(num.bulk.samples)) {
     if (s.cells > num.bulk.samples) {
       stop(paste0("If num.bulk.samples is provided, it must be greater than or equal to the total of simulated cells (",
                   s.cells, " in this case)"))
     }
-    s.cells <- round(num.bulk.samples / 17.65) # hay un márgen de error por el número. Preguntar para cambiar
+    s.cells <- ceiling(num.bulk.samples / 17.65)
+    message(paste("The number of bulk samples that will be generated has been fixed to", s.cells))
   }
 
   # split data into training and test sets
@@ -119,113 +115,51 @@ generateTrainAndTestBulkProbMatrix <- function(object,
  )
   names(prob.list) <- prob.design[, cell.type.column]
 
-  ## predefined range od cell types
+  ## check if there are exclusive types
+  if (!is.null(exclusive.types)) {
+    if (length(exclusive.types) < 2) {
+      stop("'exclusive.types' must be at least 2 different cell types")
+    } else if (any(duplicated(exclusive.types))) {
+      stop("'exclusive.types' can not contain duplicated elements")
+    } else if (!all(exclusive.types %in% unique(list.data[[2]][, "Cell_type"]))) {
+      stop("Cell types present in exclusive.types argument must be present in cells.metadata")
+    }
+    index.ex <- match(exclusive.types, names(prob.list))
+  } else {
+    index.ex <- NULL
+  }
+
+  ## predefined range of cell types
   df <- reshape::melt(prob.list)
-  colnames(df) <- c("Perc","CellType")
+  colnames(df) <- c("Perc", "CellType")
   df$CellType <- factor(df$CellType, levels = names(prob.list))
   plot.prob <- .boxPlot(df = df, title = "Predefine Range of cell fractions",
                         y = Perc)
 
   n.cell.types <- length(unique(train.types))
+  functions.list <- list(.generateSet1, .generateSet2, .generateSet3,
+                         .generateSet4, .generateSet5, .generateSet6)
 
   # TRAIN SETS -----------------------------------------------------------------
+  train.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
   train.plots <- list()
-  ## train set 1 ---------------------------------------------------------------
-  train.prob.matrix <- .generateSet1(prob.list = prob.list,
-                                     num = 1000,
-                                     s.cells = s.cells,
-                                     n.cell.types = n.cell.types)
-
-  ## plots
-  train.plots[[1]] <- .plotsQCSets(probs = train.prob.matrix,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "1",
-                                   set = "train")
-
-  ## train set 2 ---------------------------------------------------------------
-  train.probs <- .generateSet2(prob.matrix = train.prob.matrix,
-                               num = 3000,
-                               s.cells = s.cells,
-                               n.cell.types = n.cell.types)
-
-  train.prob.matrix <- rbind(train.prob.matrix, train.probs)
-
-  ## plots (antes los plots se hacían antes de actualizar train.prob.matrix)
-  train.plots[[2]] <- .plotsQCSets(probs = train.probs,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "2",
-                                   set = "train")
-
-  ## train set 3 ---------------------------------------------------------------
-
-  ## permanece en un bucle infinito porque p no llega nunca a ser mayor que 99
-  ## lo he limitado ocn el número de veces que se produce un while.
-  ## además, debido a esto, estaba limitado a 9, por lo que lo he peusto a n.cell.types - 1
-  ## sin embargo, así no llega nunca al último tipo celular. Creo que ocurre lo mismo por
-  ## el if (sum(p == 0) <= 7) --> por eso en los plots generados con la pipeline hay
-  ## varios tipos celulares que en el set 3 tienen 0. No sé qué es lo correcto, preguntar
-  ## de momento lo he corregido, coge todos los tipos celulares. Con esta corrección,
-  ## de hecho, es probable que no sea necesario lo de limitar el número de veces, porque la
-  ## condición sum(p) > 99 se cumplirá. En cualquier caso, creo que está bien dejarlo por si acaso
-  train.probs <- .generateSet3(prob.list = prob.list,
-                               prob.matrix = train.prob.matrix,
-                               num = 500,
-                               s.cells = s.cells,
-                               n.cell.types = n.cell.types)
-
-  train.prob.matrix <- rbind(train.prob.matrix, train.probs)
-
-  ## plots
-  train.plots[[3]] <- .plotsQCSets(probs = train.probs,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "3",
-                                   set = "train")
-
-
-  ## train set 4 ---------------------------------------------------------------
-  train.probs <- .generateSet4(prob.list = prob.list,
-                               prob.matrix = train.prob.matrix,
-                               num = 1000,
-                               s.cells = s.cells,
-                               n.cell.types = n.cell.types)
-
-  train.prob.matrix <- rbind(train.prob.matrix, train.probs)
-
-  ## plots
-  train.plots[[4]] <- .plotsQCSets(probs = train.probs,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "4",
-                                   set = "train")
-
-
-  ## train set 5 ---------------------------------------------------------------
-  train.probs <- .generateSet5(prob.matrix = train.prob.matrix,
-                               num = 3000,
-                               s.cells = s.cells,
-                               n.cell.types = n.cell.types)
-
-  train.prob.matrix <- rbind(train.prob.matrix, train.probs)
-
-  ## plots
-  train.plots[[5]] <- .plotsQCSets(probs = train.probs,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "5",
-                                   set = "train")
-
-
-  ## train set 6 ---------------------------------------------------------------
-  train.probs <- .generateSet6(prob.list = prob.list,
-                               prob.matrix = train.prob.matrix,
-                               num = 2000,
-                               s.cells = s.cells)
-
-  train.prob.matrix <- rbind(train.prob.matrix, train.probs)
-
-  ## plots
-  train.plots[[6]] <- .plotsQCSets(probs = train.probs,
-                                   prob.matrix = train.prob.matrix,
-                                   n = "6",
-                                   set = "train")
+  nums <- c(1000, 3000, 500, 1000, 3000, 2000)
+  n <- 1
+  for (fun in functions.list) {
+    train.probs <- fun(prob.list = prob.list,
+                       prob.matrix = train.prob.matrix,
+                       num = nums[n],
+                       s.cells = s.cells,
+                       n.cell.types = n.cell.types,
+                       index.ex = index.ex)
+    train.prob.matrix <- rbind(train.prob.matrix, train.probs)
+    if (n == 1) train.prob.matrix <- train.prob.matrix[-1,]
+    train.plots[[n]] <- .plotsQCSets(probs = train.probs,
+                                     prob.matrix = train.prob.matrix,
+                                     n = n,
+                                     set = "train")
+    n <- n + 1
+  }
 
   if (verbose) {
     message("=== Probability matrix for training data:")
@@ -235,92 +169,25 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   }
 
   # TEST SETS ------------------------------------------------------------------
+  test.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
   test.plots <- list()
-  ## test set 1 ---------------------------------------------------------------
-  test.prob.matrix <- .generateSet1(prob.list = prob.list,
-                                    num = 700,
-                                    s.cells = s.cells,
-                                    n.cell.types = n.cell.types)
-
-  ## plots
-  test.plots[[1]] <- .plotsQCSets(probs = test.prob.matrix,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "1",
-                                  set = "test")
-
-  ## test set 2 ---------------------------------------------------------------
-  test.probs <- .generateSet2(prob.matrix = test.prob.matrix,
-                              num = 2000,
-                              s.cells = s.cells,
-                              n.cell.types = n.cell.types)
-
-  test.prob.matrix <- rbind(test.prob.matrix, test.probs)
-
-  ## plots (antes los plots se hacían antes de actualizar train.prob.matrix)
-  test.plots[[2]] <- .plotsQCSets(probs = test.probs,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "2",
-                                  set = "test")
-
-  ## test set 3 ---------------------------------------------------------------
-  test.probs <- .generateSet3(prob.list = prob.list,
-                              prob.matrix = test.prob.matrix,
-                              num = 350,
-                              s.cells = s.cells,
-                              n.cell.types = n.cell.types)
-
-  test.prob.matrix <- rbind(test.prob.matrix, test.probs)
-
-  ## plots
-  test.plots[[3]] <- .plotsQCSets(probs = test.probs,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "3",
-                                  set = "test")
-
-  ## test set 4 ---------------------------------------------------------------
-  test.probs <- .generateSet4(prob.list = prob.list,
-                              prob.matrix = test.prob.matrix,
-                              num = 700,
-                              s.cells = s.cells,
-                              n.cell.types = n.cell.types)
-
-  test.prob.matrix <- rbind(test.prob.matrix, test.probs)
-
-  ## plots
-  test.plots[[4]] <- .plotsQCSets(probs = test.probs,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "4",
-                                  set = "test")
-
-
-  ## test set 5 ---------------------------------------------------------------
-  test.probs <- .generateSet5(prob.matrix = test.prob.matrix,
-                              num = 2000,
-                              s.cells = s.cells,
-                              n.cell.types = n.cell.types)
-
-  test.prob.matrix <- rbind(test.prob.matrix, test.probs)
-
-  ## plots
-  test.plots[[5]] <- .plotsQCSets(probs = test.probs,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "5",
-                                  set = "test")
-
-
-  ## test set 6 ---------------------------------------------------------------
-  test.probs <- .generateSet6(prob.list = prob.list,
-                              prob.matrix = test.prob.matrix,
-                              num = 1400,
-                              s.cells = s.cells)
-
-  test.prob.matrix <- rbind(test.prob.matrix, test.probs)
-
-  ## plots
-  test.plots[[6]] <- .plotsQCSets(probs = test.probs,
-                                  prob.matrix = test.prob.matrix,
-                                  n = "6",
-                                  set = "test")
+  nums <- c(700, 2000, 350, 700, 2000, 1400)
+  n <- 1
+  for (fun in functions.list) {
+    test.probs <- fun(prob.list = prob.list,
+                      prob.matrix = test.prob.matrix,
+                      num = nums[n],
+                      s.cells = s.cells,
+                      n.cell.types = n.cell.types,
+                      index.ex = index.ex)
+    test.prob.matrix <- rbind(test.prob.matrix, test.probs)
+    if (n == 1) test.prob.matrix <- test.prob.matrix[-1,]
+    test.plots[[n]] <- .plotsQCSets(probs = test.probs,
+                                    prob.matrix = test.prob.matrix,
+                                    n = n,
+                                    set = "test")
+    n <- n + 1
+  }
 
   if (verbose) {
     message("=== Probability matrix for test data:")
@@ -340,7 +207,7 @@ generateTrainAndTestBulkProbMatrix <- function(object,
         sc <- c(sc, sample(setList[[cType]], size = n, replace = repl))
       }
     }
-    return(sc[seq(100)]) ## por qué 100? --> número de células por bulk sample?
+    return(sc[seq(100)])
   }
 
   train.prob.matrix.names <- t(apply(X = train.prob.matrix,
@@ -419,122 +286,272 @@ generateTrainAndTestBulkProbMatrix <- function(object,
 }
 
 
-.generateSet1 <- function(prob.list, num, s.cells, n.cell.types) {
-  n <- ceiling(num * s.cells/1000)
-  probs.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
-  while (dim(probs.matrix)[1] < n + 1) {
-    probs.matrix <- rbind(probs.matrix, unlist(lapply(X = prob.list,
-                                                      FUN = sample, 1)))
-  }
-  probs.matrix <- probs.matrix[-1, ]
-  probs.matrix <- round(probs.matrix * 100 / rowSums(probs.matrix))
-  probs.matrix <- t(apply(X = probs.matrix, MARGIN = 1, FUN = .adjustHundred))
-  return(probs.matrix)
+.cellExcluder <- function(vec, index.ex) {
+  sel <- sample(index.ex, length(index.ex) - 1)
+  vec[sel] <- 0
+  return(list(vec, sel))
 }
 
-.generateSet2 <- function(prob.matrix, num, s.cells, n.cell.types) {
+.setHundredLimit <- function(x, index.ex = NULL) {
+  if (sum(x) > 100) {
+    while (TRUE) {
+      if (is.null(index.ex)) {
+        sel <- sample(seq(length(x)), 1)
+      } else {
+        sel <- sample(seq(length(x))[-index.ex], 1)
+      }
+      res <- x[sel] - abs(sum(x) - 100)
+      if (res >= 0) break
+    }
+    x[sel] <- res
+  } else if (sum(x) < 100) {
+    while (TRUE) {
+      if (is.null(index.ex)) {
+        sel <- sample(seq(length(x)), 1)
+      } else {
+        sel <- sample(seq(length(x))[-index.ex], 1)
+      }
+      res <- x[sel] + abs(sum(x) - 100)
+      if (res <= 100) break
+    }
+    x[sel] <- res
+  }
+  return(x)
+}
+
+
+.adjustHundred <- function(
+  x,
+  prob.list,
+  index.ex = NULL,
+  sampling = TRUE
+) {
+  # w <- rowMedians(as.matrix(prob.design[ind, c("from", "to")]))
+  w <- unlist(lapply(prob.list, sample, 1))
+  # remove cell types if needed
+  if (!is.null(index.ex)) {
+    x.list <- .cellExcluder(vec = x, index.ex = index.ex)
+    x <- x.list[[1]]
+    w[x.list[[2]]] <- 0
+  }
+  d <- abs(sum(x) - 100)
+  if (sum(x) > 100) {
+    div.w <- (w / sum(w)) * d
+    while (!all(x >= div.w)) {
+      index <- which(!x >= div.w)
+      w[index] <- 0
+      div.w <- (w / sum(w)) * d
+    }
+    x <- round(x - div.w)
+    x <- .setHundredLimit(x = x, index.ex = index.ex)
+  } else if (sum(x) < 100) {
+    div.w <- (w / sum(w)) * d
+    while (!all(100 - div.w > x)) {
+      index <- which(!100 - div.w > x)
+      w[index] <- 0
+      div.w <- (w / sum(w)) * d
+    }
+    x <- round(x + div.w)
+    x <- .setHundredLimit(x = x, index.ex = index.ex)
+  }
+  return(x)
+}
+
+
+.generateSet1 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
+  if (!is.null(index.ex)) {
+    sampling <- function(prob.list) {
+      x <- .cellExcluder(
+        vec = unlist(lapply(X = prob.list, FUN = sample, 1)),
+        index.ex = index.ex
+      )
+      return(x[[1]])
+    }
+  } else {
+    sampling <- function(prob.list) unlist(lapply(X = prob.list, FUN = sample, 1))
+  }
+  n <- ceiling(num * s.cells/1000)
+  while (dim(prob.matrix)[1] <= n) {
+    prob.matrix <- rbind(prob.matrix, sampling(prob.list = prob.list))
+  }
+  prob.matrix <- prob.matrix[-1, ]
+  prob.matrix <- round(prob.matrix * 100 / rowSums(prob.matrix))
+  prob.matrix <- t(apply(X = prob.matrix, MARGIN = 1, FUN = .setHundredLimit, index.ex))
+  return(prob.matrix)
+}
+
+
+.generateSet2 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
+  if (!is.null(index.ex)) {
+    sampling <- function(p) {
+      p <- .cellExcluder(vec = sample(p), index.ex = index.ex)
+      return(p[[1]])
+    }
+  } else {
+    sampling <- function(p) sample(p)
+  }
   probs <- list()
   n <- ceiling(num * s.cells/1000)
   while (length(probs) < n) {
     p <- rep(0, n.cell.types)
     i <- 1
-    while (sum(p) < 99) {
+    while (sum(p) < 100) {
       p[i] <- p[i] + sample(seq(100 - sum(p)), size = 1)
       i <- i + 1
       if (i > n.cell.types) {
         i <- 1
       }
     }
-    p[0] <- p[0] + 1
-    if (sum(p == 0) <= 9) { # hardoced? probablemente debería ser n.cell.types y no 9
-      p <- sample(p)
+    p <- sampling(p)
+    if (sum(p == 0) < n.cell.types) {
       probs[[length(probs) + 1]] <- p
     }
   }
   probs <- matrix(unlist(probs), nrow = n, byrow = T)
   colnames(probs) <- colnames(prob.matrix)
   probs <- round(probs * 100 / rowSums(probs))
-  probs <- t(apply(X = probs, MARGIN = 1, FUN = .adjustHundred))
+  probs <- t(apply(X = probs, MARGIN = 1, FUN = .setHundredLimit, index.ex))
   return(probs)
 }
 
 
-
-.generateSet3 <- function(prob.list, prob.matrix, num, s.cells, n.cell.types) {
+.generateSet3 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
   probs <- list()
   n <- ceiling(num * s.cells/1000)
   while(length(probs) < n) {
     p <- rep(0, n.cell.types)
     names(p) <- names(prob.list)
     i <- 1
-    times <- 0
-    while (sum(p) < 99 & times <= s.cells * 5) {
+    while (sum(p) < 100) {
       dp <- 101
       while (dp > max(prob.list[[i]])) {
         dp <- sample(prob.list[[i]], size = 1)
       }
       p[i] <- dp
       i <- i + 1
-      times <- times + 1
-      if (i > n.cell.types) i <- 1 # corrección
+      if (i > n.cell.types) i <- 1
     }
     p[1] <- p[1] + 1
-    if (sum(p == 0) <= 7) {
-      p <- sample(p)
+    p <- sample(p)
+    if (sum(p == 0) < n.cell.types) {
       probs[[length(probs) + 1]] <- p
     }
-    # n <- n+1
   }
   probs <- lapply(X = probs, FUN = function (x) return(x[names(prob.list)]))
   probs <- matrix(unlist(probs), nrow = n, byrow = T)
   colnames(probs) <- colnames(prob.matrix)
   probs <- round(probs * 100 / rowSums(probs))
-  probs <- t(apply(X = probs, MARGIN = 1, FUN = .adjustHundred))
+  probs <- t(apply(X = probs, MARGIN = 1,
+                   FUN = function(x) {
+                     .adjustHundred(
+                       x = x,
+                       prob.list = prob.list,
+                       index.ex = index.ex
+                     )
+                   }))
   return(probs)
 }
 
 
-
-.generateSet4 <- function(prob.list, prob.matrix, num, s.cells, n.cell.types) {
+.generateSet4 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
   probs <- list()
   n <- ceiling(num * s.cells/1000)
   while(length(probs) < n) {
     p <- rep(0, n.cell.types)
     names(p) <- names(prob.list)
     i <- 1
-    while (sum(p) < 99) {
+    while (sum(p) < 100) {
       dp <- sample(prob.list[[i]], size = 1)
       p[i] <- dp
-      i <- i+1
+      i <- i + 1
       if (i > n.cell.types) i <- 1
     }
     p[1] <- p[1] + 1
-    if (sum(p == 0) <= 7) { # preguntar --> habrá que cambiarlo
-      p <- sample(p)
+    p <- sample(p)
+    if (sum(p == 0) < n.cell.types) {
       probs[[length(probs) + 1]] <- p
     }
-    # n <- n+1
   }
   probs <- lapply(X = probs, FUN = sample)
   probs <- matrix(unlist(probs), nrow = n, byrow = T)
   colnames(probs) <- colnames(prob.matrix)
   probs <- round(probs * 100 / rowSums(probs))
-  probs <- t(apply(X = probs, MARGIN = 1, FUN = .adjustHundred))
+  probs <- t(apply(X = probs, MARGIN = 1,
+                   FUN = function(x) {
+                     .adjustHundred(
+                       x = x,
+                       prob.list = prob.list,
+                       index.ex = index.ex
+                     )
+                   }))
   return(probs)
 }
 
-
-.generateSet5 <- function(prob.matrix, num, s.cells, n.cell.types) {
+.generateSet5 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
   n <- ceiling(num * s.cells/1000)
-  probs <- gtools::rdirichlet(n, rep(1, n.cell.types))
+  if (!is.null(index.ex)) {
+    generator <- function() {
+      gtools::rdirichlet(
+        n = 1, alpha = .cellExcluder(rep(1, n.cell.types), index.ex = index.ex)[[1]]
+      )
+    }
+    probs <- t(replicate(n = n, expr = generator(), simplify = TRUE))
+  } else {
+    probs <- gtools::rdirichlet(n, rep(1, n.cell.types))
+  }
   probs <- round(probs * 100)
-  probs <- t(apply(X = probs, MARGIN = 1, FUN = .adjustHundred))
+  probs <- t(apply(X = probs, MARGIN = 1,
+                   FUN = function(x) .setHundredLimit(
+                     x = x, index.ex = index.ex
+                   )))
   colnames(probs) <- colnames(prob.matrix)
   return(probs)
 }
 
 
-.generateSet6 <- function(prob.list, prob.matrix, num, s.cells) {
+.generateSet6 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
   probs <- list()
   n <- ceiling(num * s.cells/1000)
   while (length(probs) < n) {
@@ -542,8 +559,14 @@ generateTrainAndTestBulkProbMatrix <- function(object,
   }
   probs <- lapply(X = probs, FUN = function(x) return(round(x * 100 / sum(x))))
   probs <- lapply(X = probs, FUN = sample)
-  probs <- lapply(X = probs, FUN = .adjustHundred)
+  probs <- lapply(X = probs, FUN = function(x) x[names(prob.list)])
   probs <- matrix(unlist(probs), nrow = n, byrow = T)
+  probs <- t(apply(X = probs, 1, FUN = function(x) {
+    .adjustHundred(x = x,
+                   prob.list = prob.list,
+                   index.ex = index.ex
+    )
+  }))
   colnames(probs) <- colnames(prob.matrix)
   return(probs)
 }
