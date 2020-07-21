@@ -1,8 +1,5 @@
 library(ggplot2)
 
-
-
-
 generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
@@ -124,6 +121,8 @@ generateTrainAndTestBulkProbMatrix <- function(
     } else if (!all(exclusive.types %in% unique(list.data[[2]][, "Cell_type"]))) {
       stop("Cell types present in exclusive.types argument must be present in cells.metadata")
     }
+    message("=== Set the next exclusive cell types: ",
+            paste(exclusive.types, collapse = ", "), "\n")
     index.ex <- match(exclusive.types, names(prob.list))
   } else {
     index.ex <- NULL
@@ -210,17 +209,21 @@ generateTrainAndTestBulkProbMatrix <- function(
     return(sc[seq(100)])
   }
 
-  train.prob.matrix.names <- t(apply(X = train.prob.matrix,
-                                     MARGIN = 1,
-                                     FUN = setCount,
-                                     setList = train.set.list,
-                                     sn = colnames(train.prob.matrix)))
+  train.prob.matrix.names <- t(apply(
+    X = train.prob.matrix,
+    MARGIN = 1,
+    FUN = setCount,
+    setList = train.set.list,
+    sn = colnames(train.prob.matrix)
+  ))
 
-  test.prob.matrix.names <- t(apply(X = test.prob.matrix,
-                                    MARGIN = 1,
-                                    FUN = setCount,
-                                    setList = test.set.list,
-                                    sn = colnames(test.prob.matrix)))
+  test.prob.matrix.names <- t(apply(
+    X = test.prob.matrix,
+    MARGIN = 1,
+    FUN = setCount,
+    setList = test.set.list,
+    sn = colnames(test.prob.matrix)
+  ))
 
   # generate object of ProbMatrixCellTypes class
   train.prob.matrix.object <- new(
@@ -229,6 +232,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     cell.names = train.prob.matrix.names,
     set.list = train.set.list,
     set = train.set,
+    exclusive.types = exclusive.types,
     plots = train.plots,
     type.data = "train"
   )
@@ -239,6 +243,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     cell.names = test.prob.matrix.names,
     set.list = test.set.list,
     set = test.set,
+    exclusive.types = exclusive.types,
     plots = test.plots,
     type.data = "test"
   )

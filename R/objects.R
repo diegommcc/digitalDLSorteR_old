@@ -11,6 +11,7 @@ library(splatter)
 
 setClassUnion("MatrixOrNULL", c("matrix", "NULL"))
 setClassUnion("ListOrNULL", c("list", "NULL"))
+setClassUnion("CharacterOrNULL", c("character", "NULL"))
 setClassUnion("SingleCellExperimentOrNULL", c("SingleCellExperiment", "NULL"))
 setClassUnion("ZINBParamsOrNULL", c("ZINBParams", "NULL"))
 setOldClass(Classes = 'package_version')
@@ -21,25 +22,30 @@ ProbMatrixCellTypes <- setClass(
     prob.matrix = "MatrixOrNULL",
     cell.names = "MatrixOrNULL",
     set.list = "ListOrNULL",
-    set = "character",
+    set = "CharacterOrNULL",
+    exclusive.types = "CharacterOrNULL",
     plots = "ListOrNULL",
-    type.data = "character"
+    type.data = "CharacterOrNULL"
   )
 )
 
 setMethod(
   f = "initialize", signature = "ProbMatrixCellTypes",
-  definition = function(.Object,
-                        prob.matrix = NULL,
-                        cell.names = NULL,
-                        set.list = NULL,
-                        set = "",
-                        plots = NULL,
-                        type.data = "") {
+  definition = function(
+    .Object,
+    prob.matrix = NULL,
+    cell.names = NULL,
+    set.list = NULL,
+    set = NULL,
+    exclusive.types = NULL,
+    plots = NULL,
+    type.data = NULL
+  ) {
     .Object@prob.matrix <- prob.matrix
     .Object@cell.names <- cell.names
     .Object@set.list <- set.list
     .Object@set <- set
+    .Object@exclusive.types = exclusive.types
     .Object@plots <- plots
     .Object@type.data <- type.data
     return(.Object)
@@ -65,12 +71,14 @@ setMethod(f = "show",
             if (is.null(object@prob.matrix)) {
               cat("ProbMatrixCellTypes object empty")
             } else {
-              cat(paste("  Probability matrix of cell types for",
-                        object@type.data, "data\n"))
-              cat(paste(c("    Number of bulk samples:",
-                          "    Number of cell types:"),
-                        dim(object@prob.matrix),
-                        collapse = "\n"))
+              cat(paste0("  Probability matrix for ",
+                        object@type.data, ": "))
+              cat(paste(dim(object@prob.matrix), c("bulk samples and",
+                          "cell types"),
+                        collapse = " "))
+              if (!is.null(object@exclusive.types)) {
+                cat("\n    Exclusive types:", paste(object@exclusive.types, collapse = ", "))
+              }
             }
           })
 
@@ -187,10 +195,12 @@ setOldClass("keras_training_history")
 DigitalDLSorterDNN <- setClass(
   Class = "DigitalDLSorterDNN",
   slots = c(
-    trained.model = "keras.engine.sequential.Sequential",
+    model = "keras.engine.sequential.Sequential",
     training.history = "keras_training_history",
     eval.stats = "ListOrNULL",
-    predict.results = "matrix"
+    predict.results = "matrix",
+    classes = "character",
+    features = "character"
   )
 )
 
@@ -198,15 +208,19 @@ setMethod(
   f = "initialize", signature = "DigitalDLSorterDNN",
   definition = function(
     .Object,
-    trained.model = "keras.engine.sequential.Sequential",
-    training.history = "keras_training_history",
-    eval.stats = "ListOrNULL",
-    predict.results = "MatrixOrNULL"
+    model = NULL,
+    training.history = NULL,
+    eval.stats = NULL,
+    predict.results = NULL,
+    classes = NULL,
+    features = NULL
   ) {
-    .Object@trained.model <- trained.model
+    .Object@model <- model
     .Object@training.history <- training.history
     .Object@eval.stats <- eval.stats
     .Object@predict.results <- predict.results
+    .Object@classes <- classes
+    .Object@features <- features
     return(.Object)
   }
 )
@@ -215,41 +229,39 @@ setMethod(f = "show",
           signature = "DigitalDLSorterDNN",
           definition = function(object) {
             # cat("An object of class", class(object), "\n")
-            if (is.null(object@trained.model)) {
+            if (is.null(object@model)) {
               cat("DigitalDLSorterDNN object empty")
             } else {
+
+              cat(paste("Trained model:", object@training.history$params$epochs,
+                        "epochs\n"))
               train.metrics <- lapply(object@training.history$metrics,
                                       function(x) x[length(x)])
               cat("  Training metrics (last epoch):\n")
               cat(paste0("    ", names(train.metrics), ": ",
                          lapply(train.metrics, round, 4),
                          collapse = "\n"))
-              cat("\n  Evaluation metrics (on test data):\n")
+              cat("\n  Evaluation metrics on test data:\n")
               cat(paste0("    ", names(object@eval.stats), ": ",
                          lapply(object@eval.stats, round, 4),
                          collapse = "\n"))
             }
           })
 
-
-
-test.metrics <- test.eval
-
-
 setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 
 # getters and setters for slots ------------------------------------------------
-## trained.model
-setGeneric("trained.model", function(object) standardGeneric("trained.model"))
-setMethod(f = "trained.model",
+## model
+setGeneric("model", function(object) standardGeneric("model"))
+setMethod(f = "model",
           signature = "DigitalDLSorterDNN",
-          definition = function(object) object@trained.model)
+          definition = function(object) object@model)
 
-setGeneric("trained.model<-", function(object, value) standardGeneric("trained.model<-"))
-setMethod(f = "trained.model<-",
+setGeneric("model<-", function(object, value) standardGeneric("model<-"))
+setMethod(f = "model<-",
           signature = "DigitalDLSorterDNN",
           definition = function(object, value) {
-            object@trained.model <- value
+            object@model <- value
             return(object)
           })
 
@@ -294,6 +306,33 @@ setMethod(f = "predict.results<-",
             return(object)
           })
 
+## classes
+setGeneric("classes", function(object) standardGeneric("classes"))
+setMethod(f = "classes",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@classes)
+
+setGeneric("classes<-", function(object, value) standardGeneric("classes<-"))
+setMethod(f = "classes<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@classes <- value
+            return(object)
+          })
+
+## features
+setGeneric("features", function(object) standardGeneric("features"))
+setMethod(f = "features",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object) object@features)
+
+setGeneric("features<-", function(object, value) standardGeneric("features<-"))
+setMethod(f = "features<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value) {
+            object@features <- value
+            return(object)
+          })
 
 # DigitalDLSorter class --------------------------------------------------------
 DigitalDLSorter <- setClass(
@@ -306,6 +345,8 @@ DigitalDLSorter <- setClass(
     bulk.sim = "ListOrNULL",
     final.data = "ListOrNULL",
     trained.model = "DigitalDLSorterDNNOrNULL",
+    deconv.data = "ListOrNULL",
+    deconv.results = "ListOrNULL",
     project = "character",
     version = "package_version"
   )
@@ -314,16 +355,20 @@ DigitalDLSorter <- setClass(
 
 setMethod(
   f = "initialize", signature = "DigitalDLSorter",
-  definition = function(.Object,
-                        single.cell.real = NULL,
-                        zinb.params = NULL,
-                        single.cell.sim = NULL,
-                        prob.matrix = NULL,
-                        bulk.sim = NULL,
-                        final.data = NULL,
-                        trained.model = NULL,
-                        project = "DigitalDLSorterProject",
-                        version = packageVersion(pkg = "digitalDLSorterPackageR")) {
+  definition = function(
+    .Object,
+    single.cell.real = NULL,
+    zinb.params = NULL,
+    single.cell.sim = NULL,
+    prob.matrix = NULL,
+    bulk.sim = NULL,
+    final.data = NULL,
+    trained.model = NULL,
+    deconv.data = NULL,
+    deconv.results = NULL,
+    project = "DigitalDLSorterProject",
+    version = packageVersion(pkg = "digitalDLSorterPackageR")
+  ) {
     .Object@single.cell.real <- single.cell.real
     .Object@zinb.params <- zinb.params
     .Object@single.cell.sim <- single.cell.sim
@@ -331,6 +376,8 @@ setMethod(
     .Object@bulk.sim <- bulk.sim
     .Object@final.data <- final.data
     .Object@trained.model <- trained.model
+    .Object@deconv.data <- deconv.data
+    .Object@deconv.results <- deconv.results
     .Object@project <- project
     .Object@version <- version
     return(.Object)
@@ -387,44 +434,68 @@ setMethod(f = "single.cell.sim<-",
           })
 
 ## prob.matrix
-setGeneric("prob.matrix", function(object) standardGeneric("prob.matrix"))
+setGeneric("prob.matrix", function(object, type.data = "both") standardGeneric("prob.matrix"))
 setMethod(f = "prob.matrix",
           signature = "DigitalDLSorter",
-          definition = function(object) object@prob.matrix)
+          definition = function(object, type.data) {
+            if (type.data == "train") object@prob.matrix[["train"]]
+            else if (type.data == "test") object@prob.matrix[["test"]]
+            else if (type.data == "both") object@prob.matrix
+            else stop(paste("No", type.data, "in prob.matrix"))
+          })
 
-setGeneric("prob.matrix<-", function(object, value) standardGeneric("prob.matrix<-"))
+setGeneric("prob.matrix<-", function(object, value, type.data = "both") standardGeneric("prob.matrix<-"))
 setMethod(f = "prob.matrix<-",
           signature = "DigitalDLSorter",
-          definition = function(object, value) {
-            object@prob.matrix <- value
+          definition = function(object, value, type.data) {
+            if (type.data == "train") object@prob.matrix[["train"]] <- value
+            else if (type.data == "test") object@prob.matrix[["test"]] <- value
+            else if (type.data == "both") object@prob.matrix <- value
+            else stop(paste("No", type.data, "in prob.matrix slot"))
             return(object)
           })
 
 ## bulk.sim
-setGeneric("bulk.sim", function(object) standardGeneric("bulk.sim"))
+setGeneric("bulk.sim", function(object, type.data = "both") standardGeneric("bulk.sim"))
 setMethod(f = "bulk.sim",
           signature = "DigitalDLSorter",
-          definition = function(object) object@bulk.sim)
+          definition = function(object, type.data) {
+            if (type.data == "train") object@bulk.sim[["train"]]
+            else if (type.data == "test") object@bulk.sim[["test"]]
+            else if (type.data == "both") object@bulk.sim
+            else stop(paste("No", type.data, "in bulk.sim slot"))
+          })
 
-setGeneric("bulk.sim<-", function(object, value) standardGeneric("bulk.sim<-"))
+setGeneric("bulk.sim<-", function(object, value, type.data = "both") standardGeneric("bulk.sim<-"))
 setMethod(f = "bulk.sim<-",
           signature = "DigitalDLSorter",
-          definition = function(object, value) {
-            object@bulk.sim <- value
+          definition = function(object, value, type.data) {
+            if (type.data == "train") object@bulk.sim[["train"]] <- value
+            else if (type.data == "test") object@bulk.sim[["test"]] <- value
+            else if (type.data == "both") object@bulk.sim <- value
+            else stop(paste("No", type.data, "in bulk.sim slot"))
             return(object)
           })
 
 ## final.data
-setGeneric("final.data", function(object) standardGeneric("final.data"))
+setGeneric("final.data", function(object, type.data = "both") standardGeneric("final.data"))
 setMethod(f = "final.data",
           signature = "DigitalDLSorter",
-          definition = function(object) object@final.data)
+          definition = function(object, type.data) {
+            if (type.data == "train") object@final.data[["train"]]
+            else if (type.data == "test") object@final.data[["test"]]
+            else if (type.data == "both") object@final.data
+            else stop(paste("No", type.data, "in bulk.sim slot"))
+          })
 
-setGeneric("final.data<-", function(object, value) standardGeneric("final.data<-"))
+setGeneric("final.data<-", function(object, value, type.data = "both") standardGeneric("final.data<-"))
 setMethod(f = "final.data<-",
           signature = "DigitalDLSorter",
-          definition = function(object, value) {
-            object@final.data <- value
+          definition = function(object, value, type.data) {
+            if (type.data == "train") object@final.data[["train"]] <- value
+            else if (type.data == "test") object@final.data[["test"]] <- value
+            else if (type.data == "both") object@final.data <- value
+            else stop(paste("No", type.data, "in bulk.sim slot"))
             return(object)
           })
 
@@ -439,6 +510,62 @@ setMethod(f = "trained.model<-",
           signature = "DigitalDLSorter",
           definition = function(object, value) {
             object@trained.model <- value
+            return(object)
+          })
+
+## deconv.data
+setGeneric("deconv.data", function(object, name.data = NULL) standardGeneric("deconv.data"))
+setMethod(f = "deconv.data",
+          signature = "DigitalDLSorter",
+          definition = function(object, name.data) {
+            if (is.null(name.data)) object@deconv.data
+            else {
+              if (!name.data %in% name(object@deconv.data)) {
+                stop("name.data provided does not exists in deconv.data slot")
+              }
+              return(object@deconv.data[[name.data]])
+            }
+          })
+
+setGeneric("deconv.data<-", function(object, value, name.data = NULL) standardGeneric("deconv.data<-"))
+setMethod(f = "deconv.data<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value, name.data) {
+            if (is.null(name.data)) object@deconv.data <- value
+            else {
+              if (!name.data %in% name(object@deconv.data)) {
+                stop("name.data provided does not exists in deconv.data slot")
+              }
+              object@deconv.data[[name.data]] <- value
+            }
+            return(object)
+          })
+
+## deconv.results
+setGeneric("deconv.results", function(object, name.data = NULL) standardGeneric("deconv.results"))
+setMethod(f = "deconv.results",
+          signature = "DigitalDLSorter",
+          definition = function(object, name.data) {
+            if (is.null(name.data)) object@deconv.results
+            else {
+              if (!name.data %in% name(object@deconv.results)) {
+                stop("name.data provided does not exists in deconv.results slot")
+              }
+              return(object@deconv.results[[name.data]])
+            }
+          })
+
+setGeneric("deconv.results<-", function(object, value, name.data = NULL) standardGeneric("deconv.results<-"))
+setMethod(f = "deconv.results<-",
+          signature = "DigitalDLSorter",
+          definition = function(object, value, name.data) {
+            if (is.null(name.data)) object@deconv.results <- value
+            else {
+              if (!name.data %in% name(object@deconv.results)) {
+                stop("name.data provided does not exists in deconv.results slot")
+              }
+              object@deconv.results[[name.data]] <- value
+            }
             return(object)
           })
 
@@ -484,12 +611,12 @@ setMethod(f = "project<-",
   n.bulk <- sum(grepl("Bulk\\.*", rowData(se)[[1]]))
   n.sc <- abs(n.bulk - dim(se)[1])
   cat(n.bulk, "bulk samples and", n.sc, "single-cell samples\n")
-  if (is.null(rowData(se)[[1]])) rownames.se <- "---"
-  else rownames.se <- S4Vectors:::selectSome(rowData(se)[[1]], 6)
-  if (identical(colnames(se), character(0))) colnames.se <- "---"
-  else colnames.se <- S4Vectors:::selectSome(colData(se)[[1]], 6)
-  cat("    rownames:", rownames.se, "\n")
-  cat("    colnames:", colnames.se, "\n")
+  # if (is.null(rowData(se)[[1]])) rownames.se <- "---"
+  # else rownames.se <- S4Vectors:::selectSome(rowData(se)[[1]], 6)
+  # if (identical(colnames(se), character(0))) colnames.se <- "---"
+  # else colnames.se <- S4Vectors:::selectSome(colData(se)[[1]], 6)
+  # cat("    rownames:", rownames.se, "\n")
+  # cat("    colnames:", colnames.se, "\n")
 }
 
 
@@ -529,8 +656,11 @@ setMethod(f = "show",
             }
             if (!is.null(object@prob.matrix)) {
               cat("Probability matrices:\n")
-              cat(show(object@prob.matrix$train), "\n")
-              cat(show(object@prob.matrix$test), "\n")
+              lapply(X = c("train", "test"), FUN = function(x) {
+                if (x %in% names(object@prob.matrix)) {
+                  cat(show(object@prob.matrix[[x]]), "\n")
+                }
+              })
             }
             if (!is.null(object@bulk.sim)) {
               cat("Simulated bulk samples:\n")
@@ -551,8 +681,7 @@ setMethod(f = "show",
               })
             }
             if (!is.null(object@trained.model)) {
-              cat("Trained model:\n")
-              show(object@trained.model)
+              cat(show(object@trained.model), "\n")
             }
-            cat("\nProject:", object@project, "\n")
+            cat("Project:", object@project, "\n")
           })

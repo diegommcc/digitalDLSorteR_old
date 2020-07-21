@@ -11,8 +11,7 @@ trainDigitalDLSorterModel <- function(
   val.freq = 0.1,
   loss = "kullback_leibler_divergence",
   metrics = c("accuracy", "mean_absolute_error",
-              "kullback_leibler_divergence",
-              "categorical_accuracy"),
+              "kullback_leibler_divergence"),
   view.metrics.plot = TRUE,
   verbose = TRUE
 ) {
@@ -27,11 +26,11 @@ trainDigitalDLSorterModel <- function(
   } else if (batch.size <= 10) {
     stop("'batch.size' argument must be greater than or equal to 10")
   }
-  # errors with loss and metrics are controled by keras
-  # if (!is.null(trained.model(object))) {
-  #   warning("'trained.model' slot is not empty. For the moment, digitalDLSorteR does not support for multiple trained models, so the actual model will be overwritten")
-  # }
-
+  # errors with loss and metrics are controled by keras: se puede hacer un tryCatch y coger ese tipo de error
+  if (!is.null(trained.model(object))) {
+    warning("'trained.model' slot is not empty. For the moment, digitalDLSorteR does not support for multiple trained models, so the actual model will be overwritten",
+            call. = FALSE, immediate. = TRUE)
+  }
   if (view.metrics.plot) {
     view.plot <- "auto"
   } else {
@@ -143,9 +142,11 @@ trainDigitalDLSorterModel <- function(
 
   ## prediction of test samples
   if (verbose) {
-    message(paste("\n=== Generating prediction results on test data\n"))
+    message(paste0("  - ", names(test.eval), ": ", lapply(test.eval, round, 4),
+                   collapse = "\n"))
+    message(paste("\n=== Generating prediction results using test data\n"))
   }
-  predict.generator <- .predictGenerator(
+  predict.generator <- .predictTestGenerator(
     object = object,
     type.data = "test",
     batch.size = batch.size
@@ -160,12 +161,13 @@ trainDigitalDLSorterModel <- function(
 
   network.object <- new(
     Class = "DigitalDLSorterDNN",
-    trained.model = model,
+    model = model,
     training.history = history,
     eval.stats = test.eval,
-    predict.results = predict.results
+    predict.results = predict.results,
+    classes = colnames(object@final.data[["train"]]@metadata[[1]]),
+    features = colData(object@final.data[["test"]])[[1]]
   )
-
   object@trained.model <- network.object
 
   message("DONE")
@@ -217,7 +219,7 @@ trainDigitalDLSorterModel <- function(
   }
 }
 
-.predictGenerator <- function(
+.predictTestGenerator <- function(
   object,
   type.data,
   batch.size
@@ -237,5 +239,109 @@ trainDigitalDLSorterModel <- function(
                        ncol = n.features, nrow = length(data.index))))
   }
 }
+
+saveTrainedModel <- function(
+  object,
+  file.path,
+  overwrite = FALSE
+) {
+  if (class(object) != "DigitalDLSorter") {
+    stop("The provided object is not of DigitalDLSorter class")
+  } else if (is.null(trained.model(object))) {
+    stop("'trained.model' slot is empty")
+  } else if (is.null(trained.model(object)@model)) {
+    stop("There is not model to save on disk. First, train model with trainDigitalDLSorterModel function")
+  }
+  if (file.exists(file.path)) {
+    if (overwrite) {
+      message(paste(file.path, "file exists. Since 'overwrite' argument is TRUE, it will be overwritten"))
+    } else {
+      stop(paste(file.path, "file exists"))
+    }
+  }
+  tryCatch({
+    save_model_hdf5(object = object@trained.model@model,
+                    filepath = file.path,
+                    overwrite = overwrite,
+                    include_optimizer = TRUE)
+  }, error = function(cond) {
+    message(paste("\nProblem during saving", file.path))
+    stop(cond)
+  })
+}
+
+loadTrainedModel <- function(
+  object,
+  file.path,
+  reset.slot = TRUE
+) {
+  if (class(object) != "DigitalDLSorter") {
+    stop("The provided object is not of DigitalDLSorter class")
+  } else if (!file.exists(file.path)) {
+    stop(paste(file.path, "file does not exist. Please provide a valid file path"))
+  }
+  if (!is.null(trained.model(object))) {
+    slot.exists <- TRUE
+    message("'trained.model' slot is not empty:")
+    if (reset.slot) {
+      message("  'reset.slot' is TRUE, 'trained.model' slot will be restart")
+    } else {
+      message("  'reset.slot' is FALSE, only 'model' slot of DigitalDLSorterDNN object will be overwritten")
+    }
+  } else {
+    slot.exists <- FALSE
+  }
+  tryCatch({
+    loaded.model <- load_model_hdf5(filepath = file.path, compile = TRUE)
+  }, error = function(cond) {
+    message(paste("\n", file.path, "file provided is not a valid Keras model:"))
+    stop(cond)
+  })
+
+  if (!slot.exists) {
+    model <- new(Class = "DigitalDLSorterDNN",
+                         model = loaded.model)
+  } else {
+    if (reset.slot) {
+      model <- new(Class = "DigitalDLSorterDNN",
+                           model = loaded.model)
+    } else {
+      model(object@trained.model) <- loaded.model
+      return(object)
+    }
+  }
+  trained.model(object) <- model
+  return(object)
+}
+
+
+
+
+plotTrainingHistory <- function(
+  object,
+  title = "History of metrics during training",
+  metrics = NULL
+) {
+  if (class(object) != "DigitalDLSorter") {
+    stop("The provided object is not of DigitalDLSorter class")
+  } else if (is.null(trained.model(object))) {
+    stop("'trained.model' slot is empty")
+  } else if (is.null(trained.model(object)@training.history)) {
+    stop("There is not training history on the provided object")
+  }
+  if (!is.null(metrics)) {
+    if (!all(metrics %in% names(object@trained.model@training.history$metrics))) {
+      stop("Some metrics are not present in the provided object")
+    }
+  }
+  plot(object@trained.model@training.history,
+       metrics = metrics, method = "ggplot2") + ggtitle(title)
+}
+
+
+
+
+
+
 
 

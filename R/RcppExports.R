@@ -2,6 +2,6 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cpp_rowSums <- function(x) {
-    .Call('_digitalDLSorterPackageR_cpp_rowSums', PACKAGE = 'digitalDLSorterPackageR', x)
+    .Call('_digitalDLSorteR_cpp_rowSums', PACKAGE = 'digitalDLSorteR', x)
 }
 

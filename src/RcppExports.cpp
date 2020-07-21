@@ -7,7 +7,7 @@ using namespace Rcpp;
 
 // cpp_rowSums
 NumericVector cpp_rowSums(const NumericMatrix& x);
-RcppExport SEXP _digitalDLSorterPackageR_cpp_rowSums(SEXP xSEXP) {
+RcppExport SEXP _digitalDLSorteR_cpp_rowSums(SEXP xSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -18,11 +18,11 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_digitalDLSorterPackageR_cpp_rowSums", (DL_FUNC) &_digitalDLSorterPackageR_cpp_rowSums, 1},
+    {"_digitalDLSorteR_cpp_rowSums", (DL_FUNC) &_digitalDLSorteR_cpp_rowSums, 1},
     {NULL, NULL, 0}
 };
 
-RcppExport void R_init_digitalDLSorterPackageR(DllInfo *dll) {
+RcppExport void R_init_digitalDLSorteR(DllInfo *dll) {
     R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
     R_useDynamicSymbols(dll, FALSE);
 }
