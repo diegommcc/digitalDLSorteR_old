@@ -10,8 +10,27 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Imports:
-    Rcpp,
+    SingleCellExperiment,
+    SummarizedExperiment,
+    BiocParallel,
+    splatter,
+    zinbwave,
     DelayedArray,
-    HDF5Array
-LinkingTo:
-    Rcpp
+    HDF5Array,
+    pbapply,
+    dplyr,
+    tools,
+    reshape,
+    gtools,
+    edgeR,
+    tensorflow,
+    keras
+RoxygenNote: 7.0.2
+Collate: 
+    'AllClasses.R'    
+    'AllGenerics.R'
+    'dnnModel.R'
+    'loadData.R'
+    'simBulk.R'
+    'simSingleCell.R'
+    'utils.R'
