@@ -9,9 +9,10 @@
 #' (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
 #' following a zero-inflated negative binomial (ZINB) distribution. The estimated
 #' paramters will be used for the simulation of new single-cell expression profiles.
-#' To do this, we use \code{zinbEstimate} function from \code{splatter} package,
+#' To do this, we use \code{zinbEstimate} function from \code{splatter} package
+#' (Zappia et al., 2017),
 #' that is a wrapper around \code{zinbFit} function from \code{zinbwave} package.
-#' For details about the model, see Risso et al. 2018.
+#' For details about the model, see Risso et al., 2018.
 #
 #' @param object DigitalDLSorter object with a \code{single.cell.real} slot.
 #' @param cell.ID.column Name or number of the column in cells.metadata
@@ -46,6 +47,19 @@
 #'   threads = 4,
 #'   verbose = TRUE
 #' )
+#'
+#' @references
+#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
+#' for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
+#' doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+#'
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' \url{10.3389/fgene.2019.00978}
+#'
+#' Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell RNA
+#' sequencing data. Genome
+#' Biol. 2017; 18: 174.
 #'
 estimateZinbwaveParams <- function(object,
                                    cell.ID.column,
@@ -238,7 +252,7 @@ estimateZinbwaveParams <- function(object,
 #'
 #' Simulate single-cell expression profiles by randomly sampling from a negative
 #' binomial distribution using ZINB-WaVE parameters estimated and introducing
-#' dropouts by sampling ffrom a binomial distribution with ZINB-WaVE model
+#' dropouts by sampling from a binomial distribution with ZINB-WaVE model
 #' estimated..
 #'
 #' As described in Torroja and Sanchez-Cabo, 2019, this function simulates a determined
@@ -274,6 +288,15 @@ estimateZinbwaveParams <- function(object,
 #'   n.cells = 100,
 #'   verbose = TRUE
 #' )
+#'
+#' @references
+#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
+#' for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
+#' doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+#'
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' \url{10.3389/fgene.2019.00978}
 #'
 simSingleCellProfiles <- function(object,
                                   cell.ID.column,

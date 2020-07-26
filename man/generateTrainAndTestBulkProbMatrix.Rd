@@ -120,6 +120,11 @@ DDLSChung <- generateTrainAndTestBulkProbMatrix(
 )
 
 }
+\references{
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+\url{10.3389/fgene.2019.00978}
+}
 \seealso{
 \code{\link{generateBulkSamples}}, \code{\link{ProbMatrixCellType}}.
 }

@@ -59,7 +59,7 @@ prediction results are produced.
 \details{
 All the steps related with Deep Neural Network are performed by using
 \code{keras} package, a API in R for \code{keras} in Python available from CRAN.
-We recommend use the guide of installation available on https://keras.rstudio.com/
+We recommend use the guide of installation available on \url{https://keras.rstudio.com/}
 in order to set a custom configuration (type of backend used, CPU or
 GPU, etc.). In the vignette of \code{digitalDLSorteR} we show the main steps for
 the installation.
@@ -77,6 +77,11 @@ DDLSChung <- trainDigitalDLSorterModel(
   num.epochs = 20
 )
 
+}
+\references{
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+\url{10.3389/fgene.2019.00978}
 }
 \seealso{
 \code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.

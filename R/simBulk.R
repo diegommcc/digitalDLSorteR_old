@@ -102,6 +102,11 @@ NULL
 #'   verbose = TRUE
 #' )
 #'
+#' @references
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' \url{10.3389/fgene.2019.00978}
+#'
 generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
@@ -759,6 +764,14 @@ generateTrainAndTestBulkProbMatrix <- function(
 #'   type.data = "both",
 #'   file.backend = "DDLSChung.bulk.sim.h5"
 #' )
+#'
+#' @references
+#' Pagès H, Hickey wcfP, Lun A (2020). DelayedArray: A unified framework for
+#' working transparently with on-disk and in-memory array-like datasets.
+#' R package version 0.14.1.
+#'
+#' Pagès H (2020). HDF5Array: HDF5 backend for DelayedArray objects. R package
+#' version 1.16.1.
 #'
 generateBulkSamples <- function(
   object,

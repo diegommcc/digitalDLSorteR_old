@@ -79,6 +79,14 @@ DDLSChung <- generateBulkSamples(
 )
 
 }
+\references{
+Pagès H, Hickey wcfP, Lun A (2020). DelayedArray: A unified framework for
+working transparently with on-disk and in-memory array-like datasets.
+R package version 0.14.1.
+
+Pagès H (2020). HDF5Array: HDF5 backend for DelayedArray objects. R package
+version 1.16.1.
+}
 \seealso{
 \code{\link{generateTrainAndTestBulkProbMatrix}},
 \code{\link{ProbMatrixCellType}}.

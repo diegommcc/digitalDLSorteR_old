@@ -35,7 +35,7 @@ a \code{SingleCellExperiment} object with the simulated single-cell profiles.
 \description{
 Simulate single-cell expression profiles by randomly sampling from a negative
 binomial distribution using ZINB-WaVE parameters estimated and introducing
-dropouts by sampling ffrom a binomial distribution with ZINB-WaVE model
+dropouts by sampling from a binomial distribution with ZINB-WaVE model
 estimated..
 }
 \details{
@@ -56,6 +56,15 @@ DDLSChung <- simSingleCellProfiles(
   verbose = TRUE
 )
 
+}
+\references{
+Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
+for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
+doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+\url{10.3389/fgene.2019.00978}
 }
 \seealso{
 \code{\link{estimateZinbwaveParams}}

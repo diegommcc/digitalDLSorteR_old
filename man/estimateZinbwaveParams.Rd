@@ -56,9 +56,10 @@ carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
 (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
 following a zero-inflated negative binomial (ZINB) distribution. The estimated
 paramters will be used for the simulation of new single-cell expression profiles.
-To do this, we use \code{zinbEstimate} function from \code{splatter} package,
+To do this, we use \code{zinbEstimate} function from \code{splatter} package
+(Zappia et al., 2017),
 that is a wrapper around \code{zinbFit} function from \code{zinbwave} package.
-For details about the model, see Risso et al. 2018.
+For details about the model, see Risso et al., 2018.
 }
 \examples{
 DDLSChung <- estimateZinbwaveParams(
@@ -72,6 +73,19 @@ DDLSChung <- estimateZinbwaveParams(
   verbose = TRUE
 )
 
+}
+\references{
+Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
+for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
+doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+\url{10.3389/fgene.2019.00978}
+
+Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell RNA
+sequencing data. Genome
+Biol. 2017; 18: 174.
 }
 \seealso{
 \code{\link{simSingleCellProfiles}}

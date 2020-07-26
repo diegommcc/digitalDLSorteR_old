@@ -13,7 +13,7 @@ tensorflow::tf$compat$v1$disable_eager_execution()
 #'
 #' All the steps related with Deep Neural Network are performed by using
 #' \code{keras} package, a API in R for \code{keras} in Python available from CRAN.
-#' We recommend use the guide of installation available on https://keras.rstudio.com/
+#' We recommend use the guide of installation available on \url{https://keras.rstudio.com/}
 #' in order to set a custom configuration (type of backend used, CPU or
 #' GPU, etc.). In the vignette of \code{digitalDLSorteR} we show the main steps for
 #' the installation.
@@ -59,6 +59,11 @@ tensorflow::tf$compat$v1$disable_eager_execution()
 #'   num.epochs = 20
 #' )
 #'
+#' @references
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' \url{10.3389/fgene.2019.00978}
+#'
 trainDigitalDLSorterModel <- function(
   object,
   batch.size = 128,
@@ -83,7 +88,9 @@ trainDigitalDLSorterModel <- function(
     stop("'batch.size' argument must be greater than or equal to 10")
   }
   if (!is.null(trained.model(object))) {
-    warning("'trained.model' slot is not empty. For the moment, digitalDLSorteR does not support for multiple trained models, so the actual model will be overwritten",
+    warning("'trained.model' slot is not empty. For the moment, digitalDLSorteR",
+            " does not support for multiple trained models, so the actual model",
+            " will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
   }
   if (view.metrics.plot) {
@@ -96,8 +103,6 @@ trainDigitalDLSorterModel <- function(
   } else {
     verbose.model <- 0
   }
-
-
   # number of samples
   n.train <- nrow(object@final.data[["train"]])
   n.test <- nrow(object@final.data[["test"]])
@@ -440,7 +445,21 @@ plotTrainingHistory <- function(
 }
 
 
-## check si el fichero tiene colnames y rownames
+#' Load data to deconvolute from text file.
+#'
+#' Load data to deconvolute from text file. Accepted formats are tsv and tas.gz.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
+#' @param file.path File path where data is stored.
+#' @param name.data Name with which the data is stored in \code{DigitalDLSorter}
+#' object. If \code{name.data} is not provided, basename of file is used.
+#'
+#' @export
+#'
+#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+#'
+#' @examples
+#'
 loadDeconvDataFromFile <- function(
   object,
   file.path,
@@ -473,6 +492,23 @@ loadDeconvDataFromFile <- function(
 ## check si la matriz tiene colnames y rownames
 ## hacer genérica y que funione de forma diferente en función de si es
 ## SummarizedExperiment o matrix
+
+#' Load data to deconvolute from \code{SummarizedExperiment} object.
+#'
+#' Load data in \code{DigitalDLSorter} object to deconvolute from
+#' \code{SummarizedExperiment} object.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
+#' @param se.object \code{SummarizedExperiment} object.
+#' @param name.data Name with which the data is stored in \code{DigitalDLSorter}
+#' object.
+#'
+#' @export
+#'
+#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+#'
+#' @examples
+#'
 loadDeconvDataFromSummarizedExperiment <- function(
   object,
   se.object,
@@ -493,19 +529,22 @@ loadDeconvDataFromSummarizedExperiment <- function(
   }
   ## generate name for data if is not provided
   if (is.null(name.data)) {
-    name.data <- tools::file_path_sans_ext(basename(file.path))
+    if (is.null(decov.data(object))) {
+      name.data <- "deconv_1"
+    } else {
+      name.data <- paste0("decon_", length(decov.data(object)) + 1)
+    }
   }
   ## create or not a new list
-  if (is.null(object@deconv.data)) list.data <- list()
-  else list.data <- object@deconv.data
+  if (is.null(deconv.data(object))) list.data <- list()
+  else list.data <- deconv.data(object)
   ## check if name.data exists
   if (name.data %in% names(list.data)) {
     stop(paste(name.data, "data already exists in deconv.data slot"))
   }
-
   list.data[[name.data]] <- se.object
+  deconv.data(object) <- list.data
 
-  object@deconv.data <- list.data
   return(object)
 }
 
@@ -520,15 +559,68 @@ loadDeconvDataFromSummarizedExperiment <- function(
 
 ##
 
-# pretrained.model = NULLsi si no es nulo
+# pretrained.model = NULL si si no es nulo
 # Si no es NULL, permitir que coja algún modelo preentrenado por nosotros:
 # Chung, el de cáncer, etc.
-
 # argumento file.path en el caso de que se quiera entrenar desde un csv en disco.
 # de momento voy a obligar al usuario a cargar los datos en memoria
 # recordar que los genes deben estar en la misma notación que los datos con los
 # que ha sido entrenada la red
 
+
+#' Deconvolute bulk gene expression samples (RNA-Seq) using a pre-trained
+#' DigitalDLSorter model.
+#'
+#' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
+#' quantifying the proportion of cell types present in a bulk sample.
+#'
+#' This method uses a pre-trained Deep Neural Network model to enumerate
+#' and quantify the cell types present in bulk RNA-Seq samples. For the moment,
+#' the available models allow to deconvolute the immune infiltration in colorectal
+#' (\code{colon.li} (Li et al., 2017)) and breast cancer (\code{breast.chung}
+#' (Chung et al., 2017)).
+#'
+#' @param data A matrix bulk gene expression with
+#' @param batch.size Number of samples per gradient update. If unspecified,
+#' \code{batch.size} will default to 128.
+#' @param numm.epochs Number of epochs to train the model.
+#' @param val Boolean that determine if a validation subset is used during
+#' training (\code{FALSE} by default).
+#' @param freq.val Number between 0.1 and 0.5 that determine the number of
+#' samples from training data that will be used as validation subset.
+#' @param loss Character indicating loss function selected for training the model
+#' (Kullback-Leibler divergence by default).
+#' See \code{keras} documentation for more details.
+#' @param metrics Vector fo metrics used to evaluate the performance of the model
+#' during training and on test data (\code{c("accuracy", "mean_absolute_error",
+#' "categorical_accuracy")} by default)
+#' @param view.metrics.plots Boolean indicating if show progression plots of loss
+#' and metrics during training (\code{TRUE} by default). \code{keras} for R allows
+#' to see the progression of the model during training if you are working in RStudio.
+#' @param verbose Boolean indicating if show the progression of the model during
+#' training. Beisdes, it is shown information about the architecture of the model
+#' (\code{TRUE} by default).
+#' @return A DigitalDLSorter object with \code{trained.model} slot containing
+#' a \code{\link{DigitalDLSorterDNN}} object. For more information about the
+#' structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+#'
+#' @export
+#'
+#' @seealso \code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.
+#'
+#' @examples
+#' DDLSChung <- trainDigitalDLSorterModel(
+#'   object = DDLSChung,
+#'   batch.size = 128,
+#'   num.epochs = 20
+#' )
+#'
+#' @references
+#' Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,
+#' K. T., et al. (2017). Single-cell RNA-seq enables comprehensive tumour and
+#' immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
+#' doi: \url{10.1038/ncomms15081}.
+#'
 deconvDigitalDLSorter <- function(
   data,
   model = "breast",
@@ -537,6 +629,26 @@ deconvDigitalDLSorter <- function(
   normalize = FALSE,
   verbose = TRUE
 ) {
+  if (!is.matrix(data) && !is.data.frame(data)) {
+    stop("'data' must be a matrix or data.frame")
+  }
+  if (model == "breast") {
+    model.dnn <- digitalDLSorteR::breast.chung
+  } else if (model == "colon") {
+    model.dnn <- digitalDLSorteR::colon.li
+  }
+
+  ## check data --> habría que hacer algún checkeo sobre la matriz, genes,
+  ## check si hay duplicados: hacer función para ello y que funcione también
+  ## cuando se cargan los datos en loadRealSCProfiles
+  results <- .deconvCore(
+    deconv.counts = data,
+    model = model.dnn,
+    transpose = transpose,
+    normalize = normalize,
+    verbose = verbose
+  )
+  return(results)
 }
 
 deconvDigitalDLSorterObj <- function(
@@ -555,68 +667,88 @@ deconvDigitalDLSorterObj <- function(
     stop("'batch.size' argument must be greater than or equal to 10")
   }
   ## comming soon
-  if (!is.null(file.path)) {
-    if (!file.exists(file.path)) {
-      stop("The provided file does not exists")
-    }
-    message(paste("=== Deconvolution of data stored on disk in", file.path, "\n"))
-    ## set generator that works with CSV files on disk
-
-  } else {
-    message("=== Deconvolution of data provided in deconv.data slot of DigitalDLSorter object")
-    ## access to data from object. Todo esto lo implemento en una función interna
-    if (is.null(name.data)) {
-      message("   No name.data provided. Using the first dataset\n")
-      name.data <- 1
-    }
-    deconv.counts <- object@deconv.data[[name.data]]
-
-    if (transpose) {
-      deconv.counts <- t(deconv.counts)
-    }
-    if (is.null(colnames(deconv.counts))) {
-      stop("The given matrix does not have column names. You must provide a matrix with feature names in the same notation used in training data")
-    }
-    if (verbose) {
-      message(paste("=== Filtering", sum(filter.features),
-                    "features in data that are not present in training data\n"))
-      message(paste("=== Setting", sum(fill.features),
-                    "features that are not present in training data to zero\n"))
-    }
-    # this can do it more elegant and probably more efficient
-    ## filtering features missing in training data
-    filter.features <- colnames(deconv.counts) %in% colData(object@final.data$train)[[1]]
-    deconv.counts <- deconv.counts[, filter.features]
-    ## set features missing in deconv.data
-    fill.features <- !colData(object@final.data$train)[[1]] %in% colnames(deconv.counts)
-    m.new <- matrix(0L, ncol = sum(fill.features), nrow = nrow(deconv.counts))
-    colnames(m.new) <- colData(object@final.data$train)[[1]][fill.features]
-    deconv.counts <- cbind(deconv.counts, m.new)
-    deconv.counts <- deconv.counts[, colData(object@final.data$train)[[1]]]
-
-    if (normalize) {
-      if (verbose) {
-        message("=== Normalizing data\n")
-      }
-      deconv.counts <- edgeR::cpm.default(deconv.counts)
-      deconv.counts <- scale(deconv.counts)
-    }
-    deconv.generator <- .predictDeconvDataGenerator(
-      data = deconv.counts,
-      batch.size = 128,
-      type.data = "train"
-    )
+  # if (!is.null(file.path)) {
+  #   if (!file.exists(file.path)) {
+  #     stop("The provided file does not exists")
+  #   }
+  #   message(paste("=== Deconvolution of data stored on disk in", file.path, "\n"))
+  #   ## set generator that works with CSV files on disk
+  # } else {
+  message("=== Deconvolution of data provided in deconv.data slot of DigitalDLSorter object")
+  ## access to data from object. Todo esto lo implemento en una función interna
+  if (is.null(name.data)) {
+    message("   No name.data provided. Using the first dataset\n")
+    name.data <- 1
   }
+  deconv.counts <- object@deconv.data[[name.data]]
+
+  ## deconvolution
+  results <- .deconvCore(
+    deconv.counts = deconv.counts,
+    model = trained.model(object),
+    transpose = transpose,
+    normalize = normalize,
+    verbose = verbose
+  )
+
+  object@deconv.results[[name.data]] <- results
+
+  return(object)
+}
+
+
+.deconvCore <- function(
+  deconv.counts,
+  model,
+  transpose,
+  normalize,
+  verbose
+) {
+  if (transpose) {
+    deconv.counts <- t(deconv.counts)
+  }
+  if (is.null(colnames(deconv.counts))) {
+    stop("The given matrix does not have column names. You must provide a matrix",
+         " with feature names in the same notation used in training data")
+  }
+  if (verbose) {
+    message(paste("=== Filtering", sum(filter.features),
+                  "features in data that are not present in training data\n"))
+    message(paste("=== Setting", sum(fill.features),
+                  "features that are not present in training data to zero\n"))
+  }
+  # this can do it more elegant and probably more efficient
+  ## filtering features missing in training data
+  filter.features <- colnames(deconv.counts) %in% features(model)
+  deconv.counts <- deconv.counts[, filter.features]
+  ## set features missing in deconv.data
+  fill.features <- !features(model) %in% colnames(deconv.counts)
+  m.new <- matrix(0L, ncol = sum(fill.features), nrow = nrow(deconv.counts))
+  colnames(m.new) <- features(model)[fill.features]
+  deconv.counts <- cbind(deconv.counts, m.new)
+  deconv.counts <- deconv.counts[, features(model)]
+
+  if (normalize) {
+    if (verbose) {
+      message("=== Normalizing data\n")
+    }
+    deconv.counts <- edgeR::cpm.default(deconv.counts)
+    deconv.counts <- scale(deconv.counts)
+  }
+  deconv.generator <- .predictDeconvDataGenerator(
+    data = deconv.counts,
+    model = model,
+    batch.size = 128,
+    type.data = "train"
+  )
   if (verbose) {
     verbose.model <- 1
     message("=== Predicting cell types present in the provided samples\n")
   } else {
     verbose.model <- 0
   }
-
-
-  model <- object@trained.model@model
-  results <- model %>% predict_generator(
+  dnn.model <- model(model)
+  results <- dnn.model %>% predict_generator(
     generator = deconv.generator,
     steps = ceiling(nrow(deconv.counts) / batch.size),
     verbose = verbose.model
@@ -627,23 +759,21 @@ deconvDigitalDLSorterObj <- function(
     rownames.deconv <- seq(1, nrow(deconv.counts))
   }
   rownames(results) <- rownames.deconv
-  colnames(results) <- object@trained.model@classes
+  colnames(results) <- cell.types(model)
 
-  object@deconv.results[[name.data]] <- results
-
-  return(object)
+  return(results)
 }
-
 
 .predictDeconvDataGenerator <- function(
   data,
+  model,
   batch.size,
   type.data = "train"
 ) {
   nb <- 0
   n.samples <- nrow(data)
-  n.features <- ncol(object@final.data[[type.data]])
-  n.classes <- ncol(object@final.data[[type.data]]@metadata$prob.matrix)
+  n.features <- length(features(model))
+  n.classes <- length(cell.types(model))
   function() {
     data.index <- seq(nb + 1, nb + batch.size)
     nb <<- nb + batch.size

@@ -27,8 +27,9 @@ Imports:
     keras
 RoxygenNote: 7.0.2
 Collate: 
-    'AllClasses.R'    
+    'AllClasses.R'
     'AllGenerics.R'
+    'data.R'
     'dnnModel.R'
     'loadData.R'
     'simBulk.R'
