@@ -644,6 +644,7 @@ deconvDigitalDLSorter <- function(
   results <- .deconvCore(
     deconv.counts = data,
     model = model.dnn,
+    batch.size = batch.size,
     transpose = transpose,
     normalize = normalize,
     verbose = verbose
@@ -686,6 +687,7 @@ deconvDigitalDLSorterObj <- function(
   results <- .deconvCore(
     deconv.counts = deconv.counts,
     model = trained.model(object),
+    batch.size = batch.size,
     transpose = transpose,
     normalize = normalize,
     verbose = verbose
@@ -700,34 +702,31 @@ deconvDigitalDLSorterObj <- function(
 .deconvCore <- function(
   deconv.counts,
   model,
+  batch.size,
   transpose,
   normalize,
   verbose
 ) {
-  if (transpose) {
-    deconv.counts <- t(deconv.counts)
-  }
-  if (is.null(colnames(deconv.counts))) {
+  if (is.null(rownames(deconv.counts))) {
     stop("The given matrix does not have column names. You must provide a matrix",
          " with feature names in the same notation used in training data")
   }
+  # this can do it more elegant and probably more efficient
+  ## filtering features missing in training data
+  filter.features <- rownames(deconv.counts) %in% features(model)
+  deconv.counts <- deconv.counts[filter.features, ]
+  ## set features missing in deconv.data
+  fill.features <- !features(model) %in% rownames(deconv.counts)
+  m.new <- matrix(0L, nrow = sum(fill.features), ncol = ncol(deconv.counts))
+  rownames(m.new) <- features(model)[fill.features]
+  deconv.counts <- rbind(deconv.counts, m.new)
+  deconv.counts <- deconv.counts[features(model), ]
   if (verbose) {
     message(paste("=== Filtering", sum(filter.features),
                   "features in data that are not present in training data\n"))
     message(paste("=== Setting", sum(fill.features),
                   "features that are not present in training data to zero\n"))
   }
-  # this can do it more elegant and probably more efficient
-  ## filtering features missing in training data
-  filter.features <- colnames(deconv.counts) %in% features(model)
-  deconv.counts <- deconv.counts[, filter.features]
-  ## set features missing in deconv.data
-  fill.features <- !features(model) %in% colnames(deconv.counts)
-  m.new <- matrix(0L, ncol = sum(fill.features), nrow = nrow(deconv.counts))
-  colnames(m.new) <- features(model)[fill.features]
-  deconv.counts <- cbind(deconv.counts, m.new)
-  deconv.counts <- deconv.counts[, features(model)]
-
   if (normalize) {
     if (verbose) {
       message("=== Normalizing data\n")
@@ -735,11 +734,11 @@ deconvDigitalDLSorterObj <- function(
     deconv.counts <- edgeR::cpm.default(deconv.counts)
     deconv.counts <- scale(deconv.counts)
   }
+  deconv.counts <- t(deconv.counts)
   deconv.generator <- .predictDeconvDataGenerator(
     data = deconv.counts,
     model = model,
-    batch.size = 128,
-    type.data = "train"
+    batch.size = batch.size
   )
   if (verbose) {
     verbose.model <- 1
@@ -767,8 +766,7 @@ deconvDigitalDLSorterObj <- function(
 .predictDeconvDataGenerator <- function(
   data,
   model,
-  batch.size,
-  type.data = "train"
+  batch.size
 ) {
   nb <- 0
   n.samples <- nrow(data)
