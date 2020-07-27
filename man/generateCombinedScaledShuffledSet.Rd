@@ -13,7 +13,7 @@ generateCombinedScaledShuffledSet(
 }
 \arguments{
 \item{object}{\code{DigitalDLSorter} object with \code{single.cell.sim} and
-\code{prob.matrix} slots.}
+\code{prob.cell.types} slots.}
 
 \item{type.data}{Type of data to generate among 'train', 'test' or 'both'
 (the last by default).}

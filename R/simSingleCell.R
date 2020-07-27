@@ -61,15 +61,17 @@
 #' sequencing data. Genome
 #' Biol. 2017; 18: 174.
 #'
-estimateZinbwaveParams <- function(object,
-                                   cell.ID.column,
-                                   gene.ID.column,
-                                   cell.type.column,
-                                   cell.cov.columns,
-                                   gene.cov.columns,
-                                   set.type = "All",
-                                   threads = 2,
-                                   verbose = TRUE) {
+estimateZinbwaveParams <- function(
+  object,
+  cell.ID.column,
+  gene.ID.column,
+  cell.type.column,
+  cell.cov.columns,
+  gene.cov.columns,
+  set.type = "All",
+  threads = 2,
+  verbose = TRUE
+) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
   } else if (is.null(single.cell.real(object))) {
@@ -298,11 +300,13 @@ estimateZinbwaveParams <- function(object,
 #' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
 #' \url{10.3389/fgene.2019.00978}
 #'
-simSingleCellProfiles <- function(object,
-                                  cell.ID.column,
-                                  cell.type.column,
-                                  n.cells = 100,
-                                  verbose = TRUE) {
+simSingleCellProfiles <- function(
+  object,
+  cell.ID.column,
+  cell.type.column,
+  n.cells = 100,
+  verbose = TRUE
+) {
   if (is.null(zinb.params(object))) {
     stop(paste("zinb.params slot is empty. To simulate single-cell profiles,",
                "DigitalDLSorter object  must contain the estimated parameters for the data with",

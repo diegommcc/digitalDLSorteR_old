@@ -6,13 +6,18 @@
 #' quantification of immune infiltrated cell types in breast cancer environment.
 #' This dataset consists in single-cell profiles from 10 patients from different
 #' tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
-#' The analysis and characterization of the cells was carried out by us.
+#' The analysis and characterization of the cells was carried out by the authors
+#' of \code{digitalDLSorteR} package.
 #'
 #' The cell types considered in this model are 13, four of them being different
 #' molecular subtypes of breast cancer: ER+, HER2+, ER+ and HER2+, TNBC, Stromal,
 #' Monocyte, Tme (memory T cells), BGC (germinal center B cells),
 #' Bmem (memory B cells), DC (dendritic cells), Macrophage, TCD8 (CD8+ T cells)
 #' and Treg (regulatory T cells).
+#'
+#' The model consists in 2 hidden layers with 200 neurons per layer trained with
+#' 'kullback_leibler_divergence' loss function  batch size equal to 128 and
+#' a number of epochs equal to 20.
 #'
 #' @format A \code{DigitalDLSorterDNN} object with the following slots:
 #' \describe{

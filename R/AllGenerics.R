@@ -5,11 +5,26 @@
 ## getters and setters for ProbMatrixCellTypes class ---------------------------
 
 ## prob.matrix
+
+#' @title Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes} object.
+#'
+#' @param object A \code{ProbMatrixCellTypes} object.
+#'
+#' @rdname prob.matrix
+#' @export prob.matrix
+#'
 setGeneric("prob.matrix", function(object) standardGeneric("prob.matrix"))
 setMethod(f = "prob.matrix",
           signature = "ProbMatrixCellTypes",
           definition = function(object) object@prob.matrix)
 
+
+#' @param value \code{matrix} object with cell types as columns and samples as
+#' rows.
+#'
+#' @rdname prob.matrix
+#' @export prob.matrix<-
+#'
 setGeneric("prob.matrix<-", function(object, value) standardGeneric("prob.matrix<-"))
 setMethod(f = "prob.matrix<-",
           signature = "ProbMatrixCellTypes",
@@ -78,11 +93,24 @@ setMethod(f = "plots<-",
 ## getters and setters for DigitalDLSorterDNN class ----------------------------
 
 ## model
+#' @title Get and set \code{model} slot in a \code{DigitalDLSorterDNN} object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname model
+#' @export model
+#'
 setGeneric("model", function(object) standardGeneric("model"))
 setMethod(f = "model",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@model)
 
+#' @param value A \code{keras.engine.sequential.Sequential} object with a
+#' trained DNN model.
+#'
+#' @rdname model
+#' @export model<-
+#'
 setGeneric("model<-", function(object, value) standardGeneric("model<-"))
 setMethod(f = "model<-",
           signature = "DigitalDLSorterDNN",
@@ -92,10 +120,25 @@ setMethod(f = "model<-",
           })
 
 ## training.history
+
+#' @title Get and set \code{training.history} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname training.history
+#' @export training.history
+#'
 setGeneric("training.history", function(object) standardGeneric("training.history"))
 setMethod(f = "training.history",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@training.history)
+
+#' @param value A \code{keras_training_history} object with training history of
+#' DNN model
+#' @rdname training.history
+#' @export training.history<-
+#'
 setGeneric("training.history<-", function(object, value) standardGeneric("training.history<-"))
 setMethod(f = "training.history<-",
           signature = "DigitalDLSorterDNN",
@@ -105,11 +148,25 @@ setMethod(f = "training.history<-",
           })
 
 ## eval.stats
+
+#' @title Get and set \code{eval.stats} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname eval.stats
+#' @export eval.stats
+#'
 setGeneric("eval.stats", function(object) standardGeneric("eval.stats"))
 setMethod(f = "eval.stats",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@eval.stats)
 
+#' @param value A \code{list} object with the resulting metrics after prediction
+#' on test data with DNN model.
+#' @rdname eval.stats
+#' @export eval.stats<-
+#'
 setGeneric("eval.stats<-", function(object, value) standardGeneric("eval.stats<-"))
 setMethod(f = "eval.stats<-",
           signature = "DigitalDLSorterDNN",
@@ -119,11 +176,24 @@ setMethod(f = "eval.stats<-",
           })
 
 ## predict.results
+
+#' @title Get and set \code{predict.results} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname predict.results
+#' @export predict.results
+#'
 setGeneric("predict.results", function(object) standardGeneric("predict.results"))
 setMethod(f = "predict.results",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@predict.results)
 
+#' @param value A \code{matrix} object with prediction results on test data.
+#' @rdname predict.results
+#' @export predict.results<-
+#'
 setGeneric("predict.results<-", function(object, value) standardGeneric("predict.results<-"))
 setMethod(f = "predict.results<-",
           signature = "DigitalDLSorterDNN",
@@ -133,11 +203,24 @@ setMethod(f = "predict.results<-",
           })
 
 ## cell.types
+
+#' @title Get and set \code{cell.types} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname cell.types
+#' @export cell.types
+#'
 setGeneric("cell.types", function(object) standardGeneric("cell.types"))
 setMethod(f = "cell.types",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@cell.types)
 
+#' @param value A \code{vector} with cell types considered by DNN model.
+#' @rdname cell.types
+#' @export cell.types<-
+#'
 setGeneric("cell.types<-", function(object, value) standardGeneric("cell.types<-"))
 setMethod(f = "cell.types<-",
           signature = "DigitalDLSorterDNN",
@@ -147,11 +230,24 @@ setMethod(f = "cell.types<-",
           })
 
 ## features
+
+#' @title Get and set \code{features} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname features
+#' @export features
+#'
 setGeneric("features", function(object) standardGeneric("features"))
 setMethod(f = "features",
           signature = "DigitalDLSorterDNN",
           definition = function(object) object@features)
 
+#' @param value A \code{vector} with features (genes) considered by DNN model.
+#' @rdname features
+#' @export features<-
+#'
 setGeneric("features<-", function(object, value) standardGeneric("features<-"))
 setMethod(f = "features<-",
           signature = "DigitalDLSorterDNN",
@@ -163,11 +259,25 @@ setMethod(f = "features<-",
 ## getters and setters for DigitalDLSorter class -------------------------------
 
 ## single.cell.real
+
+#' @title Get and set \code{single.cell.real} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#'
+#' @rdname single.cell.real
+#' @export single.cell.real
+#'
 setGeneric("single.cell.real", function(object) standardGeneric("single.cell.real"))
 setMethod(f = "single.cell.real",
           signature = "DigitalDLSorter",
           definition = function(object) object@single.cell.real)
 
+#' @param value A \code{SingleCellExperiment} object with real single-cell
+#' profiles.
+#' @rdname single.cell.real
+#' @export single.cell.real<-
+#'
 setGeneric("single.cell.real<-", function(object, value) standardGeneric("single.cell.real<-"))
 setMethod(f = "single.cell.real<-",
           signature = "DigitalDLSorter",
@@ -177,10 +287,26 @@ setMethod(f = "single.cell.real<-",
           })
 
 ## zinb.params
+
+#' @title Get and set \code{zinb.params} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#'
+#' @rdname zinb.params
+#' @export zinb.params
+#'
 setGeneric("zinb.params", function(object) standardGeneric("zinb.params"))
 setMethod(f = "zinb.params",
           signature = "DigitalDLSorter",
           definition = function(object) object@zinb.params)
+
+#' @param value A \code{ZinbParams} object with ZiNB-WaVE parameters estimated
+#' from real single-cell profiles.
+#'
+#' @rdname zinb.params
+#' @export zinb.params<-
+#'
 setGeneric("zinb.params<-", function(object, value) standardGeneric("zinb.params<-"))
 setMethod(f = "zinb.params<-",
           signature = "DigitalDLSorter",
@@ -190,11 +316,25 @@ setMethod(f = "zinb.params<-",
           })
 
 ## single.cell.sim
+
+#' @title Get and set \code{single.cell.sim} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#'
+#' @rdname single.cell.sim
+#' @export single.cell.sim
+#'
 setGeneric("single.cell.sim", function(object) standardGeneric("single.cell.sim"))
 setMethod(f = "single.cell.sim",
           signature = "DigitalDLSorter",
           definition = function(object) object@single.cell.sim)
 
+#' @param value A \code{SingleCellExperiment} object with real and simulated
+#' single-cell profiles.
+#' @rdname single.cell.sim
+#' @export single.cell.sim<-
+#'
 setGeneric("single.cell.sim<-", function(object, value) standardGeneric("single.cell.sim<-"))
 setMethod(f = "single.cell.sim<-",
           signature = "DigitalDLSorter",
@@ -203,29 +343,56 @@ setMethod(f = "single.cell.sim<-",
             return(object)
           })
 
-## prob.matrix
-setGeneric("prob.matrix", function(object, type.data = "both") standardGeneric("prob.matrix"))
-setMethod(f = "prob.matrix",
+## prob.cell.types
+
+#' @title Get and set \code{prob.cell.types} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#' @param type.data Element of the list. Can be 'train', 'test' or 'both' (the
+#' last by default).
+#'
+#' @rdname prob.cell.types
+#' @export prob.cell.types
+#'
+setGeneric("prob.cell.types", function(object, type.data = "both") standardGeneric("prob.cell.types"))
+setMethod(f = "prob.cell.types",
           signature = "DigitalDLSorter",
           definition = function(object, type.data) {
-            if (type.data == "train") object@prob.matrix[["train"]]
-            else if (type.data == "test") object@prob.matrix[["test"]]
-            else if (type.data == "both") object@prob.matrix
-            else stop(paste("No", type.data, "in prob.matrix"))
+            if (type.data == "train") object@prob.cell.types[["train"]]
+            else if (type.data == "test") object@prob.cell.types[["test"]]
+            else if (type.data == "both") object@prob.cell.types
+            else stop(paste("No", type.data, "in prob.cell.types"))
           })
 
-setGeneric("prob.matrix<-", function(object, value, type.data = "both") standardGeneric("prob.matrix<-"))
-setMethod(f = "prob.matrix<-",
+#' @param value A list with two elements, train and test, each one with a
+#' \code{ProbMatrixCellTypes} object.
+#' @rdname prob.cell.types
+#' @export prob.cell.types<-
+#'
+setGeneric("prob.cell.types<-", function(object, value, type.data = "both") standardGeneric("prob.cell.types<-"))
+setMethod(f = "prob.cell.types<-",
           signature = "DigitalDLSorter",
           definition = function(object, value, type.data) {
-            if (type.data == "train") object@prob.matrix[["train"]] <- value
-            else if (type.data == "test") object@prob.matrix[["test"]] <- value
-            else if (type.data == "both") object@prob.matrix <- value
-            else stop(paste("No", type.data, "in prob.matrix slot"))
+            if (type.data == "train") object@prob.cell.types[["train"]] <- value
+            else if (type.data == "test") object@prob.cell.types[["test"]] <- value
+            else if (type.data == "both") object@prob.cell.types <- value
+            else stop(paste("No", type.data, "in prob.cell.types slot"))
             return(object)
           })
 
 ## bulk.sim
+
+#' @title Get and set \code{bulk.sim} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#' @param type.data Element of the list. Can be 'train', 'test' or 'both' (the
+#' last by default).
+#'
+#' @rdname bulk.sim
+#' @export bulk.sim
+#'
 setGeneric("bulk.sim", function(object, type.data = "both") standardGeneric("bulk.sim"))
 setMethod(f = "bulk.sim",
           signature = "DigitalDLSorter",
@@ -236,6 +403,12 @@ setMethod(f = "bulk.sim",
             else stop(paste("No", type.data, "in bulk.sim slot"))
           })
 
+#' @param value A \code{list} with two elements, train and test, each one being a
+#' \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples.
+#'
+#' @rdname bulk.sim
+#' @export bulk.sim<-
+#'
 setGeneric("bulk.sim<-", function(object, value, type.data = "both") standardGeneric("bulk.sim<-"))
 setMethod(f = "bulk.sim<-",
           signature = "DigitalDLSorter",
@@ -248,6 +421,17 @@ setMethod(f = "bulk.sim<-",
           })
 
 ## final.data
+
+#' @title Get and set \code{final.data} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#' @param type.data Element of the list. Can be 'train', 'test' or 'both' (the
+#' last by default).
+#'
+#' @rdname final.data
+#' @export final.data
+#'
 setGeneric("final.data", function(object, type.data = "both") standardGeneric("final.data"))
 setMethod(f = "final.data",
           signature = "DigitalDLSorter",
@@ -258,6 +442,12 @@ setMethod(f = "final.data",
             else stop(paste("No", type.data, "in bulk.sim slot"))
           })
 
+#' @param value A \code{list} with two elements, train and test, each one being a
+#' \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples prepared for
+#' training. This samples have been normalized and shuffled.
+#' @rdname final.data
+#' @export final.data<-
+#'
 setGeneric("final.data<-", function(object, value, type.data = "both") standardGeneric("final.data<-"))
 setMethod(f = "final.data<-",
           signature = "DigitalDLSorter",
@@ -270,11 +460,24 @@ setMethod(f = "final.data<-",
           })
 
 ## trained.model
+
+#' @title Get and set \code{trained.model} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#'
+#' @rdname trained.model
+#' @export trained.model
+#'
 setGeneric("trained.model", function(object) standardGeneric("trained.model"))
 setMethod(f = "trained.model",
           signature = "DigitalDLSorter",
           definition = function(object) object@trained.model)
 
+#' @param value A \code{DigitalDLSorterDNN} object.
+#' @rdname trained.model
+#' @export trained.model<-
+#'
 setGeneric("trained.model<-", function(object, value) standardGeneric("trained.model<-"))
 setMethod(f = "trained.model<-",
           signature = "DigitalDLSorter",
@@ -284,6 +487,17 @@ setMethod(f = "trained.model<-",
           })
 
 ## deconv.data
+
+#' @title Get and set \code{deconv.data} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#' @param name.data Name of the data. If it is \code{NULL} (by default),
+#' all data contained in \code{deconv.data} slot are returned.
+#'
+#' @rdname deconv.data
+#' @export deconv.data
+#'
 setGeneric("deconv.data", function(object, name.data = NULL) standardGeneric("deconv.data"))
 setMethod(f = "deconv.data",
           signature = "DigitalDLSorter",
@@ -297,6 +511,10 @@ setMethod(f = "deconv.data",
             }
           })
 
+#' @param value A \code{list} whose names are the reference of the data stored.
+#' @rdname deconv.data
+#' @export deconv.data<-
+#'
 setGeneric("deconv.data<-", function(object, value, name.data = NULL) standardGeneric("deconv.data<-"))
 setMethod(f = "deconv.data<-",
           signature = "DigitalDLSorter",
@@ -312,6 +530,17 @@ setMethod(f = "deconv.data<-",
           })
 
 ## deconv.results
+
+#' @title Get and set \code{deconv.results} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#' @param name.data Name of the data. If it is \code{NULL} (by default),
+#' all results contained in \code{deconv.results} slot are returned.
+#'
+#' @rdname deconv.results
+#' @export deconv.results
+#'
 setGeneric("deconv.results", function(object, name.data = NULL) standardGeneric("deconv.results"))
 setMethod(f = "deconv.results",
           signature = "DigitalDLSorter",
@@ -325,6 +554,10 @@ setMethod(f = "deconv.results",
             }
           })
 
+#' @param value A \code{list} whose names are the reference of the results stored.
+#' @rdname deconv.results
+#' @export deconv.results<-
+#'
 setGeneric("deconv.results<-", function(object, value, name.data = NULL) standardGeneric("deconv.results<-"))
 setMethod(f = "deconv.results<-",
           signature = "DigitalDLSorter",
@@ -340,11 +573,24 @@ setMethod(f = "deconv.results<-",
           })
 
 ## project
+
+#' @title Get and set \code{project} slot in a \code{DigitalDLSorter}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorter} object.
+#'
+#' @rdname project
+#' @export project
+#'
 setGeneric("project", function(object) standardGeneric("project"))
 setMethod(f = "project",
           signature = "DigitalDLSorter",
           definition = function(object) object@project)
 
+#' @param value A character indicating the name of the project.
+#' @rdname project
+#' @export project<-
+#'
 setGeneric("project<-", function(object, value) standardGeneric("project<-"))
 setMethod(f = "project<-",
           signature = "DigitalDLSorter",
@@ -352,3 +598,115 @@ setMethod(f = "project<-",
             object@project <- value
             return(object)
           })
+
+
+
+## generic for save function: save as RDA a keras model
+setGeneric("save", function(object, file, name) standardGeneric("save"))
+
+setMethod("save", "DigitalDLSorterDNN", definition = function(object, file, name) {
+  if ("keras.engine.sequential.Sequential" %in% class(model(object))) {
+    object <- list(object)
+    names(object) <- name
+    object[[1]] <- .saveModelToJSON(object[[1]])
+    base::save(list = names(object), file = file, envir = list2env(object))
+  } else if (class(model(object)) == "list") {
+    object <- list(object)
+    names(object) <- name
+    base::save(list = names(object), file = file, envir = list2env(object))
+  } else {
+    stop("No valid DigitalDLSorterDNN object")
+  }
+})
+
+# setMethod("save", "DigitalDLSorter", definition = function(object, file, name) {
+#   if (!is.null(trained.model(object))) {
+#     if ("keras.engine.sequential.Sequential" %in% class(model(object@trained.model))) {
+#       name.var <- deparse(substitute(object))
+#       object <- .saveModelFromJSON(object)
+#       assign(x = eval(substitute(name.var)), value = object)
+#       base::save(name.var, file = file)
+#     } else if (class(model(object)) == "list") {
+#       name.var <- deparse(substitute(object))
+#       assign(x = eval(substitute(name.var)), value = object)
+#       base::save(get(name.var), file = file)
+#     } else {
+#       stop("No valid DigitalDLSorterDNN object")
+#     }
+#   } else {
+#     base::save(object, file = file)
+#   }
+#
+# })
+
+
+setGeneric("saveRDS", function(
+  object,
+  file,
+  ascii = FALSE,
+  version = NULL,
+  compress = TRUE,
+  refhook = NULL
+) {
+  standardGeneric("saveRDS")
+})
+
+setMethod("saveRDS", "DigitalDLSorterDNN", definition = function(
+  object,
+  file,
+  ascii,
+  version,
+  compress,
+  refhook
+) {
+  if ("keras.engine.sequential.Sequential" %in% class(model(object))) {
+    object <- .saveModelToJSON(object)
+    base::saveRDS(
+      object = object,
+      file = file,
+      ascii = ascii,
+      version = version,
+      compress = compress,
+      refhook = refhook
+    )
+  } else if (class(model(object)) == "list") {
+    base::saveRDS(
+      object = object,
+      file = file,
+      ascii = ascii,
+      version = version,
+      compress = compress,
+      refhook = refhook
+    )
+  } else {
+    stop("No valid DigitalDLSorterDNN object")
+  }
+})
+
+setMethod("saveRDS", "DigitalDLSorter", definition = function(
+  object,
+  file,
+  ascii,
+  version,
+  compress,
+  refhook
+) {
+  if (!is.null(trained.model(object))) {
+    if ("keras.engine.sequential.Sequential" %in% class(trained.model(object)@model)) {
+      model.object <- .saveModelToJSON(trained.model(object))
+      trained.model(object) <- model.object
+    }
+  }
+  base::saveRDS(
+    object = object,
+    file = file,
+    ascii = ascii,
+    version = version,
+    compress = compress,
+    refhook = refhook
+  )
+})
+
+# loadDigitalDLSorterDNN <- function(file) {
+#
+# }

@@ -49,7 +49,7 @@ bulk samples.}
 \item{verbose}{Show messages during the execution.}
 }
 \value{
-A DigitalDLSorter object with \code{prob.matrix} slot containing
+A DigitalDLSorter object with \code{prob.cell.types} slot containing
 a \code{\link{ProbMatrixCellTypes}} object. For more information about the
 structure of this class, see \code{\link{?ProbMatrixCellTypes}}. The most
 important element is the probability matrix, which is formed by \eqn{n} rows

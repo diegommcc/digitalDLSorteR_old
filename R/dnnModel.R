@@ -80,8 +80,8 @@ trainDigitalDLSorterModel <- function(
     stop("The provided object is not of DigitalDLSorter class")
   } else if (is.null(final.data(object))) {
     stop("'final.data' slot is empty")
-  } else if (is.null(prob.matrix(object))) {
-    stop("prob.matrix slot is empty")
+  } else if (is.null(prob.cell.types(object))) {
+    stop("prob.cell.types slot is empty")
   } else if (num.epochs <= 1) {
     stop("'num.epochs' argument must be greater than or equal to 2")
   } else if (batch.size <= 10) {
@@ -301,7 +301,7 @@ trainDigitalDLSorterModel <- function(
 }
 
 
-#' Save on disk trained DigitalDLSorter DNN model.
+#' Save on disk trained DigitalDLSorter DNN model as HDF5 file.
 #'
 #' Save on disk the trained model in HDF5 format.
 #'
@@ -311,7 +311,7 @@ trainDigitalDLSorterModel <- function(
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{loadTrainedModel}}.
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{loadTrainedModel}}.
 #'
 #' @examples
 #'
@@ -557,56 +557,44 @@ loadDeconvDataFromSummarizedExperiment <- function(
 # ) {
 # }
 
-##
-
-# pretrained.model = NULL si si no es nulo
-# Si no es NULL, permitir que coja algún modelo preentrenado por nosotros:
-# Chung, el de cáncer, etc.
-# argumento file.path en el caso de que se quiera entrenar desde un csv en disco.
-# de momento voy a obligar al usuario a cargar los datos en memoria
-# recordar que los genes deben estar en la misma notación que los datos con los
-# que ha sido entrenada la red
-
 
 #' Deconvolute bulk gene expression samples (RNA-Seq) using a pre-trained
 #' DigitalDLSorter model.
 #'
 #' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
-#' quantifying the proportion of cell types present in a bulk sample.
+#' quantifying the proportion of cell types present in a bulk sample. See in
+#' Details the available models.
 #'
 #' This method uses a pre-trained Deep Neural Network model to enumerate
 #' and quantify the cell types present in bulk RNA-Seq samples. For the moment,
 #' the available models allow to deconvolute the immune infiltration in colorectal
-#' (\code{colon.li} (Li et al., 2017)) and breast cancer (\code{breast.chung}
+#' (\code{'colon.li'} (Li et al., 2017)) and breast cancer (\code{'breast.chung'}
 #' (Chung et al., 2017)).
 #'
+#' This function is oriented for users that only want to use the method for
+#' deconvoluting their bulk RNA-Seq samples. For users that are buliding their
+#' own model using the rest of functionalities of \code{digitalDLSoteR} package,
+#' see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
+#' while the last uses \code{DigitalDLSorter} objects.
+#'
 #' @param data A matrix bulk gene expression with
+#' @param model Pre-trained DNN model to use for deconvoluting process.
+#' For the moment, the available
+#' models are for deconvoluting RNA-Seq samples from breast cancer ('breast') and
+#' colon cancer ('colon') environments.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
-#' @param numm.epochs Number of epochs to train the model.
-#' @param val Boolean that determine if a validation subset is used during
-#' training (\code{FALSE} by default).
-#' @param freq.val Number between 0.1 and 0.5 that determine the number of
-#' samples from training data that will be used as validation subset.
-#' @param loss Character indicating loss function selected for training the model
-#' (Kullback-Leibler divergence by default).
-#' See \code{keras} documentation for more details.
-#' @param metrics Vector fo metrics used to evaluate the performance of the model
-#' during training and on test data (\code{c("accuracy", "mean_absolute_error",
-#' "categorical_accuracy")} by default)
-#' @param view.metrics.plots Boolean indicating if show progression plots of loss
-#' and metrics during training (\code{TRUE} by default). \code{keras} for R allows
-#' to see the progression of the model during training if you are working in RStudio.
-#' @param verbose Boolean indicating if show the progression of the model during
-#' training. Beisdes, it is shown information about the architecture of the model
-#' (\code{TRUE} by default).
-#' @return A DigitalDLSorter object with \code{trained.model} slot containing
-#' a \code{\link{DigitalDLSorterDNN}} object. For more information about the
-#' structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+#' @param transpose Transpose data for set features (genes) as columns and
+#' samples as rows. \code{TRUE} by default.
+#' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
+#' @param verbose Show messages during the execution.
+#' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
+#' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
+#' type in \eqn{i} sample.
 #'
 #' @export
 #'
-#' @seealso \code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.
+#' @seealso \code{\link{deconvDigitalDLSorterObj}}.
 #'
 #' @examples
 #' DDLSChung <- trainDigitalDLSorterModel(
@@ -634,8 +622,10 @@ deconvDigitalDLSorter <- function(
   }
   if (model == "breast") {
     model.dnn <- digitalDLSorteR::breast.chung
+    model.dnn <- .loadModelFromJSON(model.dnn)
   } else if (model == "colon") {
     model.dnn <- digitalDLSorteR::colon.li
+    model.dnn <- .loadModelFromJSON(model.dnn)
   }
 
   ## check data --> habría que hacer algún checkeo sobre la matriz, genes,
@@ -652,21 +642,71 @@ deconvDigitalDLSorter <- function(
   return(results)
 }
 
+
+#' Deconvolute bulk gene expression samples (RNA-Seq).
+#'
+#' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
+#' quantifying the proportion of cell types present in a bulk sample. This
+#' function needs a \code{DigitalDLSorter} object with a trained DNN model
+#' (\code{\link{trained.model}} slot) and data for deconvoluting store in
+#' \code{deconv.data} slot.
+#'
+#' This function is oriented for users that have trained a DNN model using their
+#' own data. If you want to use a pre-trained model, see
+#' \code{\link{deconvDigitalDLSorter}}.
+#'
+#' @param object \code{\link{DigitalDLSorter}} object with \code{trained.data}
+#' and \code{deconv.data} slots.
+#' @param name.data Name of the data store in \code{DigitalDLSorter} object. If
+#' it is not provided, the first dataset will be used.
+#' @param batch.size Number of samples per gradient update. If unspecified,
+#' \code{batch.size} will default to 128.
+#' @param transpose Transpose data for set features (genes) as columns and
+#' samples as rows. \code{TRUE} by default.
+#' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
+#' @param verbose Show messages during the execution.
+#' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
+#' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
+#' type in \eqn{i} sample.
+#'
+#' @export
+#'
+#' @seealso \code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}
+#'
+#' @examples
+#' DDLSChung <- trainDigitalDLSorterModel(
+#'   object = DDLSChung,
+#'   batch.size = 128,
+#'   num.epochs = 20
+#' )
+#'
+#' @references
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
+#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' \url{10.3389/fgene.2019.00978}
+#'
 deconvDigitalDLSorterObj <- function(
   object,
-  name.data = NULL,
+  name.data,
   batch.size = 128,
   transpose = FALSE,
   normalize = FALSE,
   verbose = TRUE
 ) {
-  if (class(data) != "DigitalDLSorter") {
+  if (class(object) != "DigitalDLSorter") {
     stop("The provided object is not of DigitalDLSorter class")
   } else if (is.null(object@trained.model)) {
     stop("There is not trained model in DigitalDLSorter object")
   } else if (batch.size <= 10) {
     stop("'batch.size' argument must be greater than or equal to 10")
   }
+
+  ## check if model is json format or compiled
+  if (is.list(trained.model(object)@model)) {
+    model.comp <- .loadModelFromJSON(trained.model(object))
+    trained.model(object) <- model.comp
+  }
+
   ## comming soon
   # if (!is.null(file.path)) {
   #   if (!file.exists(file.path)) {
@@ -675,13 +715,13 @@ deconvDigitalDLSorterObj <- function(
   #   message(paste("=== Deconvolution of data stored on disk in", file.path, "\n"))
   #   ## set generator that works with CSV files on disk
   # } else {
-  message("=== Deconvolution of data provided in deconv.data slot of DigitalDLSorter object")
+  # message("=== Deconvolution of data provided in deconv.data slot of DigitalDLSorter object")
   ## access to data from object. Todo esto lo implemento en una función interna
-  if (is.null(name.data)) {
+  if (missing(name.data)) {
     message("   No name.data provided. Using the first dataset\n")
     name.data <- 1
   }
-  deconv.counts <- object@deconv.data[[name.data]]
+  deconv.counts <- assay(object@deconv.data[[name.data]])
 
   ## deconvolution
   results <- .deconvCore(
@@ -692,7 +732,6 @@ deconvDigitalDLSorterObj <- function(
     normalize = normalize,
     verbose = verbose
   )
-
   object@deconv.results[[name.data]] <- results
 
   return(object)
@@ -732,6 +771,7 @@ deconvDigitalDLSorterObj <- function(
       message("=== Normalizing data\n")
     }
     deconv.counts <- edgeR::cpm.default(deconv.counts)
+    # deconv.counts <- rescale(deconv.counts)
     deconv.counts <- scale(deconv.counts)
   }
   deconv.counts <- t(deconv.counts)
@@ -783,6 +823,25 @@ deconvDigitalDLSorterObj <- function(
                        ncol = n.features,
                        nrow = length(data.index))))
   }
+}
+
+
+.loadModelFromJSON <- function(object) {
+  model.list <- model(object)
+  model.comp <- model_from_json(model.list[[1]])
+  model.comp <- set_weights(model.comp, model.list[[2]])
+  model(object) <- model.comp
+
+  return(object)
+}
+
+.saveModelToJSON <- function(object) {
+  model.comp <- model(object)
+  model.json <- model_to_json(model.comp)
+  weights <- get_weights(model.comp)
+  model(object) <- list(model.json, weights)
+
+  return(object)
 }
 
 # .predictDeconvFileGenerator <- function(

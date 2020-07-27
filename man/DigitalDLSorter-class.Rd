@@ -41,7 +41,7 @@ new single-cell expression profiles.}
 
 \item{\code{single.cell.sim}}{Simulated single-cell expression profiles.}
 
-\item{\code{prob.matrix}}{\code{ProbMatrixCellTypes} class with the probability matrix built
+\item{\code{prob.cell.types}}{\code{ProbMatrixCellTypes} class with the probability matrix built
 for the simulation of bulk RNASeq profiles. These probabilities determine the
 proportion of single-cell types that will constitute te bulk samples.}
 

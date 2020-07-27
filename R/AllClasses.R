@@ -5,15 +5,17 @@
 #' @useDynLib digitalDLSorteR
 NULL
 
+setOldClass(Classes = 'package_version')
+setOldClass("keras.engine.sequential.Sequential")
+setOldClass("keras_training_history")
+
 setClassUnion("MatrixOrNULL", c("matrix", "NULL"))
 setClassUnion("ListOrNULL", c("list", "NULL"))
 setClassUnion("CharacterOrNULL", c("character", "NULL"))
 setClassUnion("SingleCellExperimentOrNULL", c("SingleCellExperiment", "NULL"))
 setClassUnion("ZINBParamsOrNULL", c("ZINBParams", "NULL"))
+setClassUnion("KerasOrList", c("keras.engine.sequential.Sequential", "list"))
 
-setOldClass(Classes = 'package_version')
-setOldClass("keras.engine.sequential.Sequential")
-setOldClass("keras_training_history")
 
 ## ProbMatrixCellTypes class ----------------------------------------------------
 
@@ -147,7 +149,7 @@ setMethod(f = "show",
 DigitalDLSorterDNN <- setClass(
   Class = "DigitalDLSorterDNN",
   slots = c(
-    model = "keras.engine.sequential.Sequential",
+    model = "KerasOrList",
     training.history = "keras_training_history",
     eval.stats = "ListOrNULL",
     predict.results = "matrix",
@@ -235,7 +237,7 @@ setClassUnion("DigitalDLSorterDNNOrNULL", c("DigitalDLSorterDNN", "NULL"))
 #' @slot zinb.params \code{ZinbParams} object with estimated params for the simulation of
 #' new single-cell expression profiles.
 #' @slot single.cell.sim Simulated single-cell expression profiles.
-#' @slot prob.matrix \code{ProbMatrixCellTypes} class with the probability matrix built
+#' @slot prob.cell.types \code{ProbMatrixCellTypes} class with the probability matrix built
 #' for the simulation of bulk RNASeq profiles. These probabilities determine the
 #' proportion of single-cell types that will constitute te bulk samples.
 #' @slot bulk.sim This slots consists in a list with two elements: train and test simulated bulk RNASeq.
@@ -273,7 +275,7 @@ DigitalDLSorter <- setClass(
     single.cell.real = "SingleCellExperimentOrNULL",
     zinb.params = "ZINBParamsOrNULL",
     single.cell.sim = "SingleCellExperimentOrNULL",
-    prob.matrix = "ListOrNULL",
+    prob.cell.types = "ListOrNULL",
     bulk.sim = "ListOrNULL",
     final.data = "ListOrNULL",
     trained.model = "DigitalDLSorterDNNOrNULL",
@@ -292,7 +294,7 @@ setMethod(
     single.cell.real = NULL,
     zinb.params = NULL,
     single.cell.sim = NULL,
-    prob.matrix = NULL,
+    prob.cell.types = NULL,
     bulk.sim = NULL,
     final.data = NULL,
     trained.model = NULL,
@@ -304,7 +306,7 @@ setMethod(
     .Object@single.cell.real <- single.cell.real
     .Object@zinb.params <- zinb.params
     .Object@single.cell.sim <- single.cell.sim
-    .Object@prob.matrix <- prob.matrix
+    .Object@prob.cell.types <- prob.cell.types
     .Object@bulk.sim <- bulk.sim
     .Object@final.data <- final.data
     .Object@trained.model <- trained.model
@@ -385,11 +387,11 @@ setMethod(f = "show",
               cat("Simulated single-cell profiles:\n")
               .sceShow(object@single.cell.sim)
             }
-            if (!is.null(object@prob.matrix)) {
+            if (!is.null(object@prob.cell.types)) {
               cat("Probability matrices:\n")
               lapply(X = c("train", "test"), FUN = function(x) {
-                if (x %in% names(object@prob.matrix)) {
-                  cat(show(object@prob.matrix[[x]]), "\n")
+                if (x %in% names(object@prob.cell.types)) {
+                  cat(show(object@prob.cell.types[[x]]), "\n")
                 }
               })
             }

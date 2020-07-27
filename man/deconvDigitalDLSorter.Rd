@@ -17,48 +17,43 @@ deconvDigitalDLSorter(
 \arguments{
 \item{data}{A matrix bulk gene expression with}
 
+\item{model}{Pre-trained DNN model to use for deconvoluting process.
+For the moment, the available
+models are for deconvoluting RNA-Seq samples from breast cancer ('breast') and
+colon cancer ('colon') environments.}
+
 \item{batch.size}{Number of samples per gradient update. If unspecified,
 \code{batch.size} will default to 128.}
 
-\item{verbose}{Boolean indicating if show the progression of the model during
-training. Beisdes, it is shown information about the architecture of the model
-(\code{TRUE} by default).}
+\item{transpose}{Transpose data for set features (genes) as columns and
+samples as rows. \code{TRUE} by default.}
 
-\item{numm.epochs}{Number of epochs to train the model.}
+\item{normalize}{Normalize data before deconvolution. \code{TRUE} by default.}
 
-\item{val}{Boolean that determine if a validation subset is used during
-training (\code{FALSE} by default).}
-
-\item{freq.val}{Number between 0.1 and 0.5 that determine the number of
-samples from training data that will be used as validation subset.}
-
-\item{loss}{Character indicating loss function selected for training the model
-(Kullback-Leibler divergence by default).
-See \code{keras} documentation for more details.}
-
-\item{metrics}{Vector fo metrics used to evaluate the performance of the model
-during training and on test data (\code{c("accuracy", "mean_absolute_error",
-"categorical_accuracy")} by default)}
-
-\item{view.metrics.plots}{Boolean indicating if show progression plots of loss
-and metrics during training (\code{TRUE} by default). \code{keras} for R allows
-to see the progression of the model during training if you are working in RStudio.}
+\item{verbose}{Show messages during the execution.}
 }
 \value{
-A DigitalDLSorter object with \code{trained.model} slot containing
-a \code{\link{DigitalDLSorterDNN}} object. For more information about the
-structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+A \code{data.frame} with samples (\eqn{i}) as rows and cell types
+(\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
+type in \eqn{i} sample.
 }
 \description{
 Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
-quantifying the proportion of cell types present in a bulk sample.
+quantifying the proportion of cell types present in a bulk sample. See in
+Details the available models.
 }
 \details{
 This method uses a pre-trained Deep Neural Network model to enumerate
 and quantify the cell types present in bulk RNA-Seq samples. For the moment,
 the available models allow to deconvolute the immune infiltration in colorectal
-(\code{colon.li} (Li et al., 2017)) and breast cancer (\code{breast.chung}
+(\code{'colon.li'} (Li et al., 2017)) and breast cancer (\code{'breast.chung'}
 (Chung et al., 2017)).
+
+This function is oriented for users that only want to use the method for
+deconvoluting their bulk RNA-Seq samples. For users that are buliding their
+own model using the rest of functionalities of \code{digitalDLSoteR} package,
+see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
+while the last uses \code{DigitalDLSorter} objects.
 }
 \examples{
 DDLSChung <- trainDigitalDLSorterModel(
@@ -75,5 +70,5 @@ immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
 doi: \url{10.1038/ncomms15081}.
 }
 \seealso{
-\code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.
+\code{\link{deconvDigitalDLSorterObj}}.
 }

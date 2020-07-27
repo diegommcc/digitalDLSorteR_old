@@ -2,7 +2,7 @@
 % Please edit documentation in R/dnnModel.R
 \name{saveTrainedModel}
 \alias{saveTrainedModel}
-\title{Save on disk trained DigitalDLSorter DNN model.}
+\title{Save on disk trained DigitalDLSorter DNN model as HDF5 file.}
 \usage{
 saveTrainedModel(object, file.path, overwrite = FALSE)
 }
@@ -20,5 +20,5 @@ Save on disk the trained model in HDF5 format.
 
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}}, \code{\link{loadTrainedModel}}.
+\code{\link{trainDigitalDLSorterModel}} \code{\link{loadTrainedModel}}.
 }

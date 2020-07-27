@@ -54,7 +54,7 @@ NULL
 #' If it is equal to NULL (by default), all cell types will be mixed when generating
 #' bulk samples.
 #' @param verbose Show messages during the execution.
-#' @return A DigitalDLSorter object with \code{prob.matrix} slot containing
+#' @return A DigitalDLSorter object with \code{prob.cell.types} slot containing
 #' a \code{\link{ProbMatrixCellTypes}} object. For more information about the
 #' structure of this class, see \code{\link{?ProbMatrixCellTypes}}. The most
 #' important element is the probability matrix, which is formed by \eqn{n} rows
@@ -129,8 +129,8 @@ generateTrainAndTestBulkProbMatrix <- function(
                "from: frequency from which the cell type can appear",
                "to: frequency up to which the cell type can appear", sep = "\n   - "))
   }
-  if (!is.null(prob.matrix(object)) | !length(prob.matrix(object)) == 0) {
-    warning("prob.matrix slot already has the probability matrices. Note that it will be overwritten\n",
+  if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
+    warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
   }
 
@@ -367,7 +367,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     plots = test.plots,
     type.data = "test"
   )
-  object@prob.matrix <- list(train = train.prob.matrix.object,
+  object@prob.cell.types <- list(train = train.prob.matrix.object,
                              test = test.prob.matrix.object)
 
   message("DONE")
@@ -730,7 +730,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 #' options due to the large size of the simulated matrices.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
-#' \code{prob.matrix} slots.
+#' \code{prob.cell.types} slots.
 #' @param type.data Type of data to generate among 'train', 'test' or 'both'
 #' (the last by default).
 #' @param file.backend Valid file path where to save the HDF5 file used as backend.
@@ -784,13 +784,13 @@ generateBulkSamples <- function(
     stop("The object provided is not of DigitalDLSorter class")
   } else if (is.null(single.cell.sim(object))) {
     stop("single.cell.sim slot is empty")
-  } else if (is.null(prob.matrix(object))) {
-    stop("prob.matrix slot is empty")
+  } else if (is.null(prob.cell.types(object))) {
+    stop("prob.cell.types slot is empty")
   } else if (!any(type.data == c("train", "test", "both"))) {
     stop("type.data argument must be one of the next options: train, test or both")
   }
-  # else if (object@prob.matrix$train@cell.names) {
-  #   stop("prob.matrix is not a valid object")
+  # else if (object@prob.cell.types$train@cell.names) {
+  #   stop("prob.cell.types is not a valid object")
   # }
   if (!is.null(file.backend)) {
     if (file.exists(file.backend)) {
@@ -871,7 +871,7 @@ setBulks <- function (x, c, i) {
   threads,
   verbose
 ) {
-  prob.matrix.names <- object@prob.matrix[[type.data]]@cell.names
+  prob.matrix.names <- object@prob.cell.types[[type.data]]@cell.names
   bulk.counts <- pbapply::pbapply(
     X = prob.matrix.names,
     MARGIN = 1,
@@ -901,7 +901,7 @@ setBulks <- function (x, c, i) {
     colData = colnames.bulk))
 }
 
-## generateCombinedScaledShuffledSet function ---------------------------------
+## prepareDataForTraining function ---------------------------------
 
 #' Generate training and test final data for training DNN model.
 #'
@@ -922,7 +922,7 @@ setBulks <- function (x, c, i) {
 #' recommend this options due to the large size of the simulated matrices.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
-#' \code{prob.matrix} slots.
+#' \code{prob.cell.types} slots.
 #' @param type.data Type of data to generate among 'train', 'test' or 'both'
 #' (the last by default).
 #' @param file.backend Valid file path where to save the HDF5 file used as backend.
@@ -941,23 +941,24 @@ setBulks <- function (x, c, i) {
 #'
 #' @examples
 #' ## loading all data in memory
-#' DDLSChung <- generateCombinedScaledShuffledSet(
+#' DDLSChung <- prepareDataForTraining(
 #'   object = DDLSChung,
 #'   type.data = "both",
 #'   verbose = TRUE
 #' )
 #'
 #' ## using HDF5 as backend
-#' DDLSChung <- generateCombinedScaledShuffledSet(
+#' DDLSChung <- prepareDataForTraining(
 #'   object = DDLSChung,
 #'   type.data = "both",
 #'   file.backend = "DDLSChung.final.data.combined.h5",
 #'   verbose = TRUE
 #' )
 #'
-generateCombinedScaledShuffledSet <- function(
+prepareDataForTraining <- function(
   object,
   type.data,
+  combine = TRUE,
   file.backend = NULL,
   verbose = TRUE
 ) {
@@ -965,8 +966,8 @@ generateCombinedScaledShuffledSet <- function(
     stop("The object provided is not of DigitalDLSorter class")
   } else if (is.null(single.cell.sim(object))) {
     stop("single.cell.sim slot is empty")
-  } else if (is.null(prob.matrix(object))) {
-    stop("prob.matrix slot is empty")
+  } else if (is.null(prob.cell.types(object))) {
+    stop("prob.cell.types slot is empty")
   } else if (is.null(bulk.sim(object))) {
     stop("bulk.sim slot is empty")
   } else if (!any(type.data == c("train", "test", "both"))) {
@@ -1047,39 +1048,44 @@ generateCombinedScaledShuffledSet <- function(
   setHDF5DumpName(name)
 }
 
+
 .combineBulkSCProfilesHDF5 <- function(
   object = object,
   type.data = type.data,
+  combine = combine,
   file.backend = file.backend,
   verbose = verbose
 ) {
-  gene.list <- intersect(rowData(bulk.sim(object)[[type.data]])[[1]],
-                         rownames(assay(object@single.cell.sim)))
-  counts <- assay(bulk.sim(object)[[type.data]])
-  # .setConfigHDF5(file.backend = file.backend, name = "tpm")
+  if (combine) {
+    gene.list <- intersect(rowData(bulk.sim(object)[[type.data]])[[1]],
+                           rownames(assay(object@single.cell.sim)))
+    counts <- assay(bulk.sim(object)[[type.data]])
+    # .setConfigHDF5(file.backend = file.backend, name = "tpm")
   counts <- DelayedArray::cbind(
     DelayedArray::DelayedArray(assay(object@single.cell.sim)[,
-                        unlist(object@prob.matrix[[type.data]]@set.list)]),
+                        unlist(object@prob.cell.types[[type.data]]@set.list)]),
     counts
   )
+  }
+
   sample.names <- c(
     colnames(assay(object@single.cell.sim)[,
-                          unlist(object@prob.matrix[[type.data]]@set.list)]),
+                          unlist(object@prob.cell.types[[type.data]]@set.list)]),
     colData(object@bulk.sim[[type.data]])[[1]]
   )
   tpsm <- matrix(unlist(sapply(
-    X = names(object@prob.matrix[[type.data]]@set.list),
+    X = names(object@prob.cell.types[[type.data]]@set.list),
     FUN = function (x, l) {
       v <- rep(0,length(l))
       names(v) <- names(l)
       v[x] <- 100
       return(rep(v, length(l[[x]])))
-    }, l = object@prob.matrix[[type.data]]@set.list
-  )), ncol = length(object@prob.matrix[[type.data]]@set.list), byrow = T)
-  colnames(tpsm) <- names(object@prob.matrix[[type.data]]@set.list)
-  tpsm <- tpsm[, colnames(object@prob.matrix[[type.data]]@prob.matrix)]
-  rownames(tpsm) <- unlist(object@prob.matrix[[type.data]]@set.list)
-  probs.matrix <- rbind(tpsm, object@prob.matrix[[type.data]]@prob.matrix)/100
+    }, l = object@prob.cell.types[[type.data]]@set.list
+  )), ncol = length(object@prob.cell.types[[type.data]]@set.list), byrow = T)
+  colnames(tpsm) <- names(object@prob.cell.types[[type.data]]@set.list)
+  tpsm <- tpsm[, colnames(object@prob.cell.types[[type.data]]@prob.matrix)]
+  rownames(tpsm) <- unlist(object@prob.cell.types[[type.data]]@set.list)
+  probs.matrix <- rbind(tpsm, object@prob.cell.types[[type.data]]@prob.matrix)/100
   rownames(probs.matrix) <- c(rownames(tpsm), colData(object@bulk.sim[[type.data]])[[1]])
 
   # rownames(assay(DDLSChung.1@bulk.sim$train)) <- gene.list
@@ -1135,29 +1141,29 @@ generateCombinedScaledShuffledSet <- function(
     counts <- assay(bulk.sim(object)[[type.data]])
   }
   counts <- cbind(
-    assay(object@single.cell.sim)[, unlist(object@prob.matrix[[type.data]]@set.list)],
+    assay(object@single.cell.sim)[, unlist(object@prob.cell.types[[type.data]]@set.list)],
     counts
   )
 
   sample.names <- c(
     colnames(assay(object@single.cell.sim)[,
-                          unlist(object@prob.matrix[[type.data]]@set.list)]),
+                          unlist(object@prob.cell.types[[type.data]]@set.list)]),
     colData(object@bulk.sim[[type.data]])[[1]]
   )
   tpsm <- matrix(unlist(sapply(
-    X = names(object@prob.matrix[[type.data]]@set.list),
+    X = names(object@prob.cell.types[[type.data]]@set.list),
     FUN = function (x, l) {
       v <- rep(0,length(l))
       names(v) <- names(l)
       v[x] <- 100
       return(rep(v, length(l[[x]])))
-    }, l = object@prob.matrix[[type.data]]@set.list
-  )), ncol = length(object@prob.matrix[[type.data]]@set.list), byrow = T)
+    }, l = object@prob.cell.types[[type.data]]@set.list
+  )), ncol = length(object@prob.cell.types[[type.data]]@set.list), byrow = T)
 
-  colnames(tpsm) <- names(object@prob.matrix[[type.data]]@set.list)
-  tpsm <- tpsm[, colnames(object@prob.matrix[[type.data]]@prob.matrix)]
-  rownames(tpsm) <- unlist(object@prob.matrix[[type.data]]@set.list)
-  probs.matrix <- rbind(tpsm, object@prob.matrix[[type.data]]@prob.matrix)/100
+  colnames(tpsm) <- names(object@prob.cell.types[[type.data]]@set.list)
+  tpsm <- tpsm[, colnames(object@prob.cell.types[[type.data]]@prob.matrix)]
+  rownames(tpsm) <- unlist(object@prob.cell.types[[type.data]]@set.list)
+  probs.matrix <- rbind(tpsm, object@prob.cell.types[[type.data]]@prob.matrix)/100
   rownames(probs.matrix) <- c(rownames(tpsm), colData(object@bulk.sim[[type.data]])[[1]])
 
   # rownames(assay(DDLSChung.1@bulk.sim$train)) <- gene.list
