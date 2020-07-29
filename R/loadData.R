@@ -280,13 +280,57 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-
+#' Load scRNA-Seq data into a \code{DigitalDLSorter} object.
+#'
+#' Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
+#' or from a \code{SingleCellExperiment} object. Provided data must be composed
+#' by three pieces of information:
+#' \itemize{
+#'   \item Single-cell counts: genes in rows and cells in columns.
+#'   \item Cells metadata: with annotations (columns) for each cell (rows).
+#'   \item Genes metadata with annotations (columns) for each gene (rows).
+#' }
+#' In the case that data is provided from files, \code{single.cell.real}
+#' argument must be a vector of three elements ordered so that the first file
+#' corresponds to counts, the second to cells metadata and the last to genes
+#' metadata.
+#' On the other hand, if data is provided as \code{SingleCellExperiment}, the
+#' object must contains single-cell counts in \code{assay} slot, cells metadata
+#' in \code{colData} slot and genes metadata in \code{rowData}.
+#'
+#' @param single.cell.real If data is provided from files, \code{single.cell.real}
+#' must be a vector with three elements: single-cell counts, cells metadata and
+#' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
+#' singlecell counts must be in \code{assay} slot, cells metadata in
+#' \code{colData} and genes metadata in \code{rowData}.
+#' @param cell.ID.column Name or number of the column in cells.metadata
+#' corresponding with cell names in expression matrix.
+#' @param gene.ID.column Name or number of the column in genes.metadata
+#' corresponding with the nonation used for features/genes.
+#' @param min.counts Minimum gene counts to filter (0 by default).
+#' @param min.cells Minimum of cells with more than min.counts (0 by default).
+#' @param project Name of the project for \code{DigitaDLSorter} object.
+#'
+#' @export
+#'
+#' @seealso \code{\link{simSingleCellProfiles}}
+#'
+#' @examples
+#' DDLSChung <- loadRealSCProfiles(
+#'   single.cell.real = breast.chung.data,
+#'   cell.ID.column = "Cell_ID",
+#'   gene.ID.column = "external_gene_name",
+#'   min.cells = 0,
+#'   min.counts = 0,
+#'   project = "Chung_etal_2017"
+#' )
+#'
 loadRealSCProfiles <- function(
   single.cell.real,
   cell.ID.column = 1,
   gene.ID.column = 1,
-  min.cells = 0,
   min.counts = 0,
+  min.cells = 0,
   project = "DigitalDLSorterProject"
 ) {
   single.cell.real <- .loadSingleCellData(

@@ -2,7 +2,7 @@
 #' @import keras
 NULL
 
-tensorflow::tf$compat$v1$disable_eager_execution()
+# tensorflow::tf$compat$v1$disable_eager_execution()
 ## this line should be in documentation or vignette, since it is a general option
 
 #' Train DigitalDLSorter DNN model.

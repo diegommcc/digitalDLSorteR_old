@@ -1,5 +1,5 @@
 ---
-title: "digitalLDSorteR: Introduction to deconvolution of bulk RNA-Seq samples based on Deep Learning"
+title: "digitalLDSorteR: Package for deconvolution of bulk RNA-Seq samples based on Deep Learning"
 author:
 - name: First Author
   affiliation: First Author's Affiliation
@@ -73,7 +73,9 @@ is an advantage over other tools, since the model has been trained from scRNA-Se
 data from the tumor itself, preserving the specific characteristics of the tumor 
 microenvironment as opposite to other approaches in which cells were isolated 
 from blood. For knowing more about the datasets, see the provided documentation 
-in the package. **Aquí realmente se puede comentar algo de las ventajas que 
+in the package. 
+
+**Aquí realmente se puede comentar algo de las ventajas que 
 presenta cada dataset y qué lo compone de forma resumida**.
 
 
@@ -95,7 +97,12 @@ so we have to use `colon.li` model setting `model = "colon"`:
 ```{r}
 library(digitalDLSorteR)
 
-deconvDigitalDLSorter(data = , model = "colon", batch.size = )
+deconvResults <- deconvDigitalDLSorter(
+  data = TGCA.colon,
+  model = "colon", 
+  batch.size = 128,
+  normalize = TRUE
+)
 ```
 
 
@@ -103,6 +110,8 @@ deconvDigitalDLSorter(data = , model = "colon", batch.size = )
 
 # Build your own model for deconvolution of bulk RNA-Seq samples in a determined 
 environment
+
+
 
 
 # Getting started
