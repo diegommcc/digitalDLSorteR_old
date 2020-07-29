@@ -315,7 +315,7 @@ trainDigitalDLSorterModel <- function(
 #'
 #' @examples
 #'
-saveTrainedModel <- function(
+saveTrainedModelAsH5 <- function(
   object,
   file.path,
   overwrite = FALSE
@@ -364,7 +364,7 @@ saveTrainedModel <- function(
 #'
 #' @examples
 #'
-loadTrainedModel <- function(
+loadTrainedModelFromH5 <- function(
   object,
   file.path,
   reset.slot = TRUE

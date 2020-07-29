@@ -27,3 +27,47 @@ showProbPlot <- function(object, type.data, set, type.plot = "maxprob") {
 }
 
 
+#' Prepare \code{DigitalDLSorter} objects for saving as RDA file.
+#'
+#' Prepare \code{DigitalDLSorter} objects that have a \code{DigitalDLSorterDNN}
+#' object with trained DNN model. \code{keras} models are not able to be stored
+#' natively as R objects (e.g. RData or RDS files). By saving the structure as
+#' JSON character object and weights as list object, it is possible recovering
+#' the model and carrying out perdictions.
+#'
+#' With this option, the state of optimizer is not saved, only architecture and
+#' weights. It is possible to save completely the model as HDF5 file with
+#' \code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
+#' object with \code{\link{loadTrainedModelFromH5}} function.
+#'
+#' It is also possible to save a \code{DigitalDLSorter} object as RDS file with
+#' \code{saveRDS} function without any type of previous preparation.
+#'
+#' @param object \code{\link{DigitalDLSorter}} object with \code{trained.data}
+#' slot.
+#'
+#' @export
+#'
+#' @seealso \code{\link{saveRDS}} \code{\link{saveTrainedModelAsH5}}
+#'
+preparingToSave <- function(object) {
+  if (class(object) != "DigitalDLSorter" ||
+      class(object) != "DigitalDLSorterDNN") {
+    stop("object provided is not a DigitalDLSorter object")
+  }
+  if (is.null(trained.model(object))) {
+    message("Object provided has not a DigitalDLSorterDNN object. It is not necessary ",
+            "prepare the object for saving on disk")
+    return(object)
+  } else if (is.null(trained.model(object)@model)) {
+    message("Object provided has not a trained DNN model. It is not necessary ",
+            "prepare the object for saving on disk")
+    return(object)
+  }
+  if (class(trained.model(object)@model) == "list") return(object)
+  else {
+    trained.model.mod <- .saveModelToJSON(trained.model(object))
+    trained.model(object) <- trained.model.mod
+    return(object)
+  }
+}

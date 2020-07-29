@@ -602,22 +602,22 @@ setMethod(f = "project<-",
 
 
 ## generic for save function: save as RDA a keras model
-setGeneric("save", function(object, file, name) standardGeneric("save"))
-
-setMethod("save", "DigitalDLSorterDNN", definition = function(object, file, name) {
-  if ("keras.engine.sequential.Sequential" %in% class(model(object))) {
-    object <- list(object)
-    names(object) <- name
-    object[[1]] <- .saveModelToJSON(object[[1]])
-    base::save(list = names(object), file = file, envir = list2env(object))
-  } else if (class(model(object)) == "list") {
-    object <- list(object)
-    names(object) <- name
-    base::save(list = names(object), file = file, envir = list2env(object))
-  } else {
-    stop("No valid DigitalDLSorterDNN object")
-  }
-})
+# setGeneric("save", function(object, file, name) standardGeneric("save"))
+#
+# setMethod("save", "DigitalDLSorterDNN", definition = function(object, file, name) {
+#   if ("keras.engine.sequential.Sequential" %in% class(model(object))) {
+#     object <- list(object)
+#     names(object) <- name
+#     object[[1]] <- .saveModelToJSON(object[[1]])
+#     base::save(list = names(object), file = file, envir = list2env(object))
+#   } else if (class(model(object)) == "list") {
+#     object <- list(object)
+#     names(object) <- name
+#     base::save(list = names(object), file = file, envir = list2env(object))
+#   } else {
+#     stop("No valid DigitalDLSorterDNN object")
+#   }
+# })
 
 # setMethod("save", "DigitalDLSorter", definition = function(object, file, name) {
 #   if (!is.null(trained.model(object))) {
@@ -640,6 +640,32 @@ setMethod("save", "DigitalDLSorterDNN", definition = function(object, file, name
 # })
 
 
+#' Save \code{DigitalDLSorter} object as RDS file.
+#'
+#' Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS files.
+#' We developed this generic with the aim of changing the behavior of the function
+#' and saving the structure and weights of DNN model as text objects. This is
+#' because \code{keras} models are not able to be stored natively as R objects
+#' (e.g. RData or RDS files). By saving the structure as JSON character object and
+#' weights as list object, it is possible recovering the model and carrying
+#' out perdictions.
+#'
+#' With this option, the state of optimizer is not saved, only architecture and
+#' weights. It is possible to save completely the model as HDF5 file with
+#' \code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
+#' object with \code{\link{loadTrainedModelFromH5}} function.
+#'
+#' Moreover, if you want to save the object as rda file, it is possible
+#' by transforming before the model to an allowed R object with \code{preparingToSave}
+#' function.
+#
+#' @inheritParams saveRDS
+#'
+#' @export
+#'
+#' @seealso \code{\link{saveTrainedModelAsH5}} \code{\link{preparingToSave}}
+#'
+#'
 setGeneric("saveRDS", function(
   object,
   file,
