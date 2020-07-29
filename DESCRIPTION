@@ -24,6 +24,10 @@ Imports:
     gtools,
     edgeR,
     keras
+Suggests: 
+    BiocStyle, 
+    knitr, 
+    rmarkdown
 RoxygenNote: 7.0.2
 Collate: 
     'AllClasses.R'
@@ -34,3 +38,4 @@ Collate:
     'simBulk.R'
     'simSingleCell.R'
     'utils.R'
+VignetteBuilder: knitr

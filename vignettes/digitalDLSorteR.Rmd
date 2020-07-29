@@ -1,0 +1,182 @@
+---
+title: "digitalLDSorteR: Introduction to deconvolution of bulk RNA-Seq samples based on Deep Learning"
+author:
+- name: First Author
+  affiliation: First Author's Affiliation
+- name: Second Author
+  affiliation: Second Author's Affiliation
+  email: corresponding@author.com
+package: digitalDLSorteR
+output:
+  BiocStyle::html_document
+    # css: "./css/style.css"
+    toc: true
+    toc_float: true
+abstract: |
+  Description of your vignette
+vignette: |
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+  %\VignettePackage{digitalDLSorteR}
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+options(width = 70)
+require(BiocStyle)
+```
+
+
+# Introduction to `digitalDLSorteR`package
+
+`digitalDLSorteR` is a package that implements a Deep Learning based method to 
+enumerate and quantify the cell type composition of a bulk RNA-Seq sample. Our 
+method makes use of a Deep Neural Network (DNN) model to adjust any cell type
+composition defined from a single-cell RNA-Seq (scRNA-Seq) data. 
+
+The method implement a pipeline that starts from scRNA-Seq data and, after a few 
+steps, a Deep Neural Network (DNN) model is trained with pseudo-bulk RNA-Seq 
+samples with known composition of cell types. The trained model is able to 
+deconvolute any bulk RNA-Seq sample, determining the proportion of the 
+different cell types present in it. 
+
+The package can be used in two ways: for deconvoluting bulk RNA-Seq
+samples using a pre-trained model provided by us or for building own models
+trained from different scRNA-Seq samples with its own peculiarities. These 
+new models can be published in order to make them available for other users
+that work with similar data (e.g. neural environment, prostate cancer environment,
+etc). For the moment, the available models allows the deconvolution of tumor
+infiltrated lymphocytes (TILs) from breast cancer and colorectal cancer 
+environments classified by our team.
+
+# Instalation of package
+
+
+
+# Use `digitalDLSorteR` for deconvolution of samples using pre-trained models
+
+This is the simplest way to use the method: from a bulk RNA-Seq sample matrix
+with genes as rows and samples as columns, perform the deconvolution of cell types
+using a pre-trained model available in the package. As mentioned above, for the 
+moment only two pre-trained models are available: breast cancer (`breast.chung`)
+and colorectal cancer (`colon.li`) models. These two models are generated from 
+two scRNA-Seq datasets that have been analyzed by our team:
+
+* Breast cancer environment has been generated from GSE75688 (Chung et al., 2017). 
+* Colorectal cancer environment has been generated from GSE81861 (Li et al., 2017).
+
+These dataset have the particularity of presenting TILs and, therefore, the resulting
+models are able to deconvolute immune cell types from bulk RNA-Seq samples. This 
+is an advantage over other tools, since the model has been trained from scRNA-Seq
+data from the tumor itself, preserving the specific characteristics of the tumor 
+microenvironment as opposite to other approaches in which cells were isolated 
+from blood. For knowing more about the datasets, see the provided documentation 
+in the package. **Aquí realmente se puede comentar algo de las ventajas que 
+presenta cada dataset y qué lo compone de forma resumida**.
+
+
+## Example of the use of the package
+
+Using the package in this way, it is only necessary to load the samples that you
+want to deconvolute in R and use them as `data` argument for 
+`deconvDigitalDLSorter` function. This object must be a `matrix` or a `data.frame`
+with genes as rows and samples as columns. Genes must be annotated as SYMBOL, 
+since the model was trained with this notation. Data must be TPMs, since model
+was trained with this type of data. If data are not normalize, set `normalize`
+argument equal to `TRUE` (by default).
+
+Moreover, you must specify the model that will be used in `model` argument. 
+In this example, we are going to deconvolute TCGA samples from colorectal cancer, 
+so we have to use `colon.li` model setting `model = "colon"`:
+
+
+```{r}
+library(digitalDLSorteR)
+
+deconvDigitalDLSorter(data = , model = "colon", batch.size = )
+```
+
+
+
+
+# Build your own model for deconvolution of bulk RNA-Seq samples in a determined 
+environment
+
+
+# Getting started
+
+To enable the _Bioconductor_ style in your R Markdown vignette you need to include the following in the `DESCRIPTION` file:
+
+    VignetteBuilder: knitr
+    Suggests: BiocStyle, knitr, rmarkdown
+
+
+# Style macros
+
+_BiocStyle_ introduces the following macros for referring to _R_ packages:
+
+* `r Biocpkg("IRanges")`, for _Bioconductor_ software, annotation and experiment data packages,
+* `r CRANpkg("data.table")`, for _R_ packages available on CRAN,
+* `r Githubpkg("rstudio/rmarkdown")`, for _R_ packages available on GitHub,
+* `r Rpackage("MyPkg")`, for _R_ packages that are _not_ available on _Bioconductor_, CRAN or GitHub.
+
+
+# Figures
+
+Assign captions to figures in the code chunk option `fig.cap` to automatically number them, and to be able to reference them, see Figure \@ref(fig:plot). The figure label is generated from the code chunk label by prefixing it with `fig:`.
+
+```{r plot, fig.cap="Regular figure. The first sentence of the figure caption is automatically emphasized to serve as figure title.", echo=FALSE}
+plot(cars)
+```
+
+Small and wide figures can be specified by `fig.small` and `fig.wide` code chunk options.
+
+```{r small, fig.cap="Small figure. A plot produced by a code chunk with option `fig.small = TRUE`.", fig.small=TRUE, echo=FALSE}
+plot(cars)
+```
+
+```{r wide, fig.cap="Wide figure. A plot produced by a code chunk with option `fig.wide = TRUE`.", fig.wide=TRUE, echo=FALSE}
+plot(cars)
+```
+
+
+# Equations
+
+To number and reference equations, put them in equation environments and assign labels to them, see Equation \@ref(eq:binom).
+
+\begin{equation}
+  f\left(k\right) = \binom{n}{k} p^k\left(1-p\right)^{n-k}
+  (\#eq:binom)
+\end{equation}
+
+
+# Tables
+
+Like figures, tables with captions will also be numbered and can be referenced, see Table \@ref(tab:table).
+
+Fruit   | Price
+------- | -----
+bananas | 1.2
+apples  | 1.0
+oranges | 2.5
+
+: (\#tab:table) A simple table. With caption.
+
+
+# Cross-references
+
+Apart from referencing figures (Section \@ref(figures)), tables (Section \@ref(tables)), and equations (Section \@ref(equations)), you can also use the same syntax to refer to sections by their default labels generated by pandoc.
+
+
+# Side notes
+
+Footnotes are displayed as side notes on the right margin^[this is a side note entered as a footnote], which has the advantage that they appear close to the place where they are defined.
+
+
+# Session info {.unnumbered}
+
+```{r sessionInfo, echo=FALSE}
+sessionInfo()
+```
