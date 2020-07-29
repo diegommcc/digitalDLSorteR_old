@@ -23,7 +23,6 @@ Imports:
     reshape,
     gtools,
     edgeR,
-    tensorflow,
     keras
 RoxygenNote: 7.0.2
 Collate: 
