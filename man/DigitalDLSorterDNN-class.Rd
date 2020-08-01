@@ -22,7 +22,7 @@ contains a R6 \code{keras.engine.sequential.Sequential} object with the}
 \item{\code{training.history}}{List with the evolution of the selected metrics during
 training.}
 
-\item{\code{eval.stats}}{Results of the selected metrics on test data.}
+\item{\code{eval.stats.model}}{Results of the selected metrics on test data.}
 
 \item{\code{predict.results}}{Matrix with the deconvolution results on test data.
 Columns are cell types, rows are samples and each entry is the proportion of

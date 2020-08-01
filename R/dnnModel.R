@@ -76,7 +76,7 @@ trainDigitalDLSorterModel <- function(
   view.metrics.plot = TRUE,
   verbose = TRUE
 ) {
-  if (class(object) != "DigitalDLSorter") {
+  if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
   } else if (is.null(final.data(object))) {
     stop("'final.data' slot is empty")
@@ -223,7 +223,7 @@ trainDigitalDLSorterModel <- function(
     Class = "DigitalDLSorterDNN",
     model = model,
     training.history = history,
-    eval.stats = test.eval,
+    eval.stats.model = test.eval,
     predict.results = predict.results,
     cell.types = colnames(object@final.data[["train"]]@metadata[[1]]),
     features = colData(object@final.data[["test"]])[[1]]

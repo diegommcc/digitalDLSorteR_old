@@ -1,4 +1,5 @@
 #' @include AllClasses.R
+NULL
 
 ## all_generics file
 
@@ -147,31 +148,31 @@ setMethod(f = "training.history<-",
             return(object)
           })
 
-## eval.stats
+## eval.stats.model
 
-#' @title Get and set \code{eval.stats} slot in a \code{DigitalDLSorterDNN}
+#' @title Get and set \code{eval.stats.model} slot in a \code{DigitalDLSorterDNN}
 #' object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
 #'
-#' @rdname eval.stats
-#' @export eval.stats
+#' @rdname eval.stats.model
+#' @export eval.stats.model
 #'
-setGeneric("eval.stats", function(object) standardGeneric("eval.stats"))
-setMethod(f = "eval.stats",
+setGeneric("eval.stats.model", function(object) standardGeneric("eval.stats.model"))
+setMethod(f = "eval.stats.model",
           signature = "DigitalDLSorterDNN",
-          definition = function(object) object@eval.stats)
+          definition = function(object) object@eval.stats.model)
 
 #' @param value A \code{list} object with the resulting metrics after prediction
 #' on test data with DNN model.
-#' @rdname eval.stats
-#' @export eval.stats<-
+#' @rdname eval.stats.model
+#' @export eval.stats.model<-
 #'
-setGeneric("eval.stats<-", function(object, value) standardGeneric("eval.stats<-"))
-setMethod(f = "eval.stats<-",
+setGeneric("eval.stats.model<-", function(object, value) standardGeneric("eval.stats.model<-"))
+setMethod(f = "eval.stats.model<-",
           signature = "DigitalDLSorterDNN",
           definition = function(object, value) {
-            object@eval.stats <- value
+            object@eval.stats.model <- value
             return(object)
           })
 
@@ -255,6 +256,55 @@ setMethod(f = "features<-",
             object@features <- value
             return(object)
           })
+
+## eval.stats.samples
+
+#' @title Get and set \code{eval.stats.samples} slot in a \code{DigitalDLSorterDNN}
+#' object.
+#'
+#' @param object A \code{DigitalDLSorterDNN} object.
+#'
+#' @rdname eval.stats.samples
+#' @export eval.stats.samples
+#'
+setGeneric(
+  name = "eval.stats.samples",
+  def = function(object, metrics = "All") standardGeneric("eval.stats.samples")
+)
+setMethod(f = "eval.stats.samples",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, metrics) {
+            if (metrics == "All") object@eval.stats.samples
+            else {
+              if (!all(metrics %in% names(object@eval.stats.samples)))
+                stop("Metric provided is not present in DigitalDLSorterDNN object")
+              return(object@eval.stats.samples[[metrics]])
+            }
+          })
+
+#' @param value A \code{list} with evaluation metrics used for evaluating the
+#' performance of the model over each sample from test data.
+#' @rdname eval.stats.samples
+#' @export eval.stats.samples<-
+#'
+setGeneric(
+  name = "eval.stats.samples<-",
+  def = function(object, value, metrics = "All") {
+    standardGeneric("eval.stats.samples<-")
+  }
+)
+setMethod(f = "eval.stats.samples<-",
+          signature = "DigitalDLSorterDNN",
+          definition = function(object, value, metrics) {
+            if (metrics == "All") object@eval.stats.samples <- value
+            else {
+              if (!all(metrics %in% names(object@eval.stats.samples)))
+                stop("Metric provided is not present in DigitalDLSorterDNN object")
+              object@eval.stats.samples[[metrics]] <- value
+            }
+            return(object)
+          })
+
 
 ## getters and setters for DigitalDLSorter class -------------------------------
 
@@ -733,6 +783,73 @@ setMethod("saveRDS", "DigitalDLSorter", definition = function(
   )
 })
 
-# loadDigitalDLSorterDNN <- function(file) {
-#
-# }
+setGeneric("barPlotCellTypes", function(
+  data,
+  colors = NULL,
+  color.line = NA,
+  x.label = "Bulk samples",
+  rm.x.text = FALSE,
+  title = "Results of deconvolution",
+  legend.title = "Cell types",
+  angle = 90,
+  ...
+) {
+  standardGeneric("barPlotCellTypes")
+})
+
+setMethod(f = "barPlotCellTypes",
+          signature(data = "DigitalDLSorter"),
+          definition = function(
+            data,
+            name.data = NULL,
+            colors = NULL,
+            color.line = NA,
+            x.label = "Bulk samples",
+            rm.x.text = FALSE,
+            title = "Results of deconvolution",
+            legend.title = "Cell types",
+            angle = 90
+          ) {
+            if (is.null(deconv.results(data))) {
+              stop("There is not results to show")
+            } else if (is.null(name.data)) {
+              message("'name.data' not provided. By default, is catch the first results")
+              name.data
+            }
+            plot <- .barPlot(
+              data = deconv.results(data)[[name.data]],
+              colors = colors,
+              color.line = color.line,
+              x.label = x.label,
+              rm.x.text = rm.x.text,
+              title = title,
+              legend.title = legend.title,
+              angle = angle
+            )
+            return(plot)
+          })
+
+setMethod(f = "barPlotCellTypes",
+          signature(data = "ANY"),
+          definition = function(
+            data,
+            colors = NULL,
+            color.line = NA,
+            x.label = "Bulk samples",
+            rm.x.text = FALSE,
+            title = "Results of deconvolution",
+            legend.title = "Cell types",
+            angle = 90
+          ) {
+            plot <- .barPlot(
+              data = data,
+              colors = colors,
+              color.line = color.line,
+              x.label = x.label,
+              rm.x.text = rm.x.text,
+              title = title,
+              legend.title = legend.title,
+              angle = angle
+            )
+            return(plot)
+          })

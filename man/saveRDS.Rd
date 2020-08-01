@@ -18,7 +18,7 @@ Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS files.
 We developed this generic with the aim of changing the behavior of the function
 and saving the structure and weights of DNN model as text objects. This is
 because \code{keras} models are not able to be stored natively as R objects
-(e.g. RData and RDS files). By saving the structure as JSON character object and
+(e.g. RData or RDS files). By saving the structure as JSON character object and
 weights as list object, it is possible recovering the model and carrying
 out perdictions.
 }

@@ -1,3 +1,7 @@
+#' @importFrom stats model.matrix rnbinom rbinom
+#'
+NULL
+
 #' Estimate parameteres for ZINB-WaVE model for simulating single-cell expression
 #' profiles.
 #'
@@ -136,8 +140,8 @@ estimateZinbwaveParams <- function(
   snowParam <- BiocParallel::SnowParam(workers = threads, type = "SOCK")
 
   if (set.type == "All") {
-    list.data[[1]] <- as.matrix(list.data[[1]])
-    list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0, ]
+    # list.data[[1]] <- as.matrix(list.data[[1]])
+    # list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0, ]
     formula.cell.model <- as.formula(paste("~", paste(c(cell.cov.columns,
                                                    cell.type.column),
                                                  collapse = "+")))
@@ -160,8 +164,15 @@ estimateZinbwaveParams <- function(
       cell.IDs <- list.data[[2]][which(list.data[[2]][, cell.type.column] == set.type),
                                  cell.ID.column]
       list.data [[1]] <- list.data[[1]][, cell.IDs]
-      list.data[[1]] <- as.matrix(list.data[[1]])
-      list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0,]
+      # list.data[[1]] <- as.matrix(list.data[[1]])
+      # list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0,]
+
+      # update object with cells used
+      sce <- CreateSCEObject(counts = list.data[[1]],
+                             cells.metadata = list.data[[2]],
+                             genes.metadata = list.data[[3]])
+      single.cell.real(object) <- sce
+
       sdm <- NULL
       sdm.ncol <- 1
       sdm.colnames <- seq(1)
@@ -173,14 +184,14 @@ estimateZinbwaveParams <- function(
       message(paste("=== Create gene model matrix with", gene.cov.columns, "covariate(s)"))
       message("\t", formula.gene.model, "\n")
     }
-    gdm <- stats::model.matrix(formula.gene.model,
+    gdm <- model.matrix(formula.gene.model,
                                data = list.data[[3]][match(rownames(list.data[[1]]),
                                                        list.data[[3]][, gene.ID.column]), ])
   } else {
     if (verbose) {
       message("=== Create gene model matrix without Covariates\n")
     }
-    gdm <- stats::model.matrix(~1, data = list.data[[3]][match(rownames(list.data[[1]]),
+    gdm <- model.matrix(~1, data = list.data[[3]][match(rownames(list.data[[1]]),
                                                     list.data[[3]][, gene.ID.column]), ])
   }
   rownames(gdm) <- rownames(list.data[[1]])
@@ -190,7 +201,7 @@ estimateZinbwaveParams <- function(
             paste("(Start time", format(start_time, "%X)"), "\n"))
   }
   zinbParamsObj <- splatter::zinbEstimate(
-    ceiling(list.data[[1]])
+    ceiling(as.matrix(list.data[[1]]))
     , BPPARAM = snowParam
     , design.samples = sdm
     , design.genes = gdm
@@ -227,10 +238,6 @@ estimateZinbwaveParams <- function(
     , verbose = verbose
   )
   # update slots
-  sce <- CreateSCEObject(counts = list.data[[1]],
-                         cells.metadata = list.data[[2]],
-                         genes.metadata = list.data[[3]])
-  single.cell.real(object) <- sce
   zinb.params(object) <- zinbParamsObj
 
   end_time <- Sys.time()
@@ -422,10 +429,10 @@ simSingleCellProfiles <- function(
     message(paste("  - i (# entries):", length(i)), "\n")
   }
 
-  datanb <- stats::rnbinom(length(i), mu = mu[i], size = theta[ceiling(i/n)])
+  datanb <- rnbinom(length(i), mu = mu[i], size = theta[ceiling(i/n)])
   data.nb <- matrix(datanb, nrow = n)
 
-  datado <- stats::rbinom(length(i), size=1, prob = pi[i])
+  datado <- rbinom(length(i), size=1, prob = pi[i])
   data.dropout <- matrix(datado, nrow = n)
 
   sim.counts <- data.nb * (1 - data.dropout)

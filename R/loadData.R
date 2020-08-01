@@ -1,3 +1,6 @@
+#' @importFrom utils read.delim
+NULL
+
 .readTabFiles <- function(file) {
   if (!file.exists(file)) {
     stop(paste(file, "file provided does not exists"))
@@ -107,8 +110,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                arg = "gene.ID.column")
   # duplicated ID cells --------------------------------------------------------
   if (any(duplicated(cells.metadata[, cell.ID.column]))) {
-    warning(paste0("There are duplicated IDs in genes.metadata (column ",
-                   gene.ID.column, "). Making unique"))
+    warning(paste0("There are duplicated IDs in cells.metadata (column ",
+                   cell.ID.column, "). Making unique"))
     cells.metadata[, cell.ID.column] <- make.unique(names = cells.metadata[, cell.ID.column])
   }
   # intersect between cells ----------------------------------------------------
@@ -129,7 +132,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   if (any(duplicated(genes.metadata[, gene.ID.column]))) {
     message("=== Removing duplicated genes:")
     message(paste0("   There are duplicated IDs in genes.metadata (column ",
-                   gene.ID.column, ").\n   Duplicated IDs have been removed"),
+                   gene.ID.column, ").\n   Removing duplicated IDs"),
             "\n")
     genes.metadata <- genes.metadata[!duplicated(genes.metadata[, gene.ID.column]), ]
   }
@@ -149,6 +152,14 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                                      common.genes, , drop = FALSE]
   counts <- counts[common.genes, common.cells]
 
+  # removing genes without any expression
+  row.zero <- Matrix::rowSums(counts) > 0
+  if (!all(row.zero)) {
+    message(paste("=== Removing", length(row.zero), "genes without expression in any cell"))
+    counts <- counts[row.zero, ]
+    genes.metadata <- genes.metadata[genes.metadata[, gene.ID.column] %in%
+                                       rownames(counts), , drop = FALSE]
+  }
   # filter genes by min.counts and min.cells -----------------------------------
   filtered.genes <- .filterGenes(counts = counts,
                                  genes.metadata = genes.metadata,
@@ -168,7 +179,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     stop("min.counts and min.cells must be greater than or equal to zero")
   }
   dim.bef <- dim(counts)
-  counts <- counts[rowSums(as.matrix(counts) > min.counts) >= min.cells, ]
+  counts <- counts[Matrix::rowSums(counts > min.counts) >= min.cells, ]
   if (dim(counts)[1] == 0) {
     stop(paste("Resulting counts matrix after filtering with min.genes = ",
                min.counts, "and min.cells = ", min.cells,
@@ -348,5 +359,3 @@ loadRealSCProfiles <- function(
   )
   return(ddls.object)
 }
-
-

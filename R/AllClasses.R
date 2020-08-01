@@ -136,13 +136,16 @@ setMethod(f = "show",
 #' contains a R6 \code{keras.engine.sequential.Sequential} object with the
 #' @slot training.history List with the evolution of the selected metrics during
 #' training.
-#' @slot eval.stats Results of the selected metrics on test data.
+#' @slot eval.stats.model Performance of the model on test data.
 #' @slot predict.results Matrix with the deconvolution results on test data.
 #' Columns are cell types, rows are samples and each entry is the proportion of
 #' this cell type on this sample.
 #' @slot cell.types Vector with the cell types to deconvolve.
 #' @slot features Vector with features used during training. These features will be
 #' used for the folloring predictions.
+#' @slot eval.stats.samples Performance of the model over each sample that
+#' compose test data. Each sample is compared with the expected proportion
+#' of each cell type.
 #'
 #' @export DigitalDLSorterDNN
 #'
@@ -151,10 +154,11 @@ DigitalDLSorterDNN <- setClass(
   slots = c(
     model = "KerasOrList",
     training.history = "keras_training_history",
-    eval.stats = "ListOrNULL",
-    predict.results = "matrix",
+    eval.stats.model = "ListOrNULL",
+    predict.results = "MatrixOrNULL",
     cell.types = "character",
-    features = "character"
+    features = "character",
+    eval.stats.samples = "ListOrNULL"
   )
 )
 
@@ -164,17 +168,19 @@ setMethod(
     .Object,
     model = NULL,
     training.history = NULL,
-    eval.stats = NULL,
+    eval.stats.model = NULL,
     predict.results = NULL,
     cell.types = NULL,
-    features = NULL
+    features = NULL,
+    eval.stats.samples = NULL
   ) {
     .Object@model <- model
     .Object@training.history <- training.history
-    .Object@eval.stats <- eval.stats
+    .Object@eval.stats.model <- eval.stats.model
     .Object@predict.results <- predict.results
     .Object@cell.types <- cell.types
     .Object@features <- features
+    .Object@eval.stats.samples <- eval.stats.samples
     return(.Object)
   }
 )
@@ -186,7 +192,6 @@ setMethod(f = "show",
             if (is.null(object@model)) {
               cat("DigitalDLSorterDNN object empty")
             } else {
-
               cat(paste("Trained model:", object@training.history$params$epochs,
                         "epochs\n"))
               train.metrics <- lapply(object@training.history$metrics,
@@ -196,9 +201,14 @@ setMethod(f = "show",
                          lapply(train.metrics, round, 4),
                          collapse = "\n"))
               cat("\n  Evaluation metrics on test data:\n")
-              cat(paste0("    ", names(object@eval.stats), ": ",
-                         lapply(object@eval.stats, round, 4),
+              cat(paste0("    ", names(object@eval.stats.model), ": ",
+                         lapply(object@eval.stats.model, round, 4),
                          collapse = "\n"))
+              if (!is.null(eval.stats.samples(object)) ||
+                  length(eval.stats.samples(object)) > 0) {
+                cat("\n  Performance evaluation over each sample: ")
+                cat(paste(names(eval.stats.samples(object)[[2]]), collapse = " "))
+              }
             }
           })
 

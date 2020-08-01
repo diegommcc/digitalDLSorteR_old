@@ -193,7 +193,7 @@ generateTrainAndTestBulkProbMatrix <- function(
       nums.train[5] <- 3000 + (abs(diff.samples) * 1000) / s.cells
     }
     message(paste("=== The number of bulk samples that will be generated has been fixed to",
-                  num.bulk.samples))
+                  num.bulk.samples), "\n")
   }
 
   # split data into training and test sets
@@ -250,7 +250,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   ## predefined range of cell types
-  # df <- reshape::melt(prob.list)
+  # df <- reshape2::melt(prob.list)
   # colnames(df) <- c("Perc", "CellType")
   # df$CellType <- factor(df$CellType, levels = names(prob.list))
   # plot.prob <- .boxPlot(df = df, title = "Predefine Range of cell fractions",
@@ -280,12 +280,16 @@ generateTrainAndTestBulkProbMatrix <- function(
     n <- n + 1
   }
 
+  rownames(train.prob.matrix) <- paste("Bulk", seq(dim(train.prob.matrix)[1]),
+                                       sep = "_")
+
   if (verbose) {
     message("=== Probability matrix for training data:")
     message(paste(c("  - Bulk samples:", "  - Cell types:"),
                   dim(train.prob.matrix),
                   collapse = "\n"), "\n")
   }
+
 
   # TEST SETS ------------------------------------------------------------------
   test.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
@@ -307,6 +311,8 @@ generateTrainAndTestBulkProbMatrix <- function(
                                     set = "test")
     n <- n + 1
   }
+  rownames(test.prob.matrix) <- paste("Bulk", seq(dim(test.prob.matrix)[1]),
+                                      sep = "_")
 
   if (verbose) {
     message("=== Probability matrix for test data:")
@@ -399,13 +405,13 @@ generateTrainAndTestBulkProbMatrix <- function(
 .plotsQCSets <- function(probs, prob.matrix, n, set) {
   title <- paste0("Bulk Probability Dist. Set ", n, " (", set, ")")
   plots.functions <- list(.violinPlot, .boxPlot, .linesPlot)
-  df <- reshape::melt(probs)
+  df <- reshape2::melt(probs)
   colnames(df) <- c("Sample", "CellType", "Prob")
   # first three plots
   plot.list <- lapply(plots.functions, function(f) f(df, title))
   # final plots <-- preguntar por los nombres de los índices
   dummy <- t(apply(prob.matrix, 1, sort, decreasing = T))
-  df <- reshape::melt(dummy)
+  df <- reshape2::melt(dummy)
   colnames(df) <- c("Sample", "MaxProb", "Prob")
   df$MaxProb <- factor(df$MaxProb)
   plot.list[[4]] <- .boxPlot(df = df, x = MaxProb, title = title)
@@ -803,7 +809,7 @@ generateBulkSamples <- function(
   if (verbose) {
     message(paste("=== Set parallel environment to", threads, "threads"))
   }
-  sim.counts <- assay(object@single.cell.sim)
+  sim.counts <- assay(single.cell.sim(object))
   sim.counts <- edgeR::cpm.default(sim.counts) # sure???
 
   if (type.data == "both") {
@@ -845,13 +851,13 @@ generateBulkSamples <- function(
       threads = threads,
       verbose = verbose
     )
-    if (!is.null(object@bulk.counts)) {
-      if (type.data %in% names(object@bulk.counts)) {
-        object@bulk.sim[[type.data]] <- NULL
+    if (!is.null(bulk.sim(object))) {
+      if (type.data %in% names(bulk.sim(object))) {
+        bulk.sim(object, type.data) <- NULL
       }
-      object@bulk.sim <- c(object@bulk.sim, type.data = bulk.counts)
+      bulk.sim(object) <- c(bulk.sim(object), type.data = bulk.counts)
     } else {
-      object@bulk.sim[[type.data]] <- bulk.counts
+      bulk.sim(object, type.data) <- bulk.counts
     }
   }
 
@@ -871,7 +877,7 @@ setBulks <- function (x, c, i) {
   threads,
   verbose
 ) {
-  prob.matrix.names <- object@prob.cell.types[[type.data]]@cell.names
+  prob.matrix.names <- prob.cell.types(object, type.data)@cell.names
   bulk.counts <- pbapply::pbapply(
     X = prob.matrix.names,
     MARGIN = 1,
@@ -885,7 +891,7 @@ setBulks <- function (x, c, i) {
     if (verbose) {
       message("\nWriting data on disk:\n")
     }
-    bulk.counts <- DelayedArray::DelayedArray(bulk.counts)
+    bulk.counts <- DelayedArray::DelayedArray(seed = bulk.counts)
     bulk.counts <- HDF5Array::writeHDF5Array(
       bulk.counts,
       filepath = file.backend,
@@ -1029,13 +1035,13 @@ prepareDataForTraining <- function(
       file.backend = file.backend,
       verbose = verbose
     )
-    if (!is.null(object@bulk.counts)) {
-      if (type.data %in% names(object@bulk.counts)) {
-        object@bulk.sim[[type.data]] <- NULL
+    if (!is.null(final.data(object))) {
+      if (type.data %in% names(final.data(object))) {
+        final.data(object, type.data) <- NULL
       }
-      object@final.data <- c(object@final.data, type.data = combined.counts)
+      final.data(object) <- c(final.data(object), type.data = combined.counts)
     } else {
-      object@final.data <- list(type.data = combined.counts)
+      final.data(object) <- list(type.data = combined.counts)
     }
   }
 

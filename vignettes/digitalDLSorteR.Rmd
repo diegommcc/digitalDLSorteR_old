@@ -26,6 +26,7 @@ vignette: |
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 options(width = 70)
 require(BiocStyle)
+library(pheatmap)
 ```
 
 
@@ -98,18 +99,164 @@ so we have to use `colon.li` model setting `model = "colon"`:
 library(digitalDLSorteR)
 
 deconvResults <- deconvDigitalDLSorter(
-  data = TGCA.colon,
-  model = "colon", 
+  data = TCGA.colon,
+  model = "breast", 
   batch.size = 128,
   normalize = TRUE
+)
+
+head(deconvResults)
+```
+
+
+`deconvDigitalDLSorter` returns a data frame with the provided samples ($i$)in 
+rows and cell types considered by the model ($j$) in columns. Each entry 
+corresponds with the proportion of $j$ cell type in $i$ sample. In order to 
+evaluate the results quickly by a barplot, you can use the function 
+`barplotCellTypes` as follows:
+
+```{r}
+barPlotCellTypes(
+  deconvResults, 
+  rm.x.text = TRUE,
+  title = "Results of deconvolution over colorectal samples"
+)
+```
+
+Due to the high number of samples that initial data presents, we will take a 
+subset of 20 samples to improve the visualization:
+
+```{r fig.height=8, fig.width=8}
+deconvResSubset <- head(deconvResults, n = 20)
+barPlotCellTypes(
+  deconvResSubset, 
+  color.line = "black", 
+  title = "Results of deconvolution over colorectal samples (first 20 samples)"
 )
 ```
 
 
-
-
 # Build your own model for deconvolution of bulk RNA-Seq samples in a determined 
 environment
+
+`digitalDLSorteR` allows to train new models from different scRNA-Seq data 
+in order to offer the possibility to generate models more suitable for 
+determined biological environments. For this, the steps described in the 
+following pipeline must be followed. As example, we are going to generate a 
+'toy' model from scRNA-Seq data used for building the `breast.chung` model 
+available in the package. 
+
+
+## Load data into a `DigitalDLSorter` object
+
+First, we have to load data into a 'DigitalDLSorter` object, the core of the 
+package. This S4 class contains all slots neccesary for storing the different 
+data generated during the building of the model. The function used is 
+`loadRealSCProfiles`, that creates a new `DigitalDLSorter` object. The 
+information that you must provided consists in three elements: 
+
+* Single-cell counts: a matrix with genes in rows and cells in columns.
+* Cells metadata: a table with annotations (columns) for each cell (rows). The 
+information expected in this element are metadata that could be used as 
+covariates in the next steps (gender, type of sample...), a column with the 
+ID used for each cell and a column with the corresponding cell type.
+* Genes metadata with annotations (columns) for each gene (rows). In the same 
+way that in cells metadata, the information that is expected in this element 
+are a column with the notation used for each gene in counts matrix and othes 
+covariates like gene length.
+
+You can inspect the `sc.chung.breast` object to see the required 
+structure.^[Data used for the examples are stored into the package as a 
+`SingleCellExperiment` object.]
+
+```{r}
+DDLSChung <- loadRealSCProfiles(
+  single.cell.real = sc.chung.breast,
+  cell.ID.column = "Cell_ID",
+  gene.ID.column = "external_gene_name",
+  min.cells = 0,
+  min.counts = 0,
+  project = "Chung_etal_2017"
+)
+
+DDLSChung
+```
+
+In this case,
+we are loading the data from a `SingleCellExperiment` object, but it is 
+also possible to load it from tsv files and sparse matrix in the case of counts. 
+The code would be as follows (this box-code will not be run):
+
+```{r eval = FALSE}
+## this code will not be run
+filesChung <- c("countsMatrix.tsv.gz",
+                "cellsMetadata.tsv.gz",
+                "genesMetadata.tsv.gz")
+
+DDLSChung <- loadRealSCProfiles(
+  single.cell.real = filesChung,
+  cell.ID.column = "Cell_ID",
+  gene.ID.column = "external_gene_name",
+  min.cells = 0,
+  min.counts = 0,
+  project = "Chung_etal_2017"
+)
+```
+
+
+## Estimation of parameters of ZINB-WaVE model for simulating new single-cell 
+profiles
+
+In order to over
+
+```{r}
+DDLSChung <- estimateZinbwaveParams(
+  object = DDLSChung,
+  cell.ID.column = "Cell_ID",
+  gene.ID.column = "external_gene_name",
+  cell.type.column = "Cell_type",
+  cell.cov.columns = "Patient",
+  gene.cov.columns = "gene_length",
+  threads = 4,
+  verbose = TRUE
+)
+```
+
+
+## Simulate new single-cell profiles using the estimated parameters
+
+```{r}
+DDLSChung <- simSingleCellProfiles(
+  object = DDLSChung,
+  cell.ID.column = "Cell_ID",
+  cell.type.column = "Cell_type",
+  n.cells = 10,
+  verbose = TRUE
+)
+```
+
+
+## Generate probability matrix for generating pseudo-bulk simulated expression 
+profiles
+
+```{r}
+probMatrix <- data.frame(
+  Cell_types = c("ER+", "HER2+", "Stromal", "Monocyte", "Tme",
+                 "BGC", "ER+ and HER2+", "Bmem", "TNBC", "DC",
+                 "Macrophage", "TCD8", "Treg"),
+   from = c(30, 30, 1, 0, 0, 0, 30, 0, 30, 0, 0, 0, 0),
+   to = c(70, 70, 50, 15, 15, 15, 70, 15, 70, 15, 15, 15, 15)
+)
+exclusive.types <- c("ER+", "HER2+", "ER+ and HER2+", "TNBC")
+
+DDLSChung <- generateTrainAndTestBulkProbMatrix(
+  object = DDLSChung,
+  cell.type.column = "Cell_type",
+  prob.design = probMatrix,
+  exclusive.types = exclusive.types,
+  verbose = TRUE
+)
+```
 
 
 
