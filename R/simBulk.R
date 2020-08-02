@@ -931,6 +931,8 @@ setBulks <- function (x, c, i) {
 #' \code{prob.cell.types} slots.
 #' @param type.data Type of data to generate among 'train', 'test' or 'both'
 #' (the last by default).
+#' @param combine Character determining if combine training data. Can be 'both',
+#' 'bulk' or 'single-cell' ('both' by default). Note that test data is always combined.
 #' @param file.backend Valid file path where to save the HDF5 file used as backend.
 #' If it is equal to \code{NULL} (by default), the data are produced and loaded in memory.
 #' @param verbose Show messages during the execution.
@@ -957,6 +959,7 @@ setBulks <- function (x, c, i) {
 #' DDLSChung <- prepareDataForTraining(
 #'   object = DDLSChung,
 #'   type.data = "both",
+#'   combine = "both",
 #'   file.backend = "DDLSChung.final.data.combined.h5",
 #'   verbose = TRUE
 #' )
@@ -964,7 +967,7 @@ setBulks <- function (x, c, i) {
 prepareDataForTraining <- function(
   object,
   type.data,
-  combine = TRUE,
+  combine = "both",
   file.backend = NULL,
   verbose = TRUE
 ) {
@@ -977,9 +980,11 @@ prepareDataForTraining <- function(
   } else if (is.null(bulk.sim(object))) {
     stop("bulk.sim slot is empty")
   } else if (!any(type.data == c("train", "test", "both"))) {
-    stop("type.data argument must be one of the next options: train, test or both")
+    stop("'type.data' argument must be one of the next options: train, test or both")
   } else if (!any(names(bulk.sim(object)) %in% c("train", "test"))) {
     stop("bulk.sim slot is not correctly built")
+  } else if (!combine %in% c("both", "bulk", "single-cell")) {
+    stop("'combine' argument must be one of the next options: both, bulk or single-cell")
   }
   if (type.data == "both") {
     if (!all(names(bulk.sim(object)) %in% c("train", "test")))
@@ -996,7 +1001,7 @@ prepareDataForTraining <- function(
     if (verbose) {
       message("=== Working in memory")
     }
-    combineBulkSCProfiles <- .combineBulkSCProfilesInMemory
+    combineBulkSCProfiles <- .prepareDataMemory
   } else {
     if (file.exists(file.backend)){
       stop("file.backend already exists. Please provide a correct file path")
@@ -1004,7 +1009,7 @@ prepareDataForTraining <- function(
     if (verbose) {
       message("=== Working with HDF5 backend")
     }
-    combineBulkSCProfiles <- .combineBulkSCProfilesHDF5
+    combineBulkSCProfiles <- .prepareDataHDF5
   }
   if (type.data == "both") {
     combined.counts <- lapply(
@@ -1056,16 +1061,21 @@ prepareDataForTraining <- function(
 }
 
 
-.combineBulkSCProfilesHDF5 <- function(
+.prepareDataHDF5 <- function(
   object = object,
   type.data = type.data,
   combine = combine,
   file.backend = file.backend,
   verbose = verbose
 ) {
-  counts <- assay(bulk.sim(object)[[type.data]])
-  if (combine) {
-    message("    Combining single-cell profiles and simulated bulk samples\n")
+
+  if (type.data == "test") {
+    combine <- "both"
+  }
+  if (combine == "both") {
+    if (verbose)
+      message("    Combining single-cell profiles and simulated bulk samples\n")
+    counts <- assay(bulk.sim(object)[[type.data]])
     gene.list <- intersect(rowData(bulk.sim(object)[[type.data]])[[1]],
                            rownames(assay(object@single.cell.sim)))
     counts <- DelayedArray::cbind(
@@ -1074,9 +1084,9 @@ prepareDataForTraining <- function(
       counts
     )
     sample.names <- c(
-      colnames(assay(object@single.cell.sim)[,
-                                             unlist(object@prob.cell.types[[type.data]]@set.list)]),
-      colData(object@bulk.sim[[type.data]])[[1]]
+      colnames(assay(object@single.cell.sim)[,unlist(
+        object@prob.cell.types[[type.data]]@set.list)]
+      ), colData(object@bulk.sim[[type.data]])[[1]]
     )
     ## include probabilities of single-cell profiles: 1 for X cell type
     tpsm <- matrix(unlist(sapply(
@@ -1093,10 +1103,34 @@ prepareDataForTraining <- function(
     rownames(tpsm) <- unlist(object@prob.cell.types[[type.data]]@set.list)
     probs.matrix <- rbind(tpsm, object@prob.cell.types[[type.data]]@prob.matrix)/100
     rownames(probs.matrix) <- c(rownames(tpsm), colData(object@bulk.sim[[type.data]])[[1]])
-  } else {
+  } else if (combine == "bulk") {
+    if (verbose)
+      message("    Using only simulated bulk samples\n")
+    counts <- assay(bulk.sim(object)[[type.data]])
     gene.list <- rowData(bulk.sim(object)[[type.data]])[[1]]
     sample.names <- colData(object@bulk.sim[[type.data]])[[1]]
     probs.matrix <- object@prob.cell.types[[type.data]]@prob.matrix / 100
+  } else if (combine == "single-cell") {
+    if (verbose)
+      message("    Using only single-cell samples\n")
+    counts <- DelayedArray::DelayedArray(assay(object@single.cell.sim)[,unlist(
+      object@prob.cell.types[[type.data]]@set.list
+    )])
+    gene.list <- rownames(assay(object@single.cell.sim))
+    sample.names <- colnames(assay(object@single.cell.sim)[,unlist(
+      object@prob.cell.types[[type.data]]@set.list)])
+    probs.matrix <- matrix(unlist(sapply(
+      X = names(object@prob.cell.types[[type.data]]@set.list),
+      FUN = function (x, l) {
+        v <- rep(0,length(l))
+        names(v) <- names(l)
+        v[x] <- 100
+        return(rep(v, length(l[[x]])))
+      }, l = object@prob.cell.types[[type.data]]@set.list
+    )), ncol = length(object@prob.cell.types[[type.data]]@set.list), byrow = T)
+    colnames(probs.matrix) <- names(object@prob.cell.types[[type.data]]@set.list)
+    probs.matrix <- probs.matrix[, colnames(object@prob.cell.types[[type.data]]@prob.matrix)]
+    rownames(probs.matrix) <- unlist(object@prob.cell.types[[type.data]]@set.list)
   }
   # rownames(assay(DDLSChung.1@bulk.sim$train)) <- gene.list
   ## problema: como en este punto no permiten los dinnames, no puedo hacer subset
@@ -1137,7 +1171,7 @@ prepareDataForTraining <- function(
 }
 
 
-.combineBulkSCProfilesInMemory <- function(
+.prepareDataMemory <- function(
   object = object,
   type.data = type.data,
   combine = combine,
@@ -1151,7 +1185,10 @@ prepareDataForTraining <- function(
   } else {
     counts <- assay(bulk.sim(object)[[type.data]])
   }
-  if (combine) {
+  if (type.data == "test") {
+    combine <- "both"
+  }
+  if (combine == "both") {
     counts <- cbind(
       assay(object@single.cell.sim)[, unlist(object@prob.cell.types[[type.data]]@set.list)],
       counts
@@ -1178,10 +1215,27 @@ prepareDataForTraining <- function(
     rownames(tpsm) <- unlist(object@prob.cell.types[[type.data]]@set.list)
     probs.matrix <- rbind(tpsm, object@prob.cell.types[[type.data]]@prob.matrix)/100
     rownames(probs.matrix) <- c(rownames(tpsm), colData(object@bulk.sim[[type.data]])[[1]])
-  } else {
+  } else if (combine == "bulk") {
     gene.list <- rowData(bulk.sim(object)[[type.data]])[[1]]
     sample.names <- colData(object@bulk.sim[[type.data]])[[1]]
     probs.matrix <- object@prob.cell.types[[type.data]]@prob.matrix/100
+  } else if (combine == "single-cell") {
+    gene.list <- rownames(assay(object@single.cell.sim))
+    colnames(assay(object@single.cell.sim)[,unlist(
+      object@prob.cell.types[[type.data]]@set.list
+    )])
+    probs.matrix <- matrix(unlist(sapply(
+      X = names(object@prob.cell.types[[type.data]]@set.list),
+      FUN = function (x, l) {
+        v <- rep(0,length(l))
+        names(v) <- names(l)
+        v[x] <- 100
+        return(rep(v, length(l[[x]])))
+      }, l = object@prob.cell.types[[type.data]]@set.list
+    )), ncol = length(object@prob.cell.types[[type.data]]@set.list), byrow = T)
+    colnames(probs.matrix) <- names(object@prob.cell.types[[type.data]]@set.list)
+    probs.matrix <- probs.matrix[, colnames(object@prob.cell.types[[type.data]]@prob.matrix)]
+    rownames(probs.matrix) <- unlist(object@prob.cell.types[[type.data]]@set.list)
   }
   # rownames(assay(DDLSChung.1@bulk.sim$train)) <- gene.list
   # cpms

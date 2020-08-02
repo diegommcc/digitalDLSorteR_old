@@ -189,7 +189,7 @@ trainDigitalDLSorterModel <- function(
   }
 
   if (verbose) {
-    message(paste0("\n=== Evaluating DNN with test data (", n.test, " samples)"))
+    message(paste0("\n=== Evaluating DNN in test data (", n.test, " samples)"))
   }
   ## evaluation of the model: set by default, no options?
   test.generator <- .trainGenerator(object = object,

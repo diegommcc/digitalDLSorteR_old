@@ -11,6 +11,42 @@ color.list <- c(RColorBrewer::brewer.pal(12, "Paired"),
                 "#333333", "#5D5D5D",
                 "#888888", "#B3B3B3")
 
+
+#' Calculate evaluation metrics for predicted cell types in test data.
+#'
+#' Calculate evaluation metrics for predicted cell types in test data in order
+#' to know the performance of the model. By default, absolute error (AbsErr),
+#' proportional absolute error (ppAbsErr), squared error (SqrErr) and
+#' proportional squared error (ppSqrErr) are calculated for each cell type in
+#' each test sample. Moreover, each one of these metrics are aggregated using
+#' mean by four criteria: each test sample (\code{Sample}), each cell type
+#' (\code{CellType}), probability bins by 0.1 (\code{pBin}), number of different
+#' cell types present in the sample \code{nMix} and a combination of pBin and
+#' nMix (\code{pBinNMix}). Finally, the process is repeated only for bulk
+#' samples, removing single-cell profiles.
+#'
+#' Evaluation metrics are available in \code{eval.stats.samples} slot of
+#' \code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
+#' object).
+#'
+#' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
+#' \code{prob.cell.types} slots.
+#' @param metrics Metrics used for evaluating the performance of the model. Mean
+#' absolute error (MAE) and mean squared error (MSE) by default.
+#'
+#' @return A DigitalDLSorter object with \code{trained.model} slot containing a
+#' \code{DigitalDLSorterDNN} object with \code{eval.stats.samples} slot.
+#'
+#' @export
+#'
+#' @seealso \code{\link{violinError}} \code{\link{corrExpPredPlot}}
+#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'
+#' @examples
+#' DDLSChung <- calculateEvalMetrics(
+#'   object = DDLSChung
+#' )
+#'
 calculateEvalMetrics <- function(
   object,
   metrics = c("MAE", "MSE")
@@ -59,7 +95,9 @@ calculateEvalMetrics <- function(
   eval.stats <- lapply(use.met, function(x) .calculateMetrics(mat = amd, err = x))
   eval.stats.f <- lapply(use.met, function(x) .calculateMetrics(mat = amdf, err = x))
   ## update object
-  trained.model(object)@eval.stats.samples <- list(amd, eval.stats, eval.stats.f)
+  trained.model(object)@eval.stats.samples <- list(raw = amd,
+                                                   allData = eval.stats,
+                                                   filData = eval.stats.f)
 
   return(object)
 }
@@ -73,12 +111,8 @@ calculateEvalMetrics <- function(
 .AbsErr <- function(x) abs(x$Prob - x$Pred)
 ## proportional absolute error
 .ppAbsErr <- function(x) x$AbsErr / x$pBin
-
+## standard error
 se <- function(x) sqrt(var(x)/length(x))
-# res1 <- aggregate(amd[["AbsErr"]], FUN = sd, by = list(by = amd[["CellType"]]))
-# res2 <- aggregate(amd[["AbsErr"]], FUN = se, by = list(by = amd[["CellType"]]))
-# Reduce(function(x,y) merge(x = x, y = y, by = by),
-#        list(mean.res, sd.res, se.red))
 
 ## mean error by
 .meanErr <- function(x, err, by, name) {
@@ -149,6 +183,50 @@ se <- function(x) sqrt(var(x)/length(x))
 }
 
 ## error: AbsErr, ppAbsErr, SqrErr, ppSqrErr
+
+#' Generate violin plot showing how errors are distributed.
+#'
+#' Generate violin plot showing how errors are distributed. There are different
+#' possibilities of showing the results. See examples for more information.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
+#' containing metrics in \code{eval.stats.samples} slot.
+#' @param error Which error is going to represent. The available errors are
+#' absolute error (\code{"AbsErr"}), proportional absolute error
+#' (\code{"ppAbsErr"}), squared error (\code{"SqrErr"}) or proportional
+#' squared error (\code{"ppSqrErr"}).
+#' @param x.by Variable used for x axis. When \code{facet.by} is not \code{NULL},
+#' the best option is \code{pBin} (probability bin). The options
+#' are \code{nMix} (by number of different cell types), \code{CellType}
+#' (by cell type) and \code{pBin}.
+#' @param facet.by Variable used for showing data in different panels. If it is
+#' \code{NULL}, the plot is not separated into different panels. The options
+#' are \code{nMix} (by number of different cell types) and \code{CellType}
+#' (by cell type).
+#' @param color.by Variable used to color data. The options
+#' are \code{nMix} (by number of different cell types) and \code{CellType}
+#' (by cell type).
+#' @param filter.sc Filter prediction errors of single-cell profiles. If
+#' \code{TRUE}, (by default) only will be shown predition errors of bulk samples.
+#' @param colors Vector of colors to use. Only vectors with a number of colors
+#' equal to or greater than the levels of \code{color.by} will be accepted.
+#' By default is used a list of custom colors provided by us.
+#' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
+#' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param title Title of the plot.
+#'
+#' @export
+#'
+#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
+#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'
+#' @examples
+#' DDLSChung <- violinError(
+#'   object = DDLSChung,
+#'
+#' )
+#'
 violinError <- function(
   object,
   error = "AbsErr",
@@ -213,13 +291,44 @@ violinError <- function(
   return(plot)
 }
 
-
+#' Generate correlation plot between predicted and expected cell type
+#' proportions.
+#'
+#' Generate correlation plot between predicted and expected cell type
+#' proportions.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
+#' containing metrics in \code{eval.stats.samples} slot.
+#' @param facet.by Variable used for showing data in different panels. If it is
+#' \code{NULL}, the plot is not separated into different panels. The options
+#' are \code{nMix} (by number of different cell types) and \code{CellType}
+#' (by cell type).
+#' @param color.by Variable used to color data. The options
+#' are \code{nMix} (by number of different cell types) and \code{CellType}
+#' (by cell type).
+#' @param colors
+#' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
+#' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param title Title of the plot.
+#'
+#' @export
+#'
+#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
+#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'
+#' @examples
+#' DDLSChung <- violinError(
+#'   object = DDLSChung,
+#'
+#' )
+#'
 corrExpPredPlot <- function(
   object,
   facet.by,
   color.by,
   colors = color.list,
-  filter.sc = FALSE,
+  filter.sc = TRUE,
   ncol = NULL,
   nrow = NULL,
   title = NULL
