@@ -119,7 +119,8 @@ evaluate the results quickly by a barplot, you can use the function
 barPlotCellTypes(
   deconvResults, 
   rm.x.text = TRUE,
-  title = "Results of deconvolution over colorectal samples"
+  title = "Results of deconvolution over colorectal samples", 
+  colors = color.list
 )
 ```
 
@@ -130,7 +131,7 @@ subset of 20 samples to improve the visualization:
 deconvResSubset <- head(deconvResults, n = 20)
 barPlotCellTypes(
   deconvResSubset, 
-  color.line = "black", 
+  color.line = "black",
   title = "Results of deconvolution over colorectal samples (first 20 samples)"
 )
 ```

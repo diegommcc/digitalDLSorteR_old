@@ -66,7 +66,7 @@ showProbPlot <- function(
 
 .barPlot <- function(
   data,
-  colors = NULL,
+  colors = color.list,
   color.line = NA,
   x.label = "Bulk samples",
   rm.x.text = FALSE,
@@ -77,10 +77,10 @@ showProbPlot <- function(
   df.res <- reshape2::melt(data * 100, value.name = "Proportion")
 
   p <- ggplot(data = df.res, aes(x = Var1, y = Proportion, fill = Var2)) +
-    geom_bar(stat = "identity", color = color.line) +  theme_classic()
+    geom_bar(stat = "identity", color = color.line) + theme_classic()
   if (!is.null(colors)) {
-    if (length(colors) != length(unique(df.res$Var2)))
-      stop("Number of colors introduced is not equal to the number of cell types")
+    if (length(colors) < length(unique(df.res$Var2)))
+      stop("Number of colors introduced is not enough to the number of cell types")
     p <- p + scale_fill_manual(values = colors)
   }
   if (is.null(x.label)) {
