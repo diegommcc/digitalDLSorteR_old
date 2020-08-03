@@ -27,6 +27,7 @@ Imports:
     edgeR,
     keras,
     ggplot2,
+    ggpubr,
     RColorBrewer
 Suggests:
     BiocStyle,

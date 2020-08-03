@@ -22,7 +22,7 @@ contains a R6 \code{keras.engine.sequential.Sequential} object with the}
 \item{\code{training.history}}{List with the evolution of the selected metrics during
 training.}
 
-\item{\code{eval.stats.model}}{Results of the selected metrics on test data.}
+\item{\code{eval.stats.model}}{Performance of the model on test data.}
 
 \item{\code{predict.results}}{Matrix with the deconvolution results on test data.
 Columns are cell types, rows are samples and each entry is the proportion of
@@ -32,5 +32,9 @@ this cell type on this sample.}
 
 \item{\code{features}}{Vector with features used during training. These features will be
 used for the folloring predictions.}
+
+\item{\code{eval.stats.samples}}{Performance of the model over each sample that
+compose test data. Each sample is compared with the expected proportion
+of each cell type.}
 }}
 

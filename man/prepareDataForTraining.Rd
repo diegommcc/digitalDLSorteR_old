@@ -7,7 +7,7 @@
 prepareDataForTraining(
   object,
   type.data,
-  combine = TRUE,
+  combine = "both",
   file.backend = NULL,
   verbose = TRUE
 )
@@ -18,6 +18,9 @@ prepareDataForTraining(
 
 \item{type.data}{Type of data to generate among 'train', 'test' or 'both'
 (the last by default).}
+
+\item{combine}{Character determining if combine training data. Can be 'both',
+'bulk' or 'single-cell' ('both' by default). Note that test data is always combined.}
 
 \item{file.backend}{Valid file path where to save the HDF5 file used as backend.
 If it is equal to \code{NULL} (by default), the data are produced and loaded in memory.}
@@ -61,6 +64,7 @@ DDLSChung <- prepareDataForTraining(
 DDLSChung <- prepareDataForTraining(
   object = DDLSChung,
   type.data = "both",
+  combine = "both",
   file.backend = "DDLSChung.final.data.combined.h5",
   verbose = TRUE
 )

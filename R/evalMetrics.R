@@ -1,6 +1,7 @@
-#' @importFrom dplyr mutate as_tibble left_join inner_join
+#' @importFrom dplyr mutate as_tibble left_join inner_join filter
 #' @importFrom tidyr gather
 #' @importFrom RColorBrewer brewer.pal
+#' @importFrom ggpubr stat_cor
 NULL
 
 
@@ -91,7 +92,7 @@ calculateEvalMetrics <- function(
 
   ## calculate stats
   amd <- .updateAMD(amd = amd, use.met = use.met)
-  amdf <- amd %>% filter(Prob > 0 & Prob < 1)
+  amdf <- amd %>% filter(amd$Prob > 0 & amd$Prob < 1)
   eval.stats <- lapply(use.met, function(x) .calculateMetrics(mat = amd, err = x))
   eval.stats.f <- lapply(use.met, function(x) .calculateMetrics(mat = amdf, err = x))
   ## update object
@@ -184,7 +185,7 @@ se <- function(x) sqrt(var(x)/length(x))
 
 ## error: AbsErr, ppAbsErr, SqrErr, ppSqrErr
 
-#' Generate violin plot showing how errors are distributed.
+#' Generate boxplot or violin plot showing how errors are distributed.
 #'
 #' Generate violin plot showing how errors are distributed. There are different
 #' possibilities of showing the results. See examples for more information.
@@ -215,6 +216,7 @@ se <- function(x) sqrt(var(x)/length(x))
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
 #' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
 #' @param title Title of the plot.
+#' @param theme Ggplot theme.
 #'
 #' @export
 #'
@@ -227,18 +229,20 @@ se <- function(x) sqrt(var(x)/length(x))
 #'
 #' )
 #'
-violinError <- function(
+plotDistError <- function(
   object,
   error = "AbsErr",
   x.by = "pBin",
   facet.by = "nMix",
   color.by = "nMix",
   filter.sc = TRUE,
+  type = "violinplot",
   colors = color.list,
   ylimit = NULL,
   nrow = NULL,
   ncol = NULL,
-  title = NULL
+  title = NULL,
+  theme = theme_grey()
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -255,6 +259,8 @@ violinError <- function(
     stop("'color.by' provided is not valid. Options available are: nMix, CellType")
   } else if (!x.by %in% c("nMix", "CellType", "pBin")) {
     stop("'x.by' provided is not valid. Options available are: nMix, CellType, pBin")
+  } else if (!type %in% c("violinplot", "boxplot")) {
+    stop("'type' provided is not valid. Options available are: violinplot, boxplot")
   }
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
@@ -264,10 +270,11 @@ violinError <- function(
     stop("Colors provided are not enought") ## generador de colores
   }
   if (is.null(title))
-    title.plot <- paste(error, "by Probability Bin")
+    title.plot <- paste(error, "by", x.by)
   else
     title.plot <- title
-  plot <- ggplot(amd, aes(x = factor(.data[[x.by]]), y = .data[[error]]))
+  plot <- ggplot(amd, aes(x = factor(.data[[x.by]]), y = .data[[error]])) +
+    theme
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
       stop("'facet.by' provided is not valid. Options available are: nMix, ",
@@ -277,15 +284,18 @@ violinError <- function(
                               nrow = nrow, ncol = ncol)
   }
   plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
-                            position = "jitter") +
-    geom_violin(trim = TRUE, scale = "width", fill = NA) +
-    scale_color_manual(values = colors, name = color.by) +
-    ggtitle(title.plot) + xlab("Probability") +  ylab(error) +
-    # facet_wrap(as.formula(paste("~", facet.by)), nrow = nrow, ncol = ncol) +
-    guides(colour = guide_legend(override.aes = list(size = 1.5))) +
-    theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
-          plot.title = element_text(face = "bold", hjust = 0.5),
-          legend.title = element_text(face = "bold"))
+                            position = "jitter")
+  if (type == "violinplot")
+    plot <- plot + geom_violin(trim = TRUE, scale = "width", fill = NA)
+  else if (type == "boxplot")
+    plot <- plot + geom_boxplot(fill = NA, outlier.shape = NA)
+  plot <- plot + scale_color_manual(values = colors, name = color.by) +
+  ggtitle(title.plot) + xlab(x.by) +  ylab(error) +
+  # facet_wrap(as.formula(paste("~", facet.by)), nrow = nrow, ncol = ncol) +
+  guides(colour = guide_legend(override.aes = list(size = 1.5))) +
+  theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+        plot.title = element_text(face = "bold", hjust = 0.5),
+        legend.title = element_text(face = "bold"))
   if (!is.null(ylimit)) plot <- plot + ylim(0, ylimit)
 
   return(plot)
@@ -306,7 +316,7 @@ violinError <- function(
 #' @param color.by Variable used to color data. The options
 #' are \code{nMix} (by number of different cell types) and \code{CellType}
 #' (by cell type).
-#' @param colors
+#' @param colors Vector with colors for the plot.
 #' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
 #' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
@@ -331,7 +341,8 @@ corrExpPredPlot <- function(
   filter.sc = TRUE,
   ncol = NULL,
   nrow = NULL,
-  title = NULL
+  title = NULL,
+  theme = theme_grey()
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -356,7 +367,7 @@ corrExpPredPlot <- function(
   else
     title.plot <- title
 
-  plot <- ggplot(amd, aes(x = Prob, y = Pred))
+  plot <- ggplot(amd, aes(x = Prob, y = Pred)) + theme
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
       stop("'facet.by' provided is not valid. Options available are: nMix, ",
@@ -364,6 +375,9 @@ corrExpPredPlot <- function(
     }
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
                               nrow = nrow, ncol = ncol)
+    size.ann <- 3
+  } else {
+    size.ann <- 4
   }
   plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
                             position = "jitter") +
@@ -373,7 +387,7 @@ corrExpPredPlot <- function(
     scale_y_continuous(labels = c(0, 0.25, 0.5, 0.75, 1)) +
     ggtitle(title.plot) + xlab("Expected") + ylab("Predicted") +
     stat_smooth(method = "lm", colour = "darkblue", alpha = 0.8, size = 0.8) +
-    stat_cor(method = "pearson", label.x = 0.01, label.y = 0.95, size = 3) +
+    stat_cor(method = "pearson", label.x = 0.01, label.y = 0.92, size = size.ann) +
     guides(colour = guide_legend(override.aes = list(size = 1.5))) +
     theme(plot.title = element_text(face = "bold", hjust = 0.5),
           legend.title = element_text(face = "bold"))
@@ -392,7 +406,8 @@ blandAltmanLehPlot <- function(
   density = TRUE,
   ncol = NULL,
   nrow = NULL,
-  title = NULL
+  title = NULL,
+  theme = theme_grey()
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -432,7 +447,7 @@ blandAltmanLehPlot <- function(
     title.plot <- title
 
   plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = amd[[color.by]])) +
-    geom_point(size = 0.05) +
+    theme + geom_point(size = 0.05) +
     scale_color_manual(values = color.list, name = color.by) +
     scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
@@ -461,7 +476,8 @@ barErrorPlot <- function(
   filter.sc = TRUE,
   colors = color.list,
   title = NULL,
-  angle = 90
+  angle = 90,
+  theme = theme_grey()
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -474,8 +490,7 @@ barErrorPlot <- function(
   } else if (!by %in% c("nMix", "CellType")) {
     stop("'by' provided is not valid. Options available are: nMix, CellType")
   } else if (!error %in% c("MAE", "MSE")) {
-    stop("Error provided is not valid. Errors available are: AbsErr, ",
-         "ppAbsErr, SqrErr, ppSqrErr")
+    stop("Error provided is not valid. Errors available are: MAE, MSE")
   } else if (!dispersion %in% c("se", "sd")) {
     stop("Dispersion provided is not valid. Options available are: sd (standard",
          " deviation) or se (standard error)")
@@ -496,7 +511,7 @@ barErrorPlot <- function(
                            y = .data[[err.mean]],
                            ymin = .data[[err.mean]] - .data[[err.dis]],
                            ymax = .data[[err.mean]] + .data[[err.dis]])) +
-    geom_errorbar(width = 0.2) + geom_point(size = 1.5) +
+    theme + geom_errorbar(width = 0.2) + geom_point(size = 1.5) +
     xlab(by) + ylab(error) + ggtitle(title.plot) +
     theme(axis.text.x = element_text(size = 8, angle = angle, hjust = 1, vjust = 0.5),
           plot.title = element_text(face = "bold", hjust = 0.5),
