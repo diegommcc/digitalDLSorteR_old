@@ -783,6 +783,8 @@ setMethod("saveRDS", "DigitalDLSorter", definition = function(
   )
 })
 
+## falta documentación
+
 setGeneric("barPlotCellTypes", function(
   data,
   colors = NULL,

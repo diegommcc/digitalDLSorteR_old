@@ -2,6 +2,11 @@
 NULL
 
 
+################################################################################
+######################## GENERATE PROBABILITY MATRIX ########################
+################################################################################
+
+
 #' Generate training and test bulk probability matrices.
 #'
 #' Generate training and test bulk probability matrices for the simulation of bulk
@@ -707,6 +712,10 @@ generateTrainAndTestBulkProbMatrix <- function(
 }
 
 
+################################################################################
+######################## GENERATE BULK RNA-SEQ SAMPLES ########################
+################################################################################
+
 #' Generate training and test simulated bulk samples.
 #'
 #' Generate training and test bulk samples using the probability matrices
@@ -907,7 +916,9 @@ setBulks <- function (x, c, i) {
     colData = colnames.bulk))
 }
 
-## prepareDataForTraining function ---------------------------------
+################################################################################
+######################## PREPARE DATA FOR TRAINING ########################
+################################################################################
 
 #' Generate training and test final data for training DNN model.
 #'
@@ -1134,8 +1145,8 @@ prepareDataForTraining <- function(
   }
   # rownames(assay(DDLSChung.1@bulk.sim$train)) <- gene.list
   ## problema: como en este punto no permiten los dinnames, no puedo hacer subset
-  # por el nombre de los genes. De momento voy a continuar sin hacer subset, pero
-  # lo mejor va a ser pasarse a R 4.0. Mirar el entorno de conda.
+  # por el nombre de los genes. De momento voy a continuar sin hacer subset,
+  # pero hay que hacerlo para ordenar los genes y que no haya problema
 
   ## scale counts matrix
   # cpms

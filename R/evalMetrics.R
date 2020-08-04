@@ -291,7 +291,6 @@ plotDistError <- function(
     plot <- plot + geom_boxplot(fill = NA, outlier.shape = NA)
   plot <- plot + scale_color_manual(values = colors, name = color.by) +
   ggtitle(title.plot) + xlab(x.by) +  ylab(error) +
-  # facet_wrap(as.formula(paste("~", facet.by)), nrow = nrow, ncol = ncol) +
   guides(colour = guide_legend(override.aes = list(size = 1.5))) +
   theme(axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
         plot.title = element_text(face = "bold", hjust = 0.5),
