@@ -73,6 +73,7 @@ trainDigitalDLSorterModel <- function(
   loss = "kullback_leibler_divergence",
   metrics = c("accuracy", "mean_absolute_error",
               "categorical_accuracy"),
+  simplify = NULL,
   view.metrics.plot = TRUE,
   verbose = TRUE
 ) {
@@ -584,8 +585,6 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #' colon cancer ('colon') environments.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
-#' @param transpose Transpose data for set features (genes) as columns and
-#' samples as rows. \code{TRUE} by default.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
 #' @param verbose Show messages during the execution.
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
@@ -613,8 +612,8 @@ deconvDigitalDLSorter <- function(
   data,
   model = "breast",
   batch.size = 128,
-  transpose = FALSE,
   normalize = FALSE,
+  simplify = NULL,
   verbose = TRUE
 ) {
   if (!is.matrix(data) && !is.data.frame(data)) {
@@ -635,10 +634,17 @@ deconvDigitalDLSorter <- function(
     deconv.counts = data,
     model = model.dnn,
     batch.size = batch.size,
-    transpose = transpose,
     normalize = normalize,
     verbose = verbose
   )
+  if (!is.null(simplify)) {
+    index <- which(colnames(results) %in% simplify)
+    results.sim <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
+    object@deconv.results[[name.data]] <- list(raw = results, sim = results.sim)
+  } else {
+    object@deconv.results[[name.data]] <- results
+  }
+
   return(results)
 }
 
@@ -661,8 +667,6 @@ deconvDigitalDLSorter <- function(
 #' it is not provided, the first dataset will be used.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
-#' @param transpose Transpose data for set features (genes) as columns and
-#' samples as rows. \code{TRUE} by default.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
 #' @param verbose Show messages during the execution.
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
@@ -689,8 +693,8 @@ deconvDigitalDLSorterObj <- function(
   object,
   name.data,
   batch.size = 128,
-  transpose = FALSE,
   normalize = FALSE,
+  simplify = NULL,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
@@ -699,6 +703,8 @@ deconvDigitalDLSorterObj <- function(
     stop("There is not trained model in DigitalDLSorter object")
   } else if (batch.size <= 10) {
     stop("'batch.size' argument must be greater than or equal to 10")
+  } else if (!name.data %in% names(deconv.data(object))) {
+    stop("'name.data' provided is not present in object")
   }
 
   ## check if model is json format or compiled
@@ -719,8 +725,9 @@ deconvDigitalDLSorterObj <- function(
   ## access to data from object. Todo esto lo implemento en una función interna
   if (missing(name.data)) {
     message("   No name.data provided. Using the first dataset\n")
-    name.data <- 1
+    index <- 1
   }
+
   deconv.counts <- assay(object@deconv.data[[name.data]])
 
   ## deconvolution
@@ -728,21 +735,34 @@ deconvDigitalDLSorterObj <- function(
     deconv.counts = deconv.counts,
     model = trained.model(object),
     batch.size = batch.size,
-    transpose = transpose,
     normalize = normalize,
     verbose = verbose
   )
-  object@deconv.results[[name.data]] <- results
+
+  if (!is.null(simplify)) {
+    index <- which(colnames(results) %in% simplify)
+    results.sim <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
+    object@deconv.results[[name.data]] <- list(raw = results, sim = results.sim)
+  } else {
+    object@deconv.results[[name.data]] <- results
+  }
 
   return(object)
 }
 
 
+.simplifyMajority <- function(vec, index) {
+  maxim <- which.max(vec[index])
+  summ <- sum(vec[index])
+  vec[index[-maxim]] <- 0
+  vec[index[maxim]] <- summ
+  return(vec)
+}
+
 .deconvCore <- function(
   deconv.counts,
   model,
   batch.size,
-  transpose,
   normalize,
   verbose
 ) {

@@ -554,7 +554,7 @@ setMethod(f = "deconv.data",
           definition = function(object, name.data) {
             if (is.null(name.data)) object@deconv.data
             else {
-              if (!name.data %in% name(object@deconv.data)) {
+              if (!name.data %in% names(object@deconv.data)) {
                 stop("name.data provided does not exists in deconv.data slot")
               }
               return(object@deconv.data[[name.data]])
@@ -571,7 +571,7 @@ setMethod(f = "deconv.data<-",
           definition = function(object, value, name.data) {
             if (is.null(name.data)) object@deconv.data <- value
             else {
-              if (!name.data %in% name(object@deconv.data)) {
+              if (!name.data %in% names(object@deconv.data)) {
                 stop("name.data provided does not exists in deconv.data slot")
               }
               object@deconv.data[[name.data]] <- value
@@ -597,7 +597,7 @@ setMethod(f = "deconv.results",
           definition = function(object, name.data) {
             if (is.null(name.data)) object@deconv.results
             else {
-              if (!name.data %in% name(object@deconv.results)) {
+              if (!name.data %in% names(object@deconv.results)) {
                 stop("name.data provided does not exists in deconv.results slot")
               }
               return(object@deconv.results[[name.data]])
@@ -614,7 +614,7 @@ setMethod(f = "deconv.results<-",
           definition = function(object, value, name.data) {
             if (is.null(name.data)) object@deconv.results <- value
             else {
-              if (!name.data %in% name(object@deconv.results)) {
+              if (!name.data %in% names(object@deconv.results)) {
                 stop("name.data provided does not exists in deconv.results slot")
               }
               object@deconv.results[[name.data]] <- value
@@ -804,6 +804,7 @@ setMethod(f = "barPlotCellTypes",
           definition = function(
             data,
             name.data = NULL,
+            simplified = FALSE,
             colors = NULL,
             color.line = NA,
             x.label = "Bulk samples",
@@ -815,11 +816,25 @@ setMethod(f = "barPlotCellTypes",
             if (is.null(deconv.results(data))) {
               stop("There is not results to show")
             } else if (is.null(name.data)) {
-              message("'name.data' not provided. By default, is catch the first results")
-              name.data
+              message("'name.data' not provided. By default, the first results are taken")
+              name.data <- 1
             }
+            if (simplified) {
+              if (!is(deconv.results(data)[[name.data]], "list")) {
+                stop("No simplified results available")
+              } else {
+                res <- deconv.results(data)[[name.data]][[2]]
+              }
+            } else {
+              if (is(deconv.results(data)[[name.data]], "list")) {
+                res <- deconv.results(data)[[name.data]][[1]]
+              } else {
+                res <- deconv.results(data)[[name.data]]
+              }
+            }
+
             plot <- .barPlot(
-              data = deconv.results(data)[[name.data]],
+              data = res,
               colors = colors,
               color.line = color.line,
               x.label = x.label,

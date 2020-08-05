@@ -50,7 +50,8 @@ color.list <- c(RColorBrewer::brewer.pal(12, "Paired"),
 #'
 calculateEvalMetrics <- function(
   object,
-  metrics = c("MAE", "MSE")
+  metrics = c("MAE", "MSE"),
+  simplify = NULL
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -72,6 +73,21 @@ calculateEvalMetrics <- function(
   ## extract information
   testProbsDeconv <- final.data(object, "test")@metadata[[1]]
   predictionsDeconv <- trained.model(object)@predict.results
+  if (!is.null(simplify)) {
+    if (!any(simplify %in% colnames(testProbsDeconv))) {
+      stop("Cell types provided are not in prediction matrices")
+    }
+    index <- which(colnames(testProbsDeconv) %in% simplify)
+    .filf <- function(ma, index) {
+      ma <- t(apply(ma, FUN = .sumMajority, MARGIN = 1, index = index))
+      ma[, colSums(ma) == 0] <- NULL
+      return(ma)
+    }
+    res <- lapply(X = list(testProbsDeconv, predictionsDeconv), FUN = .filf, index = index)
+    testProbsDeconv <- res[[1]]
+    predictionsDeconv <- res[[2]]
+  }
+
   ## results test
   tmd <- as_tibble(x = testProbsDeconv)
   tmd <- mutate(tmd, Sample = rownames(testProbsDeconv),
@@ -183,6 +199,29 @@ se <- function(x) sqrt(var(x)/length(x))
   return(amd)
 }
 
+.labelsErrorFacet <- function(object, error, facet.by, filter.sc) {
+  if (error %in% c("AbsErr", "ppAbsErr")) {
+    info <- trained.model(object)@eval.stats.samples[[2]]$MAE[[facet.by]]
+    if (error == "AbsErr")
+      info <- info[, c(facet.by, "MAE.mean")]
+    else if (error == "ppAbsErr")
+      info <- info[, c(facet.by, "ppMAE.mean")]
+  } else if (error %in% c("SqrErr", "ppSqrErr")) {
+    info <- trained.model(object)@eval.stats.samples[[2]]$MSE[[facet.by]]
+    if (error == "SqrErr")
+      info <- info[, c(facet.by, "MSE.mean")]
+    else if (error == "ppSqrErr")
+      info <- info[, c(facet.by, "ppMSE.mean")]
+  }
+  info[, 2] <- paste0("M", error, " = ", round(info[, 2], 3))
+  colnames(info) <- c(facet.by, error)
+  if (facet.by == "nMix" && filter.sc) {
+    info <- info[!info[[facet.by]] == 1, ]
+  }
+  return(info)
+}
+
+
 ## error: AbsErr, ppAbsErr, SqrErr, ppSqrErr
 
 #' Generate boxplot or violin plot showing how errors are distributed.
@@ -236,6 +275,9 @@ plotDistError <- function(
   facet.by = "nMix",
   color.by = "nMix",
   filter.sc = TRUE,
+  error.labels = FALSE,
+  pos.x.label = 4.6,
+  pos.y.label = 1,
   type = "violinplot",
   colors = color.list,
   ylimit = NULL,
@@ -282,6 +324,26 @@ plotDistError <- function(
     }
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
                               nrow = nrow, ncol = ncol)
+    if (error.labels) {
+      labels <- .labelsErrorFacet(object, error, facet.by, filter.sc)
+      plot <- plot + geom_text(x = pos.x.label, y = pos.y.label,
+                               aes(label = .data[[error]]),
+                               data = labels, size = 3)
+    }
+  } else {
+    if (error.labels) {
+      if (x.by == "nMix") {
+        pos.x.label <- levels(factor(amd[[x.by]]))[1]
+      } else if (x.by == "CellType") {
+        pos.x.label <- unique(amd[[x.by]])[1]
+      }
+      plot <- plot + annotate(
+        "text",
+        x = pos.x.label,
+        y = pos.y.label,
+        label = paste0("M", error, " = ", round(mean(amd[[error]]), 3))
+      )
+    }
   }
   plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
                             position = "jitter")
@@ -298,6 +360,26 @@ plotDistError <- function(
   if (!is.null(ylimit)) plot <- plot + ylim(0, ylimit)
 
   return(plot)
+}
+
+
+.labelsCCCFacet <- function(object, facet.by, filter.sc) {
+  unique.facet <- levels(factor(amd[[facet.by]]))
+  df <- data.frame(
+    unique.facet,
+    sapply(
+      X = unique.facet,
+      FUN = function(x) {
+        amd.fil <- amd[amd[[facet.by]] == x, c("Prob", "Pred")]
+        ccc <- yardstick::ccc(amd.fil, Prob, Pred)$.estimate
+        return(paste("CCC =", round(ccc, 3)))
+      }
+    ))
+  colnames(df) <- c(facet.by, "ccc")
+  if (facet.by == "nMix" && filter.sc) {
+    df <- df[!df[[facet.by]] == 1, ]
+  }
+  return(df)
 }
 
 #' Generate correlation plot between predicted and expected cell type
@@ -335,9 +417,12 @@ plotDistError <- function(
 corrExpPredPlot <- function(
   object,
   facet.by,
+  corr = "pearson",
   color.by,
   colors = color.list,
   filter.sc = TRUE,
+  pos.x.label = 0.01,
+  pos.y.label = 0.92,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -367,17 +452,6 @@ corrExpPredPlot <- function(
     title.plot <- title
 
   plot <- ggplot(amd, aes(x = Prob, y = Pred)) + theme
-  if (!is.null(facet.by)) {
-    if (!facet.by %in% c("nMix", "CellType")) {
-      stop("'facet.by' provided is not valid. Options available are: nMix, ",
-           "CellType or NULL")
-    }
-    plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
-                              nrow = nrow, ncol = ncol)
-    size.ann <- 3
-  } else {
-    size.ann <- 4
-  }
   plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
                             position = "jitter") +
     geom_abline(linetype = "dashed", colour = "gray40") +
@@ -386,11 +460,47 @@ corrExpPredPlot <- function(
     scale_y_continuous(labels = c(0, 0.25, 0.5, 0.75, 1)) +
     ggtitle(title.plot) + xlab("Expected") + ylab("Predicted") +
     stat_smooth(method = "lm", colour = "darkblue", alpha = 0.8, size = 0.8) +
-    stat_cor(method = "pearson", label.x = 0.01, label.y = 0.92, size = size.ann) +
     guides(colour = guide_legend(override.aes = list(size = 1.5))) +
     theme(plot.title = element_text(face = "bold", hjust = 0.5),
           legend.title = element_text(face = "bold"))
-
+  if (!is.null(facet.by)) {
+    if (!facet.by %in% c("nMix", "CellType")) {
+      stop("'facet.by' provided is not valid. Options available are: nMix, ",
+           "CellType or NULL")
+    }
+    plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
+                              nrow = nrow, ncol = ncol)
+    size.ann <- 3
+    if (corr == "ccc") {
+      labels <- .labelsCCCFacet(amd, facet.by, filter.sc)
+      plot <- plot + geom_text(x = pos.x.label, y = pos.y.label,
+                               aes(label = .data[["ccc"]]),
+                               data = labels,
+                               size = size.ann)
+    } else {
+      plot <- plot + stat_cor(method = "pearson",
+                              label.x = pos.x.label,
+                              label.y = pos.y.label,
+                              size = size.ann)
+    }
+  } else {
+    size.ann <- 4
+    if (corr == "ccc") {
+      label <- yardstick::ccc(amd, Prob, Pred)$.estimate
+      plot <- plot + annotate(
+        "text",
+        x = pos.x.label,
+        y = pos.y.label,
+        label = paste0("CCC = ", round(label, 3)),
+        size = size.ann
+      )
+    } else {
+      plot <- plot + stat_cor(method = "pearson",
+                              label.x = pos.x.label,
+                              label.y = pos.y.label,
+                              size = size.ann)
+    }
+  }
   return(plot)
 }
 

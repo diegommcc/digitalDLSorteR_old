@@ -116,6 +116,8 @@ generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
   prob.design,
+  probs.data.train = c(150, 250, 150, 200, 9500, 250),
+  probs.data.test = c(1150, 1700, 150, 150, 3000, 1000),
   train.freq = 2/3,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
@@ -177,9 +179,10 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   ## proportions of different set of samples
-  nums.train <- c(1000, 3000, 500, 1000, 3000, 2000)
-  nums.test <- c(700, 2000, 300, 700, 2000, 1400)
-
+  # nums.train <- c(1000, 3000, 500, 1000, 3000, 2000)
+  # nums.test <- c(700, 2000, 300, 700, 2000, 1400)
+  nums.train <- probs.data.train
+  nums.test <- probs.data.test
   ## set new s.cells if num.bulk.samples is provided
   s.cells <- dim(list.data[[1]])[2]
   if (!is.null(num.bulk.samples)) {
@@ -192,7 +195,6 @@ generateTrainAndTestBulkProbMatrix <- function(
                                 function(x) sum(ceiling(x * s.cells / 1000))))
     diff.samples <- num.bulk.samples - total.samples
     if (diff.samples < 0) {
-      rm.samples <-
       nums.test[3] <- 300 - (abs(diff.samples) * 1000) / s.cells
     } else if (diff.samples > 0) {
       nums.train[5] <- 3000 + (abs(diff.samples) * 1000) / s.cells
@@ -247,7 +249,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     } else if (!all(exclusive.types %in% unique(list.data[[2]][, cell.type.column]))) {
       stop("Cell types present in exclusive.types argument must be present in cells.metadata")
     }
-    message("=== Setting the next exclusive cell types: ",
+    message("=== Setting the next exclusive cell types (test data): ",
             paste(exclusive.types, collapse = ", "), "\n")
     index.ex <- match(exclusive.types, names(prob.list))
   } else {
@@ -275,7 +277,7 @@ generateTrainAndTestBulkProbMatrix <- function(
                        num = nums.train[n],
                        s.cells = s.cells,
                        n.cell.types = n.cell.types,
-                       index.ex = index.ex)
+                       index.ex = NULL)
     train.prob.matrix <- rbind(train.prob.matrix, train.probs)
     if (n == 1) train.prob.matrix <- train.prob.matrix[-1,]
     train.plots[[n]] <- .plotsQCSets(probs = train.probs,
@@ -299,7 +301,6 @@ generateTrainAndTestBulkProbMatrix <- function(
   # TEST SETS ------------------------------------------------------------------
   test.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
   test.plots <- list()
-  nums <- c(700, 2000, 300, 700, 2000, 1400)
   n <- 1
   for (fun in functions.list) {
     test.probs <- fun(prob.list = prob.list,
@@ -866,7 +867,8 @@ generateBulkSamples <- function(
       }
       bulk.sim(object) <- c(bulk.sim(object), type.data = bulk.counts)
     } else {
-      bulk.sim(object, type.data) <- bulk.counts
+      object@bulk.sim <- list(bulk.counts)
+      names(object@bulk.sim) <- type.data
     }
   }
 
@@ -998,10 +1000,20 @@ prepareDataForTraining <- function(
     stop("'combine' argument must be one of the next options: both, bulk or single-cell")
   }
   if (type.data == "both") {
-    if (!all(names(bulk.sim(object)) %in% c("train", "test")))
-      stop("If type.data = 'both', bulk.sim slot must contain train and test data")
-  } else {
-    if (names(bulk.sim(object)) != type.data)
+    if (combine == "both" || combine == "bulk") {
+      if (!all(names(bulk.sim(object)) %in% c("train", "test")))
+        stop("If type.data = 'both', bulk.sim slot must contain train and test data")
+    } else if (combine == "single-cell") {
+      if (!names(bulk.sim(object)) %in% "test")
+        stop(paste("Test data is not present in bulk.sim slot"))
+    }
+  } else if (type.data == "train") {
+    if (combine == "both" || combine == "bulk") {
+      if (!names(bulk.sim(object)) %in% type.data)
+        stop(paste(type.data, "data is not present in bulk.sim slot"))
+    }
+  } else if (type.data == "test") {
+    if (!names(bulk.sim(object)) %in% type.data)
       stop(paste(type.data, "data is not present in bulk.sim slot"))
   }
   if (!is.null(object@final.data)) {
