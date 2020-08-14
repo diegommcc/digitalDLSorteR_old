@@ -363,7 +363,7 @@ plotDistError <- function(
 }
 
 
-.labelsCCCFacet <- function(object, facet.by, filter.sc) {
+.labelsCCCFacet <- function(amd, facet.by, filter.sc) {
   unique.facet <- levels(factor(amd[[facet.by]]))
   df <- data.frame(
     unique.facet,

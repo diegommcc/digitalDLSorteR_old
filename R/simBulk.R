@@ -116,12 +116,11 @@ generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
   prob.design,
-  probs.data.train = c(150, 250, 150, 200, 9500, 250),
-  probs.data.test = c(1150, 1700, 150, 150, 3000, 1000),
+  proportions.train = c(10, 15, 20, 10, 5, 40),
+  proportions.test = c(10, 15, 20, 10, 5, 40),
   train.freq = 2/3,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
-  # seed = NULL,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
@@ -135,15 +134,17 @@ generateTrainAndTestBulkProbMatrix <- function(
                "cell.type.column: must be equal to cell.type.column in cells.metadata (colData slot of single.cell.sim)",
                "from: frequency from which the cell type can appear",
                "to: frequency up to which the cell type can appear", sep = "\n   - "))
+  } else if (sum(proportions.train) != 100 |  sum(proportions.test) != 100) {
+    stop("Proportions provided must add up to 100")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
     warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
   }
-
-  # if (!is.null(seed)) {
-  #   set.seed(seed)
-  # }
+  if (!all(unlist(lapply(X = list(proportions.train, proportions.test),
+                         FUN = function(x) all(x == floor(x)))))) {
+    stop("Proportions provided must be composed by integer")
+  }
 
   # extract data from SCE to list
   list.data <- .extractDataFromSCE(SCEobject = single.cell.sim(object),
@@ -179,10 +180,8 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   ## proportions of different set of samples
-  # nums.train <- c(1000, 3000, 500, 1000, 3000, 2000)
-  # nums.test <- c(700, 2000, 300, 700, 2000, 1400)
-  nums.train <- probs.data.train
-  nums.test <- probs.data.test
+  nums.train <- ceiling(10500 * proportions.train / 100)
+  nums.test <- ceiling(7150 * proportions.test / 100)
   ## set new s.cells if num.bulk.samples is provided
   s.cells <- dim(list.data[[1]])[2]
   if (!is.null(num.bulk.samples)) {
@@ -249,7 +248,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     } else if (!all(exclusive.types %in% unique(list.data[[2]][, cell.type.column]))) {
       stop("Cell types present in exclusive.types argument must be present in cells.metadata")
     }
-    message("=== Setting the next exclusive cell types (test data): ",
+    message("=== Setting the next exclusive cell types in some bulk samples: ",
             paste(exclusive.types, collapse = ", "), "\n")
     index.ex <- match(exclusive.types, names(prob.list))
   } else {
@@ -268,6 +267,7 @@ generateTrainAndTestBulkProbMatrix <- function(
                          .generateSet4, .generateSet5, .generateSet6)
 
   # TRAIN SETS -----------------------------------------------------------------
+  excl.cell.type <- c(index.ex, NULL, NULL, index.ex, NULL, index.ex)
   train.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
   train.plots <- list()
   n <- 1
@@ -277,7 +277,7 @@ generateTrainAndTestBulkProbMatrix <- function(
                        num = nums.train[n],
                        s.cells = s.cells,
                        n.cell.types = n.cell.types,
-                       index.ex = NULL)
+                       index.ex = excl.cell.type[n])
     train.prob.matrix <- rbind(train.prob.matrix, train.probs)
     if (n == 1) train.prob.matrix <- train.prob.matrix[-1,]
     train.plots[[n]] <- .plotsQCSets(probs = train.probs,
@@ -308,7 +308,7 @@ generateTrainAndTestBulkProbMatrix <- function(
                       num = nums.test[n],
                       s.cells = s.cells,
                       n.cell.types = n.cell.types,
-                      index.ex = index.ex)
+                      index.ex = excl.cell.type[n])
     test.prob.matrix <- rbind(test.prob.matrix, test.probs)
     if (n == 1) test.prob.matrix <- test.prob.matrix[-1, ]
     test.plots[[n]] <- .plotsQCSets(probs = test.probs,
@@ -598,7 +598,7 @@ generateTrainAndTestBulkProbMatrix <- function(
       probs[[length(probs) + 1]] <- p
     }
   }
-  probs <- lapply(X = probs, FUN = function (x) return(x[names(prob.list)]))
+  # probs <- lapply(X = probs, FUN = function(x) return(x[names(prob.list)]))
   probs <- matrix(unlist(probs), nrow = n, byrow = T)
   colnames(probs) <- colnames(prob.matrix)
   probs <- round(probs * 100 / rowSums(probs))

@@ -639,11 +639,10 @@ deconvDigitalDLSorter <- function(
   )
   if (!is.null(simplify)) {
     index <- which(colnames(results) %in% simplify)
-    results.sim <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
-    object@deconv.results[[name.data]] <- list(raw = results, sim = results.sim)
-  } else {
-    object@deconv.results[[name.data]] <- results
+    results <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
   }
+
+  message("DONE")
 
   return(results)
 }

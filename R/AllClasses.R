@@ -36,7 +36,7 @@ setClassUnion("KerasOrList", c("keras.engine.sequential.Sequential", "list"))
 #' @slot prob.matrix Matrix of probabilities generated for the simulation of
 #' bulk samples. Rows correspond with bulk samples which will be generated (\eqn{i}),
 #' columns are the cell types present on single-cell data provided (\eqn{j}) and each entry
-#' is the proportion of \eqn{i} cell type on \eqn{j} sample.
+#' is the proportion of \eqn{j} cell type on \eqn{i} sample.
 #' @slot cell.names List with the evolution of the selected metrics during
 #' training.
 #' @slot set.list Results of the selected metrics on test data.
