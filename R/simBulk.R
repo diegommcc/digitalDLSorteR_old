@@ -116,8 +116,8 @@ generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
   prob.design,
-  proportions.train = c(10, 15, 20, 10, 5, 40),
-  proportions.test = c(10, 15, 20, 10, 5, 40),
+  proportions.train = c(10, 20, 15, 10, 40, 5),
+  proportions.test = c(10, 20, 15, 10, 40, 5),
   train.freq = 2/3,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
@@ -180,8 +180,20 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   ## proportions of different set of samples
-  nums.train <- ceiling(10500 * proportions.train / 100)
-  nums.test <- ceiling(7150 * proportions.test / 100)
+  nums.train <- .setHundredLimit(
+    ceiling((10500 * proportions.train) / 100),
+    limit = 10500
+  )
+  message(nums.train)
+  message(sum(nums.train))
+
+  nums.test <- .setHundredLimit(
+    ceiling((7150 * proportions.test) / 100),
+    limit = 7150
+  )
+  message(nums.test)
+  message(sum(nums.test))
+
   ## set new s.cells if num.bulk.samples is provided
   s.cells <- dim(list.data[[1]])[2]
   if (!is.null(num.bulk.samples)) {
@@ -194,9 +206,11 @@ generateTrainAndTestBulkProbMatrix <- function(
                                 function(x) sum(ceiling(x * s.cells / 1000))))
     diff.samples <- num.bulk.samples - total.samples
     if (diff.samples < 0) {
-      nums.test[3] <- 300 - (abs(diff.samples) * 1000) / s.cells
+      w <- which.max(nums.test)
+      nums.test[w] <- nums.test[w] - (abs(diff.samples) * 1000) / s.cells
     } else if (diff.samples > 0) {
-      nums.train[5] <- 3000 + (abs(diff.samples) * 1000) / s.cells
+      w <- which.min(nums.test)
+      nums.train[w] <- nums.test[w] + (abs(diff.samples) * 1000) / s.cells
     }
     message(paste("=== The number of bulk samples that will be generated has been fixed to",
                   num.bulk.samples), "\n")
@@ -410,11 +424,12 @@ generateTrainAndTestBulkProbMatrix <- function(
 
 .plotsQCSets <- function(probs, prob.matrix, n, set) {
   title <- paste0("Bulk Probability Dist. Set ", n, " (", set, ")")
+  n.samples <- paste("# samples:", dim(probs)[1])
   plots.functions <- list(.violinPlot, .boxPlot, .linesPlot)
   df <- reshape2::melt(probs)
   colnames(df) <- c("Sample", "CellType", "Prob")
   # first three plots
-  plot.list <- lapply(plots.functions, function(f) f(df, title))
+  plot.list <- lapply(plots.functions, function(f) f(df, paste(title, n.samples)))
   # final plots <-- preguntar por los nombres de los índices
   dummy <- t(apply(prob.matrix, 1, sort, decreasing = T))
   df <- reshape2::melt(dummy)
@@ -432,27 +447,27 @@ generateTrainAndTestBulkProbMatrix <- function(
   return(list(vec, sel))
 }
 
-.setHundredLimit <- function(x, index.ex = NULL) {
-  if (sum(x) > 100) {
+.setHundredLimit <- function(x, index.ex = NULL, limit = 100) {
+  if (sum(x) > limit) {
     while (TRUE) {
       if (is.null(index.ex)) {
         sel <- sample(seq(length(x)), 1)
       } else {
         sel <- sample(seq(length(x))[-index.ex], 1)
       }
-      res <- x[sel] - abs(sum(x) - 100)
+      res <- x[sel] - abs(sum(x) - limit)
       if (res >= 0) break
     }
     x[sel] <- res
-  } else if (sum(x) < 100) {
+  } else if (sum(x) < limit) {
     while (TRUE) {
       if (is.null(index.ex)) {
         sel <- sample(seq(length(x)), 1)
       } else {
         sel <- sample(seq(length(x))[-index.ex], 1)
       }
-      res <- x[sel] + abs(sum(x) - 100)
-      if (res <= 100) break
+      res <- x[sel] + abs(sum(x) - limit)
+      if (res <= limit) break
     }
     x[sel] <- res
   }
