@@ -16,7 +16,8 @@ NULL
   } else if (grepl(".rds$", file)) {
     file.obj <- readRDS(file = file)
   } else {
-    stop("File format is not recognizable. Please look at the allowed data for in ?CreateDigitalDLSorterObject")
+    stop("File format is not recognizable. Please look at the allowed data",
+         " in ?loadRealSCProfiles or ?loadFinalSCProfiles")
   }
   return(file.obj)
 }
@@ -46,7 +47,8 @@ NULL
     colnames(counts) <- cell.names$V1
     return(counts)
   } else {
-    stop("File format is not recognizable. Please look at the allowed data for in ?CreateDigitalDLSorterObject")
+    stop("File format is not recognizable. Please look at the allowed data",
+         " in ?loadRealSCProfiles or ?loadFinalSCProfiles")
   }
 }
 
@@ -119,12 +121,15 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   diff <- abs(dim(counts)[2] - length(common.cells))
   disc <- abs(length(cells.metadata[, cell.ID.column]) - length(common.cells))
   if (length(common.cells) < min(dim(counts)[2], dim(cells.metadata)[1])) {
-    stop(paste("There are", diff, "cells that don't match between counts matrix and metadata"))
-  } else if (diff != 0){
-    warning(paste("There are", diff, "cells that don't match between counts matrix and metadata")) # this check includes the last
+    stop(paste("There are", diff,
+               "cells that don't match between counts matrix and metadata"))
+  } else if (diff != 0){ # this check includes the last
+    warning(paste("There are", diff,
+                  "cells that don't match between counts matrix and metadata"))
   } else if (disc != 0) {
     message("=== Intersection between matrix counts and cells.metadata:")
-    message(paste("   ", disc, "cells have been discarded from cells.metadata"), "\n")
+    message(paste("   ", disc, "cells have been discarded from cells.metadata"),
+            "\n")
   }
   cells.metadata <- cells.metadata[cells.metadata[, cell.ID.column] %in%
                                      common.cells, , drop = FALSE]
@@ -141,12 +146,15 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   diff <- abs(dim(counts)[1] - length(common.genes))
   disc <- abs(length(genes.metadata[, gene.ID.column]) - length(common.genes))
   if (length(common.genes) < min(dim(counts)[1], dim(genes.metadata)[1])) {
-    stop(paste("There are", diff, "genes that don't match between counts matrix and metadata"))
+    stop(paste("There are", diff,
+               "genes that don't match between counts matrix and metadata"))
   } else if (diff != 0){
-    warning(paste("There are", diff, "genes that don't match between counts matrix and metadata"))
+    warning(paste("There are", diff,
+                  "genes that don't match between counts matrix and metadata"))
   } else if (disc != 0) {
     message("=== Intersection between matrix counts and genes.metadata:")
-    message(paste("   ", disc, "genes have been discarded from genes.metadata"), "\n")
+    message(paste("   ", disc, "genes have been discarded from genes.metadata"),
+            "\n")
   }
   genes.metadata <- genes.metadata[genes.metadata[, gene.ID.column] %in%
                                      common.genes, , drop = FALSE]
@@ -155,7 +163,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   # removing genes without any expression
   row.zero <- Matrix::rowSums(counts) > 0
   if (!all(row.zero)) {
-    message(paste("=== Removing", length(row.zero), "genes without expression in any cell"))
+    message(paste("=== Removing", length(row.zero),
+                  "genes without expression in any cell"))
     counts <- counts[row.zero, ]
     genes.metadata <- genes.metadata[genes.metadata[, gene.ID.column] %in%
                                        rownames(counts), , drop = FALSE]
@@ -201,7 +210,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   # extract cells.metadata
   cells.metadata <- SingleCellExperiment::colData(SCEobject)
   if (any(dim(cells.metadata) == 0)) {
-    stop("No data provided in colData slot. Metadata about cells is needed, please look ?CreateDigitalDLSorterObject")
+    stop("No data provided in colData slot. Metadata about cells is needed, ",
+         "please look ?loadRealSCProfiles or ?loadFinalSCProfiles")
   }
   # extract count matrix
   if (length(SummarizedExperiment::assays(SCEobject)) == 0) {
@@ -241,30 +251,26 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 
 .loadSingleCellData <- function(single.cell, cell.ID.column, gene.ID.column,
                                 min.cells, min.counts, real = TRUE) {
-  # check if single-cell data are real or simulated
+  # check if single-cell data are real or final
   if (isTRUE(real)) {
     arg <- "single.cell.real"
-    if (is.null(single.cell)) {
-      stop("single.cell.real cannot be NULL")
-    } else if (is.null(cell.ID.column) | is.null(gene.ID.column)) {
-      stop("cell.ID.column and gene.ID.column are needed. Please look ?CreateDigitalDLSorterObject")
-    }
   } else {
     arg <- "single.cell.sim"
-    if (is.null(single.cell)) return(NULL)
   }
+  if (is.null(single.cell)) {
+    stop(paste(arg, "cannot be NULL"))
+  } else if (is.null(cell.ID.column) || is.null(gene.ID.column)) {
+    stop("cell.ID.column and gene.ID.column are mandatory Please look ?loadRealSCProfiles or ?loadFinalSCProfiles")
+  }
+
   # load data from the allowed sources
-  if (class(single.cell) == "SingleCellExperiment") {
+  if (is(single.cell, "SingleCellExperiment")) {
     # extract data and filter by min.counts and min.cells
     list.data <- .extractDataFromSCE(SCEobject = single.cell,
                                      cell.ID.column = cell.ID.column,
                                      gene.ID.column = gene.ID.column,
                                      min.counts = min.counts,
                                      min.cells = min.cells)
-    single.cell <- CreateSCEObject(counts = list.data[[1]],
-                                   cells.metadata = list.data[[2]],
-                                   genes.metadata = list.data[[3]])
-    return(single.cell)
   } else if (length(single.cell) == 0) {
     stop(paste(arg, "argument is empty"))
   } else if (length(single.cell) == 3) {
@@ -273,25 +279,25 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                       .readTabFiles(single.cell[[3]]))
   } else {
     stop(paste("Incorrect number of data elements given. Please look at the allowed data for",
-               arg, "in ?CreateDigitalDLSorterObject"))
+               arg, "in ?loadRealSCProfiles or ?loadFinalSCProfiles"))
   }
-  # process data only for real single-cell profiles from files (not SCE)
-  if (isTRUE(real)) {
-    list.data <- .processData(counts = list.data[[1]],
-                              cells.metadata = list.data[[2]],
-                              cell.ID.column = cell.ID.column,
-                              genes.metadata = list.data[[3]],
-                              gene.ID.column = gene.ID.column,
-                              min.counts = min.counts,
-                              min.cells = min.cells)
-  }
+
+  list.data <- .processData(counts = list.data[[1]],
+                            cells.metadata = list.data[[2]],
+                            cell.ID.column = cell.ID.column,
+                            genes.metadata = list.data[[3]],
+                            gene.ID.column = gene.ID.column,
+                            min.counts = min.counts,
+                            min.cells = min.cells)
+
   return(CreateSCEObject(counts = list.data[[1]],
                          cells.metadata = list.data[[2]],
                          genes.metadata = list.data[[3]]))
 }
 
 
-#' Load scRNA-Seq data into a \code{DigitalDLSorter} object.
+#' Load real scRNA-Seq data into a \code{DigitalDLSorter} object for simulating
+#' new profiles.
 #'
 #' Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
 #' or from a \code{SingleCellExperiment} object. Provided data must be composed
@@ -354,6 +360,76 @@ loadRealSCProfiles <- function(
   ddls.object <- new(
     Class = "DigitalDLSorter",
     single.cell.real = single.cell.real,
+    project = project,
+    version = packageVersion(pkg = "digitalDLSorteR")
+  )
+  return(ddls.object)
+}
+
+
+#' Load final real scRNA-Seq data into a \code{DigitalDLSorter} object
+#'
+#' Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
+#' or from a \code{SingleCellExperiment} object. Provided data must be composed
+#' by three pieces of information:
+#' \itemize{
+#'   \item Single-cell counts: genes in rows and cells in columns.
+#'   \item Cells metadata: with annotations (columns) for each cell (rows).
+#'   \item Genes metadata with annotations (columns) for each gene (rows).
+#' }
+#' In the case that data is provided from files, \code{single.cell.real}
+#' argument must be a vector of three elements ordered so that the first file
+#' corresponds to counts, the second to cells metadata and the last to genes
+#' metadata.
+#' On the other hand, if data is provided as \code{SingleCellExperiment}, the
+#' object must contains single-cell counts in \code{assay} slot, cells metadata
+#' in \code{colData} slot and genes metadata in \code{rowData}.
+#'
+#' @param single.cell.real If data is provided from files, \code{single.cell.real}
+#' must be a vector with three elements: single-cell counts, cells metadata and
+#' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
+#' singlecell counts must be in \code{assay} slot, cells metadata in
+#' \code{colData} and genes metadata in \code{rowData}.
+#' @param cell.ID.column Name or number of the column in cells.metadata
+#' corresponding with cell names in expression matrix.
+#' @param gene.ID.column Name or number of the column in genes.metadata
+#' corresponding with the nonation used for features/genes.
+#' @param min.counts Minimum gene counts to filter (0 by default).
+#' @param min.cells Minimum of cells with more than min.counts (0 by default).
+#' @param project Name of the project for \code{DigitaDLSorter} object.
+#'
+#' @export
+#'
+#' @seealso \code{\link{simSingleCellProfiles}}
+#'
+#' @examples
+#' DDLSChung <- loadFinalSCProfiles(
+#'   single.cell.real = breast.chung.data,
+#'   cell.ID.column = "Cell_ID",
+#'   gene.ID.column = "external_gene_name",
+#'   min.cells = 0,
+#'   min.counts = 0,
+#'   project = "Chung_etal_2017"
+#' )
+#'
+loadFinalSCProfiles <- function(
+  single.cell.real,
+  cell.ID.column = 1,
+  gene.ID.column = 1,
+  min.counts = 0,
+  min.cells = 0,
+  project = "DigitalDLSorterProject"
+) {
+  single.cell.final <- .loadSingleCellData(
+    single.cell = single.cell.real,
+    cell.ID.column = cell.ID.column,
+    gene.ID.column = gene.ID.column,
+    min.cells = min.cells,
+    min.counts = min.counts
+  )
+  ddls.object <- new(
+    Class = "DigitalDLSorter",
+    single.cell.sim = single.cell.final,
     project = project,
     version = packageVersion(pkg = "digitalDLSorteR")
   )

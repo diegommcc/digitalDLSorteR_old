@@ -116,8 +116,8 @@ generateTrainAndTestBulkProbMatrix <- function(
   object,
   cell.type.column,
   prob.design,
-  proportions.train = c(10, 20, 15, 10, 40, 5),
-  proportions.test = c(10, 20, 15, 10, 40, 5),
+  proportions.train = c(10, 5, 20, 15, 10, 40),
+  proportions.test = c(10, 5, 20, 15, 10, 40),
   train.freq = 2/3,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
@@ -184,15 +184,10 @@ generateTrainAndTestBulkProbMatrix <- function(
     ceiling((10500 * proportions.train) / 100),
     limit = 10500
   )
-  message(nums.train)
-  message(sum(nums.train))
-
   nums.test <- .setHundredLimit(
     ceiling((7150 * proportions.test) / 100),
     limit = 7150
   )
-  message(nums.test)
-  message(sum(nums.test))
 
   ## set new s.cells if num.bulk.samples is provided
   s.cells <- dim(list.data[[1]])[2]
@@ -281,7 +276,7 @@ generateTrainAndTestBulkProbMatrix <- function(
                          .generateSet4, .generateSet5, .generateSet6)
 
   # TRAIN SETS -----------------------------------------------------------------
-  excl.cell.type <- c(index.ex, NULL, NULL, index.ex, NULL, index.ex)
+  excl.cell.type <- c(index.ex, index.ex, NULL, NULL, index.ex, NULL)
   train.prob.matrix <- matrix(rep(0, n.cell.types), nrow = 1, byrow = T)
   train.plots <- list()
   n <- 1
@@ -551,6 +546,33 @@ generateTrainAndTestBulkProbMatrix <- function(
   n.cell.types,
   index.ex
 ) {
+  probs <- list()
+  n <- ceiling(num * s.cells/1000)
+  while (length(probs) < n) {
+    probs[[length(probs) + 1]] <- unlist(lapply(X = prob.list, FUN = sample, 1))
+  }
+  probs <- lapply(X = probs, FUN = function(x) return(round(x * 100 / sum(x))))
+  probs <- lapply(X = probs, FUN = sample)
+  probs <- lapply(X = probs, FUN = function(x) x[names(prob.list)])
+  probs <- matrix(unlist(probs), nrow = n, byrow = T)
+  probs <- t(apply(X = probs, 1, FUN = function(x) {
+    .adjustHundred(x = x,
+                   prob.list = prob.list,
+                   index.ex = index.ex
+    )
+  }))
+  colnames(probs) <- colnames(prob.matrix)
+  return(probs)
+}
+
+.generateSet3 <- function(
+  prob.list,
+  prob.matrix,
+  num,
+  s.cells,
+  n.cell.types,
+  index.ex
+) {
   if (!is.null(index.ex)) {
     sampling <- function(p) {
       p <- .cellExcluder(vec = sample(p), index.ex = index.ex)
@@ -584,7 +606,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 }
 
 
-.generateSet3 <- function(
+.generateSet4 <- function(
   prob.list,
   prob.matrix,
   num,
@@ -629,7 +651,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 }
 
 
-.generateSet4 <- function(
+.generateSet5 <- function(
   prob.list,
   prob.matrix,
   num,
@@ -670,7 +692,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   return(probs)
 }
 
-.generateSet5 <- function(
+.generateSet6 <- function(
   prob.list,
   prob.matrix,
   num,
@@ -699,33 +721,6 @@ generateTrainAndTestBulkProbMatrix <- function(
   return(probs)
 }
 
-
-.generateSet6 <- function(
-  prob.list,
-  prob.matrix,
-  num,
-  s.cells,
-  n.cell.types,
-  index.ex
-) {
-  probs <- list()
-  n <- ceiling(num * s.cells/1000)
-  while (length(probs) < n) {
-    probs[[length(probs) + 1]] <- unlist(lapply(X = prob.list, FUN = sample, 1))
-  }
-  probs <- lapply(X = probs, FUN = function(x) return(round(x * 100 / sum(x))))
-  probs <- lapply(X = probs, FUN = sample)
-  probs <- lapply(X = probs, FUN = function(x) x[names(prob.list)])
-  probs <- matrix(unlist(probs), nrow = n, byrow = T)
-  probs <- t(apply(X = probs, 1, FUN = function(x) {
-    .adjustHundred(x = x,
-                   prob.list = prob.list,
-                   index.ex = index.ex
-    )
-  }))
-  colnames(probs) <- colnames(prob.matrix)
-  return(probs)
-}
 
 
 ################################################################################
@@ -1197,7 +1192,8 @@ prepareDataForTraining <- function(
     x = counts,
     filepath = file.backend,
     name = type.data,
-    verbose = verbose
+    verbose = verbose,
+    chunkdim = c(nrow(x), 1)
   )
 
   return(SummarizedExperiment::SummarizedExperiment(

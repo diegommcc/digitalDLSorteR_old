@@ -242,7 +242,7 @@ profiles
 
 ```{r}
 probMatrix <- data.frame(
-  Cell_types = c("ER+", "HER2+", "Stromal", "Monocyte", "Tme",
+  Cell_type = c("ER+", "HER2+", "Stromal", "Monocyte", "Tme",
                  "BGC", "ER+ and HER2+", "Bmem", "TNBC", "DC",
                  "Macrophage", "TCD8", "Treg"),
    from = c(30, 30, 1, 0, 0, 0, 30, 0, 30, 0, 0, 0, 0),
@@ -254,6 +254,7 @@ DDLSChung <- generateTrainAndTestBulkProbMatrix(
   object = DDLSChung,
   cell.type.column = "Cell_type",
   prob.design = probMatrix,
+  num.bulk.samples = 200,
   exclusive.types = exclusive.types,
   verbose = TRUE
 )

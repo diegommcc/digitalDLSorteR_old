@@ -309,7 +309,7 @@ plotDistError <- function(
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
   }
   if (length(colors) < length(unique(amd[[color.by]]))) {
-    stop("Colors provided are not enought") ## generador de colores
+    stop("Colors provided are not enought")
   }
   if (is.null(title))
     title.plot <- paste(error, "by", x.by)
@@ -528,6 +528,8 @@ blandAltmanLehPlot <- function(
     stop("Evaluation metrics are not well built, use 'calculateEvalMetrics'")
   } else if (!color.by %in% c("nMix", "CellType")) {
     stop("'color.by' provided is not valid. Options available are: nMix, CellType")
+  } else if (!facet.by %in% c("nMix", "CellType")) {
+    stop("'facet.by' provided is not valid. Options available are: nMix, CellType")
   }
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
@@ -540,7 +542,7 @@ blandAltmanLehPlot <- function(
     )
     add.title <- "(log2 space)"
     x.lab <- "(log2(Pred) + log2(Exp))/2"
-    y.lab <- "log2(Pred/Exp)"
+    y.lab <- "log2(Pred / Exp)"
   } else {
     amd <- amd %>% mutate(
       Mean = (Prob + Pred) / 2,
@@ -548,7 +550,7 @@ blandAltmanLehPlot <- function(
     )
     add.title <- "(normal space)"
     x.lab <- "(Pred + Exp)/2"
-    y.lab <- "Pred/Exp"
+    y.lab <- "Pred - Exp"
   }
   if (is.null(title))
     title.plot <- paste("Bland-Altman Agreement Plot", add.title)
@@ -560,9 +562,9 @@ blandAltmanLehPlot <- function(
     scale_color_manual(values = color.list, name = color.by) +
     scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
-    geom_hline(aes(yintercept = mean(Diff) + 2 * sd(Diff)),
+    geom_hline(aes(yintercept = mean(Diff) + 1.96 * sd(Diff)),
                linetype = "dashed", colour = "red") +
-    geom_hline(aes(yintercept = mean(Diff) - 2 * sd(Diff)),
+    geom_hline(aes(yintercept = mean(Diff) - 1.96* sd(Diff)),
                linetype = "dashed", colour = "red") +
     xlab(x.lab) + ylab(y.lab) +
     facet_wrap(as.formula(paste("~", facet.by))) +
