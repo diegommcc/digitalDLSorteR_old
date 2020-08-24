@@ -8,6 +8,8 @@ generateTrainAndTestBulkProbMatrix(
   object,
   cell.type.column,
   prob.design,
+  proportions.train = c(10, 5, 20, 15, 10, 40),
+  proportions.test = c(10, 5, 20, 15, 10, 40),
   train.freq = 2/3,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
@@ -38,7 +40,7 @@ type.
 \item{num.bulk.samples}{Integer which allows to establish the number of bulk
 samples that will be generated taking into account training and test data.
 If it is NULL (by default), approximately
-18 more samples will be formed than there are cells in \code{single.cell.sim} slot.
+18 more samples will be formed than there are cells in \code{single.cell.final} slot.
 If an integer is given, the number of bulk samples will be the same.}
 
 \item{exclusive.types}{Vector of cell types which allows to establish cell types that
@@ -74,7 +76,7 @@ you can access them with \code{\link{showProbPlot}} function.
 
 It is important to note that the number of bulk-samples simulated are determined
 by the number of single-cell profiles available: approximately 18 more samples
-will be formed than there are cells in \code{single.cell.sim} slot. If you want
+will be formed than there are cells in \code{single.cell.final} slot. If you want
 a predefined number of bulk samples, see \code{num.bulk.samples} argument. This is
 usefull in the case that you want to control the number of samples generated, but
 we recommend default values.

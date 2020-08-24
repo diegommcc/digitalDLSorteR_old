@@ -7,34 +7,44 @@
 \title{The DigitalDLSorterDNN Class.}
 \description{
 The DigitalDLSorterDNN object stores the trained Deep Neural Network, the
-training history of selected metrics and the results of prediction on test data.
+training history of selected metrics and the results of prediction on test
+data. After executing \code{\link{calculateEvalMetrics}}, it is alto possible
+to find the results of the model evaluation.
 }
 \details{
-The steps realted with Depp Learning are carried out with \code{keras}
+The steps related with Deep Learning are carried out with \code{keras}
 package, so the model are stored in a R6 class, system used by the package.
+If you want to save the object in an rds file, \code{digitalDLSorteR} provides
+an \code{saveRDS} generic that transforms the keras model into a native valid
+R object. Specifically, the model is converted into a list with the architecture
+of the network and the weights learned during the training. The is the
+minimum information to use the model as predictor. If you want to maintain
+the optimizer state, see \code{\link{saveTrainedModelAsH5}} function. If you
+want to store an object as rda file, see \code{\link{preparingToSave}} function.
 }
 \section{Slots}{
 
 \describe{
-\item{\code{model}}{Model resulting from the training of Deep Neural Network. This slot
-contains a R6 \code{keras.engine.sequential.Sequential} object with the}
+\item{\code{model}}{Trained Deep Neural Network model. This slot can contain a
+R6 \code{keras.engine.sequential.Sequential} object or a list with two
+elements: the architecture of the model and the resulting weights after
+training.}
 
 \item{\code{training.history}}{List with the evolution of the selected metrics during
 training.}
 
 \item{\code{eval.stats.model}}{Performance of the model on test data.}
 
-\item{\code{predict.results}}{Matrix with the deconvolution results on test data.
+\item{\code{predict.results}}{Deconvolution results matrix of test data.
 Columns are cell types, rows are samples and each entry is the proportion of
 this cell type on this sample.}
 
-\item{\code{cell.types}}{Vector with the cell types to deconvolve.}
+\item{\code{cell.types}}{Vector with the cell types to deconvolute.}
 
-\item{\code{features}}{Vector with features used during training. These features will be
-used for the folloring predictions.}
+\item{\code{features}}{Vector with features used during training. These features will
+be used for the following predictions.}
 
-\item{\code{eval.stats.samples}}{Performance of the model over each sample that
-compose test data. Each sample is compared with the expected proportion
-of each cell type.}
+\item{\code{eval.stats.samples}}{Performance of the model on each sample of
+test data in comparison with the known cell proportions.}
 }}
 

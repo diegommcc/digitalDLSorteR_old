@@ -25,7 +25,7 @@ NULL
 #'
 #' It is important to note that the number of bulk-samples simulated are determined
 #' by the number of single-cell profiles available: approximately 18 more samples
-#' will be formed than there are cells in \code{single.cell.sim} slot. If you want
+#' will be formed than there are cells in \code{single.cell.final} slot. If you want
 #' a predefined number of bulk samples, see \code{num.bulk.samples} argument. This is
 #' usefull in the case that you want to control the number of samples generated, but
 #' we recommend default values.
@@ -52,7 +52,7 @@ NULL
 #' @param num.bulk.samples Integer which allows to establish the number of bulk
 #' samples that will be generated taking into account training and test data.
 #' If it is NULL (by default), approximately
-#' 18 more samples will be formed than there are cells in \code{single.cell.sim} slot.
+#' 18 more samples will be formed than there are cells in \code{single.cell.final} slot.
 #' If an integer is given, the number of bulk samples will be the same.
 #' @param exclusive.types Vector of cell types which allows to establish cell types that
 #' biologically do not make sense to be mixed during the generation of bulk samples.
@@ -125,20 +125,20 @@ generateTrainAndTestBulkProbMatrix <- function(
 ) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
-  } else if (is.null(single.cell.sim(object))) {
-    stop("single.cell.sim slot is empty")
+  } else if (is.null(single.cell.final(object))) {
+    stop("single.cell.final slot is empty")
   } else if (!train.freq <= 0.95 | !train.freq >= 0.05) {
     stop("train.seq argument must be less than or equal to 0.95 and greater than or equal to 0.05")
   } else if (!is.data.frame(prob.design)) {
     stop(paste("prob.design must be a data.frame with three column names:",
-               "cell.type.column: must be equal to cell.type.column in cells.metadata (colData slot of single.cell.sim)",
+               "cell.type.column: must be equal to cell.type.column in cells.metadata (colData slot of single.cell.final)",
                "from: frequency from which the cell type can appear",
                "to: frequency up to which the cell type can appear", sep = "\n   - "))
   } else if (sum(proportions.train) != 100 |  sum(proportions.test) != 100) {
     stop("Proportions provided must add up to 100")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
-    warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n",
+    warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten",
             call. = FALSE, immediate. = TRUE)
   }
   if (!all(unlist(lapply(X = list(proportions.train, proportions.test),
@@ -147,7 +147,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   # extract data from SCE to list
-  list.data <- .extractDataFromSCE(SCEobject = single.cell.sim(object),
+  list.data <- .extractDataFromSCE(SCEobject = single.cell.final(object),
                                    filtering = FALSE)
 
   # check if cell.type.column is correct
@@ -168,7 +168,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   if (any(duplicated(prob.design[, cell.type.column]))) {
     stop(paste("prob.design must not contain duplicated cell types in",
                cell.type.column, "column"))
-  } else if (!any(prob.design[, cell.type.column] %in%
+  } else if (!all(prob.design[, cell.type.column] %in%
                   unique(list.data[[2]][, cell.type.column]))) {
     stop("There are some cell types in prob.design that does not appear in cells.metadata. Check that the prob.design matrix is correctly built")
   } else if (any(prob.design$from < 0) | any(prob.design$from > 99)) {
@@ -207,8 +207,8 @@ generateTrainAndTestBulkProbMatrix <- function(
       w <- which.min(nums.test)
       nums.train[w] <- nums.test[w] + (abs(diff.samples) * 1000) / s.cells
     }
-    message(paste("=== The number of bulk samples that will be generated has been fixed to",
-                  num.bulk.samples), "\n")
+    message(paste("\n=== The number of bulk samples that will be generated has been fixed to",
+                  num.bulk.samples))
   }
 
   # split data into training and test sets
@@ -232,12 +232,12 @@ generateTrainAndTestBulkProbMatrix <- function(
   }
 
   if (verbose) {
-    message("=== Train Set cells by type:")
+    message("\n=== Train Set cells by type:")
     tb <- unlist(lapply(train.set.list, length))
-    message(paste0("  - ", names(tb), ": ", tb, collapse = "\n"), "\n")
+    message(paste0("    - ", names(tb), ": ", tb, collapse = "\n"), "\n")
     message("=== Test Set cells by type:")
     tb <- unlist(lapply(test.set.list, length))
-    message(paste0("  - ", names(tb), ": ", tb, collapse = "\n"), "\n")
+    message(paste0("    - ", names(tb), ": ", tb, collapse = "\n"), "\n")
   }
 
   prob.list <- apply(X = prob.design,
@@ -301,7 +301,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 
   if (verbose) {
     message("=== Probability matrix for training data:")
-    message(paste(c("  - Bulk samples:", "  - Cell types:"),
+    message(paste(c("    - Bulk samples:", "    - Cell types:"),
                   dim(train.prob.matrix),
                   collapse = "\n"), "\n")
   }
@@ -331,11 +331,10 @@ generateTrainAndTestBulkProbMatrix <- function(
 
   if (verbose) {
     message("=== Probability matrix for test data:")
-    message(paste(c("  - Bulk samples:", "  - Cell types:"),
+    message(paste(c("    - Bulk samples:", "    - Cell types:"),
                   dim(test.prob.matrix),
                   collapse = "\n"), "\n")
   }
-
   # GENERATE PROBS MATRIX NAMES ------------------------------------------------
   setCount <- function (x, setList, sn) {
     names(x) <- sn
@@ -349,6 +348,8 @@ generateTrainAndTestBulkProbMatrix <- function(
     }
     return(sc[seq(100)])
   }
+
+
 
   train.prob.matrix.names <- t(apply(
     X = train.prob.matrix,
@@ -425,13 +426,13 @@ generateTrainAndTestBulkProbMatrix <- function(
   colnames(df) <- c("Sample", "CellType", "Prob")
   # first three plots
   plot.list <- lapply(plots.functions, function(f) f(df, paste(title, n.samples)))
-  # final plots <-- preguntar por los nombres de los índices
+  # final plots
   dummy <- t(apply(prob.matrix, 1, sort, decreasing = T))
   df <- reshape2::melt(dummy)
-  colnames(df) <- c("Sample", "MaxProb", "Prob")
-  df$MaxProb <- factor(df$MaxProb)
-  plot.list[[4]] <- .boxPlot(df = df, x = MaxProb, title = title)
-  names(plot.list) <- c("violinplot", "boxplot", "linesplot", "maxprob")
+  colnames(df) <- c("Sample", "nMix", "Prob")
+  df$nMix <- factor(df$nMix)
+  plot.list[[4]] <- .boxPlot(df = df, x = nMix, title = title)
+  names(plot.list) <- c("violinplot", "boxplot", "linesplot", "nmix")
   return(plot.list)
 }
 
@@ -755,7 +756,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 #' will be carried out by chunks instead of using all data. We recommend this
 #' options due to the large size of the simulated matrices.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
+#' @param object \code{DigitalDLSorter} object with \code{single.cell.final} and
 #' \code{prob.cell.types} slots.
 #' @param type.data Type of data to generate among 'train', 'test' or 'both'
 #' (the last by default).
@@ -804,12 +805,13 @@ generateBulkSamples <- function(
   type.data = "both",
   file.backend = NULL,
   threads = 2,
+  compression.level = NULL,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
-  } else if (is.null(single.cell.sim(object))) {
-    stop("single.cell.sim slot is empty")
+  } else if (is.null(single.cell.final(object))) {
+    stop("single.cell.final slot is empty")
   } else if (is.null(prob.cell.types(object))) {
     stop("prob.cell.types slot is empty")
   } else if (!any(type.data == c("train", "test", "both"))) {
@@ -822,6 +824,14 @@ generateBulkSamples <- function(
     if (file.exists(file.backend)) {
       stop("file.backend already exists. Please provide a correct file path")
     }
+    if (is.null(compression.level)) {
+      compression.level <- HDF5Array::getHDF5DumpCompressionLevel()
+    } else {
+      if (compression.level < 0 || compression.level > 9) {
+        stop("compression.level must be an integer between 0 (no compression) and 9 (highest and slowest compression). ")
+      }
+    }
+
   }
   if (threads <= 0) {
     threads <- 1
@@ -829,12 +839,12 @@ generateBulkSamples <- function(
   if (verbose) {
     message(paste("=== Set parallel environment to", threads, "threads"))
   }
-  sim.counts <- assay(single.cell.sim(object))
-  sim.counts <- edgeR::cpm.default(sim.counts) # sure???
+  sim.counts <- assay(single.cell.final(object))
+  sim.counts <- edgeR::cpm.default(sim.counts)
 
   if (type.data == "both") {
     if (!is.null(object@bulk.sim)) {
-      warning("'bulk.sim' slot will be overwritten",
+      warning("'bulk.sim' slot will be overwritten\n",
               call. = FALSE, immediate. = TRUE)
     }
     bulk.counts <- lapply(
@@ -849,6 +859,7 @@ generateBulkSamples <- function(
           type.data = x,
           file.backend = file.backend,
           threads = threads,
+          compression.level = compression.level,
           verbose = verbose
         )
       }
@@ -869,6 +880,7 @@ generateBulkSamples <- function(
       type.data = type.data,
       file.backend = file.backend,
       threads = threads,
+      compression.level = compression.level,
       verbose = verbose
     )
     if (!is.null(bulk.sim(object))) {
@@ -896,6 +908,7 @@ setBulks <- function (x, c, i) {
   type.data,
   file.backend,
   threads,
+  compression.level,
   verbose
 ) {
   prob.matrix.names <- prob.cell.types(object, type.data)@cell.names
@@ -917,7 +930,9 @@ setBulks <- function (x, c, i) {
       bulk.counts,
       filepath = file.backend,
       name = type.data,
-      verbose = verbose
+      verbose = verbose,
+      chunkdim = HDF5Array::getHDF5DumpChunkDim(dim(bulk.counts)),
+      level = compression.level
     )
     # en R 4.0 implementaron la posibilidad de guardar dimnames
     # de momento lo meto en un slot
@@ -950,7 +965,7 @@ setBulks <- function (x, c, i) {
 #' will be carried out by chunks instead of using all data. We
 #' recommend this options due to the large size of the simulated matrices.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
+#' @param object \code{DigitalDLSorter} object with \code{single.cell.final} and
 #' \code{prob.cell.types} slots.
 #' @param type.data Type of data to generate among 'train', 'test' or 'both'
 #' (the last by default).
@@ -992,12 +1007,14 @@ prepareDataForTraining <- function(
   type.data,
   combine = "both",
   file.backend = NULL,
+  number.cols = NULL,
+  compression.level = NULL,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
-  } else if (is.null(single.cell.sim(object))) {
-    stop("single.cell.sim slot is empty")
+  } else if (is.null(single.cell.final(object))) {
+    stop("single.cell.final slot is empty")
   } else if (is.null(prob.cell.types(object))) {
     stop("prob.cell.types slot is empty")
   } else if (is.null(bulk.sim(object))) {
@@ -1014,16 +1031,16 @@ prepareDataForTraining <- function(
       if (!all(names(bulk.sim(object)) %in% c("train", "test")))
         stop("If type.data = 'both', bulk.sim slot must contain train and test data")
     } else if (combine == "single-cell") {
-      if (!names(bulk.sim(object)) %in% "test")
+      if (!"test" %in% names(bulk.sim(object)))
         stop(paste("Test data is not present in bulk.sim slot"))
     }
   } else if (type.data == "train") {
     if (combine == "both" || combine == "bulk") {
-      if (!names(bulk.sim(object)) %in% type.data)
+      if (!type.data %in% names(bulk.sim(object)))
         stop(paste(type.data, "data is not present in bulk.sim slot"))
     }
   } else if (type.data == "test") {
-    if (!names(bulk.sim(object)) %in% type.data)
+    if (!type.data %in% names(bulk.sim(object)))
       stop(paste(type.data, "data is not present in bulk.sim slot"))
   }
   if (!is.null(object@final.data)) {
@@ -1039,8 +1056,23 @@ prepareDataForTraining <- function(
     if (file.exists(file.backend)){
       stop("file.backend already exists. Please provide a correct file path")
     }
+    if (is.null(number.cols)) {
+      number.cols <- 50
+    } else {
+      if (number.cols < 1 || number.cols > 100 || number.cols%%1 != 0) {
+        stop("number.cols must be an integer between 1 and 100")
+      }
+    }
     if (verbose) {
       message("=== Working with HDF5 backend")
+    }
+    if (is.null(compression.level)) {
+      compression.level <- HDF5Array::getHDF5DumpCompressionLevel()
+    } else {
+      if (compression.level < 0 || compression.level > 9 || compression.level%%1 != 0) {
+        stop("compression.level must be an integer between 0 (no compression) ",
+             "and 9 (highest and slowest compression). ")
+      }
     }
     combineBulkSCProfiles <- .prepareDataHDF5
   }
@@ -1056,6 +1088,8 @@ prepareDataForTraining <- function(
           type.data = x,
           combine = combine,
           file.backend = file.backend,
+          number.cols = number.cols,
+          compression.level = compression.level,
           verbose = verbose
         )
       }
@@ -1071,6 +1105,8 @@ prepareDataForTraining <- function(
       type.data = type.data,
       combine = combine,
       file.backend = file.backend,
+      number.cols = number.cols,
+      compression.level = compression.level,
       verbose = verbose
     )
     if (!is.null(final.data(object))) {
@@ -1099,6 +1135,8 @@ prepareDataForTraining <- function(
   type.data = type.data,
   combine = combine,
   file.backend = file.backend,
+  number.cols = number.cols,
+  compression.level = compression.level,
   verbose = verbose
 ) {
 
@@ -1110,14 +1148,14 @@ prepareDataForTraining <- function(
       message("    Combining single-cell profiles and simulated bulk samples\n")
     counts <- assay(bulk.sim(object)[[type.data]])
     gene.list <- intersect(rowData(bulk.sim(object)[[type.data]])[[1]],
-                           rownames(assay(object@single.cell.sim)))
+                           rownames(assay(object@single.cell.final)))
     counts <- DelayedArray::cbind(
-      DelayedArray::DelayedArray(assay(object@single.cell.sim)[,
+      DelayedArray::DelayedArray(assay(object@single.cell.final)[,
                           unlist(object@prob.cell.types[[type.data]]@set.list)]),
       counts
     )
     sample.names <- c(
-      colnames(assay(object@single.cell.sim)[,unlist(
+      colnames(assay(object@single.cell.final)[,unlist(
         object@prob.cell.types[[type.data]]@set.list)]
       ), colData(object@bulk.sim[[type.data]])[[1]]
     )
@@ -1146,11 +1184,11 @@ prepareDataForTraining <- function(
   } else if (combine == "single-cell") {
     if (verbose)
       message("    Using only single-cell samples\n")
-    counts <- DelayedArray::DelayedArray(assay(object@single.cell.sim)[,unlist(
+    counts <- DelayedArray::DelayedArray(assay(object@single.cell.final)[,unlist(
       object@prob.cell.types[[type.data]]@set.list
     )])
-    gene.list <- rownames(assay(object@single.cell.sim))
-    sample.names <- colnames(assay(object@single.cell.sim)[,unlist(
+    gene.list <- rownames(assay(object@single.cell.final))
+    sample.names <- colnames(assay(object@single.cell.final)[,unlist(
       object@prob.cell.types[[type.data]]@set.list)])
     probs.matrix <- matrix(unlist(sapply(
       X = names(object@prob.cell.types[[type.data]]@set.list),
@@ -1193,7 +1231,8 @@ prepareDataForTraining <- function(
     filepath = file.backend,
     name = type.data,
     verbose = verbose,
-    chunkdim = c(nrow(x), 1)
+    chunkdim = c(number.cols, ncol(counts)),
+    level = compression.level
   )
 
   return(SummarizedExperiment::SummarizedExperiment(
@@ -1210,6 +1249,8 @@ prepareDataForTraining <- function(
   type.data = type.data,
   combine = combine,
   file.backend = NULL,
+  number.cols = number.cols,
+  compression.level = NULL,
   verbose = verbose
 ) {
 
@@ -1224,13 +1265,13 @@ prepareDataForTraining <- function(
   }
   if (combine == "both") {
     counts <- cbind(
-      assay(object@single.cell.sim)[, unlist(object@prob.cell.types[[type.data]]@set.list)],
+      assay(object@single.cell.final)[, unlist(object@prob.cell.types[[type.data]]@set.list)],
       counts
     )
     gene.list <- intersect(rowData(bulk.sim(object)[[type.data]])[[1]],
-                           rownames(assay(object@single.cell.sim)))
+                           rownames(assay(object@single.cell.final)))
     sample.names <- c(
-      colnames(assay(object@single.cell.sim)[,
+      colnames(assay(object@single.cell.final)[,
                                              unlist(object@prob.cell.types[[type.data]]@set.list)]),
       colData(object@bulk.sim[[type.data]])[[1]]
     )
@@ -1254,8 +1295,8 @@ prepareDataForTraining <- function(
     sample.names <- colData(object@bulk.sim[[type.data]])[[1]]
     probs.matrix <- object@prob.cell.types[[type.data]]@prob.matrix/100
   } else if (combine == "single-cell") {
-    gene.list <- rownames(assay(object@single.cell.sim))
-    colnames(assay(object@single.cell.sim)[,unlist(
+    gene.list <- rownames(assay(object@single.cell.final))
+    colnames(assay(object@single.cell.final)[,unlist(
       object@prob.cell.types[[type.data]]@set.list
     )])
     probs.matrix <- matrix(unlist(sapply(

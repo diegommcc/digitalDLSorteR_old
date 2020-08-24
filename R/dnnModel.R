@@ -335,8 +335,18 @@ saveTrainedModelAsH5 <- function(
       stop(paste(file.path, "file exists"))
     }
   }
+  if (is(trained.model(object)@model, "list")) {
+    warning(paste("Trained model is not a keras object, but a R list with",
+                  "architecture of network and weights. The R object will be",
+                  "compiled and saved as HDF5 file, but the optimizer state",
+                  "will not be saved\n\n"))
+    model <- .loadModelFromJSON(trained.model(object))
+    model <- model(model)
+  } else {
+    model <- trained.model(object)@model
+  }
   tryCatch({
-    save_model_hdf5(object = object@trained.model@model,
+    save_model_hdf5(object = model,
                     filepath = file.path,
                     overwrite = overwrite,
                     include_optimizer = TRUE)
@@ -446,7 +456,7 @@ plotTrainingHistory <- function(
 }
 
 
-#' Load data to deconvolute from text file.
+#' Load data to deconvolute from tabulated text file.
 #'
 #' Load data to deconvolute from text file. Accepted formats are tsv and tas.gz.
 #'
@@ -549,22 +559,95 @@ loadDeconvDataFromSummarizedExperiment <- function(
   return(object)
 }
 
-## función para establecer el fichero desde el que llevar a cabo la predicción
-# giveFilepathDataForDeconv <- function(
-#   object,
-#   file.path,
-#   name.data,
-#   chunk.size
-# ) {
-# }
+
+.simplifySet <- function(vec, index, set) {
+  summ <- sum(vec[index])
+  # vec <- vec[-index]
+  names.vec <- names(vec)
+  vec <- c(vec, summ)
+  names(vec) <- c(names.vec, set)
+  return(vec)
+}
+
+.simplifyMajority <- function(vec, index) {
+  maxim <- which.max(vec[index])
+  summ <- sum(vec[index])
+  vec[index[-maxim]] <- 0
+  vec[index[maxim]] <- summ
+  return(vec)
+}
+
+.simplifySetGeneral <- function(results, simplify.set) {
+  cell.types <- colnames(results)
+  if (is.null(names(simplify.set)) ||
+      length(names(simplify.set)) != length(simplify.set)) {
+    stop("Each element in the list must have the corresponding new cell type")
+  }
+  lapply(X = simplify.set, FUN = function(x, types) {
+    if (!all(x %in% types)) {
+      stop("Some elements in simplify.set are not present in cell types ",
+           "considered by the model")
+    } else if (length(x) < 2) {
+      stop("The minimum number of cell types for simplifying is two")
+    }
+  }, types = cell.types)
+
+  index <- lapply(X = simplify.set, FUN = function(x) unique(which(colnames(results) %in% x)))
+  if (any(duplicated(unlist(index)))) {
+    stop("It is not possible assign a determined cell type more than once")
+  }
+  ## for more than 1 subset
+  r <- 1
+  for (n in index) {
+    results <- t(apply(
+      results,
+      FUN = .simplifySet,
+      MARGIN = 1,
+      index = n,
+      set = names(index)[r]
+    ))
+    r <- r + 1
+  }
+  results <- results[, -unlist(index)]
+  # colnames(results) <- c(na.omit(colnames(results)), names(index))
+  return(results)
+}
+
+.simplifyMajorityGeneral <- function(results, simplify.majority) {
+  cell.types <- colnames(results)
+  lapply(X = simplify.majority, FUN = function(x, types) {
+    if (!all(x %in% types)) {
+      stop("Some elements in simplify.set are not present in cell types ",
+           "considered by the model")
+    } else if (length(x) < 2) {
+      stop("The minimum number of cell types for simplifying is two")
+    }
+  }, types = cell.types)
+
+  index <- lapply(X = simplify.majority, FUN = function(x) unique(which(colnames(results) %in% x)))
+  if (any(duplicated(unlist(index)))) {
+    stop("It is not possible assign a determined cell type more than once")
+  }
+  for (n in index) {
+    results <- t(apply(
+      results,
+      FUN = .simplifyMajority,
+      MARGIN = 1,
+      index = n
+    ))
+  }
+  return(results)
+}
 
 
 #' Deconvolute bulk gene expression samples (RNA-Seq) using a pre-trained
 #' DigitalDLSorter model.
 #'
-#' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
-#' quantifying the proportion of cell types present in a bulk sample. See in
-#' Details the available models.
+#' Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion
+#' of cell types present in a bulk sample. See in Details the available models.
+#' For situations where there are cell types exclusive to each other because
+#' it does not make sense that they appear together, see arguments
+#' \code{simplify.set} and \code{simplify.majority}.
 #'
 #' This method uses a pre-trained Deep Neural Network model to enumerate
 #' and quantify the cell types present in bulk RNA-Seq samples. For the moment,
@@ -580,27 +663,51 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #'
 #' @param data A matrix bulk gene expression with
 #' @param model Pre-trained DNN model to use for deconvoluting process.
-#' For the moment, the available
-#' models are for deconvoluting RNA-Seq samples from breast cancer ('breast') and
-#' colon cancer ('colon') environments.
+#' For the moment, the available models are for RNA-Seq samples from breast
+#' cancer ('breast') environment.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
+#' @param simplify.set List specifying which cell types should be compressed
+#' into a new label whose name will be the list item. See examples for details.
+#' @param simplify.majority List specifying which cell types should be compressed
+#' into the cell types with greater proportion in each sample. Unlike
+#' \code{simplify.set}, it allows to maintain the complexity of the results
+#' while compressing the information, because it is not created a new label.
 #' @param verbose Show messages during the execution.
+#'
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
 #' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
 #' type in \eqn{i} sample.
 #'
 #' @export
 #'
-#' @seealso \code{\link{deconvDigitalDLSorterObj}}.
+#' @seealso \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
-#' DDLSChung <- trainDigitalDLSorterModel(
-#'   object = DDLSChung,
-#'   batch.size = 128,
-#'   num.epochs = 20
+#' res.1 <- deconvDigitalDLSorter(
+#'   data = TCGA.breast.small,
+#'   model = "breast",
+#'   normalize = TRUE
 #' )
+#'
+#' ## simplify arguments
+#' simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+#'                  Bcells = c("Bmem", "BGC"))
+#' ## in this case,  the item names from list will be the new labels
+#' res.2 <- deconvDigitalDLSorter(
+#'   TCGA.breast.small,
+#'   model = "breast",
+#'   normalize = TRUE,
+#'   simplify.set = simplify)
+#'
+#' ## in this case, the cell type with greatest proportion will be the new label
+#' ## the rest of proportion cell types will be added to the greatest
+#' res.3 <- deconvDigitalDLSorter(
+#'   TCGA.breast.small,
+#'   model = "breast",
+#'   normalize = TRUE,
+#'   simplify.majority = simplify)
 #'
 #' @references
 #' Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,
@@ -612,8 +719,9 @@ deconvDigitalDLSorter <- function(
   data,
   model = "breast",
   batch.size = 128,
-  normalize = FALSE,
-  simplify = NULL,
+  normalize = TRUE,
+  simplify.set = NULL,
+  simplify.majority = NULL,
   verbose = TRUE
 ) {
   if (!is.matrix(data) && !is.data.frame(data)) {
@@ -621,15 +729,12 @@ deconvDigitalDLSorter <- function(
   }
   if (model == "breast") {
     model.dnn <- digitalDLSorteR::breast.chung
-    model.dnn <- .loadModelFromJSON(model.dnn)
-  } else if (model == "colon") {
-    model.dnn <- digitalDLSorteR::colon.li
-    model.dnn <- .loadModelFromJSON(model.dnn)
+  } else {
+    stop("model provided does not exist")
   }
+  model.dnn <- .loadModelFromJSON(model.dnn)
 
-  ## check data --> habría que hacer algún checkeo sobre la matriz, genes,
-  ## check si hay duplicados: hacer función para ello y que funcione también
-  ## cuando se cargan los datos en loadRealSCProfiles
+  ## check data --> check if there are duplicated genes and aggregate
   results <- .deconvCore(
     deconv.counts = data,
     model = model.dnn,
@@ -637,9 +742,28 @@ deconvDigitalDLSorter <- function(
     normalize = normalize,
     verbose = verbose
   )
-  if (!is.null(simplify)) {
-    index <- which(colnames(results) %in% simplify)
-    results <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
+  if (!is.null(simplify.set) && !is.null(simplify.majority)) {
+    stop("Only one type of simplification must be selected")
+  } else {
+    if (!is.null(simplify.set)) {
+      if (!is(simplify.set, "list")) {
+        stop("Simplify arguments must be list with each element being the cell types",
+             "to compress")
+      }
+      results <- .simplifySetGeneral(
+        results = results,
+        simplify.set = simplify.set
+      )
+    } else if (!is.null(simplify.majority)) {
+      if (!is(simplify.majority, "list")) {
+        stop("Simplify arguments must be list with each element being the cell types",
+             "to compress")
+      }
+      results <- .simplifyMajorityGeneral(
+        results = results,
+        simplify.majority = simplify.majority
+      )
+    }
   }
 
   message("DONE")
@@ -667,6 +791,16 @@ deconvDigitalDLSorter <- function(
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
+#' @param simplify.set List specifying which cell types should be compressed
+#' into a new label whose name will be the list item. See examples for details.
+#' The results are stored in a list with normal and simpli.majority results
+#' (if provided). The name of the element in the list is \code{'simpli.set'}.
+#' @param simplify.majority List specifying which cell types should be compressed
+#' into the cell types with greater proportion in each sample. Unlike
+#' \code{simplify.set}, it allows to maintain the complexity of the results
+#' while compressing the information, because it is not created a new label.
+#' The results are stored in a list with normal and simpli.set results
+#' (if provided). The name of the element in the list is \code{'simpli.majority'}.
 #' @param verbose Show messages during the execution.
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
 #' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
@@ -677,7 +811,7 @@ deconvDigitalDLSorter <- function(
 #' @seealso \code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}
 #'
 #' @examples
-#' DDLSChung <- trainDigitalDLSorterModel(
+#' DDLSChung <- deconvDigitalDLSorterObj(
 #'   object = DDLSChung,
 #'   batch.size = 128,
 #'   num.epochs = 20
@@ -692,8 +826,9 @@ deconvDigitalDLSorterObj <- function(
   object,
   name.data,
   batch.size = 128,
-  normalize = FALSE,
-  simplify = NULL,
+  normalize = TRUE,
+  simplify.set = NULL,
+  simplify.majority = NULL,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
@@ -712,16 +847,6 @@ deconvDigitalDLSorterObj <- function(
     trained.model(object) <- model.comp
   }
 
-  ## comming soon
-  # if (!is.null(file.path)) {
-  #   if (!file.exists(file.path)) {
-  #     stop("The provided file does not exists")
-  #   }
-  #   message(paste("=== Deconvolution of data stored on disk in", file.path, "\n"))
-  #   ## set generator that works with CSV files on disk
-  # } else {
-  # message("=== Deconvolution of data provided in deconv.data slot of DigitalDLSorter object")
-  ## access to data from object. Todo esto lo implemento en una función interna
   if (missing(name.data)) {
     message("   No name.data provided. Using the first dataset\n")
     index <- 1
@@ -738,10 +863,30 @@ deconvDigitalDLSorterObj <- function(
     verbose = verbose
   )
 
-  if (!is.null(simplify)) {
-    index <- which(colnames(results) %in% simplify)
-    results.sim <- t(apply(results, FUN = .sumMajority, MARGIN = 1, index = index))
-    object@deconv.results[[name.data]] <- list(raw = results, sim = results.sim)
+  if (!is.null(simplify.set) || !is.null(simplify.majority)) {
+    object@deconv.results[[name.data]] <- list(raw = results)
+    if (!is.null(simplify.set)) {
+      if (!is(simplify.set, "list")) {
+        stop("Simplify arguments must be list with each element being the cell types",
+             "to compress")
+      }
+      results.set <- .simplifySetGeneral(
+        results = results,
+        simplify.set = simplify.set
+      )
+      object@deconv.results[[name.data]][["simpli.set"]] <- results.set
+    }
+    if (!is.null(simplify.majority)) {
+      if (!is(simplify.majority, "list")) {
+        stop("Simplify arguments must be list with each element being the cell types",
+             "to compress")
+      }
+      results.maj <- .simplifyMajorityGeneral(
+        results = results,
+        simplify.majority = simplify.majority
+      )
+      object@deconv.results[[name.data]][["simpli.majority"]] <- results.maj
+    }
   } else {
     object@deconv.results[[name.data]] <- results
   }
@@ -863,13 +1008,4 @@ deconvDigitalDLSorterObj <- function(
   return(object)
 }
 
-# .predictDeconvFileGenerator <- function(
-#   object,
-#   name.data,
-#   batch.size,
-#   transpose,
-#   normalize
-# ) {
-#
-# }
 

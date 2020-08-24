@@ -282,7 +282,7 @@ estimateZinbwaveParams <- function(
 #' if you have 10 different cell types on your dataset, if \code{n.cells = 100},
 #' then 1000 cell profiles will be simulated).
 #' @param verbose Show messages during the execution.
-#' @return A \code{DigitalDLSorter} object with \code{single.cell.sim} slot containing
+#' @return A \code{DigitalDLSorter} object with \code{single.cell.final} slot containing
 #' a \code{SingleCellExperiment} object with the simulated single-cell profiles.
 #'
 #' @export
@@ -323,8 +323,8 @@ simSingleCellProfiles <- function(
     stop(paste("single.cell.real slot is empty. To simulate single-cell profiles,",
                "DigitalDLSorter object must contain the original data. See ?CreateDigitalDLSorterObject"))
   }
-  if (!is.null(single.cell.sim(object = object))) {
-    warning("single.cell.sim slot already has a SingleCellExperiment object. Note that it will be overwritten\n",
+  if (!is.null(single.cell.final(object = object))) {
+    warning("single.cell.final slot already has a SingleCellExperiment object. Note that it will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
   }
 
@@ -458,7 +458,7 @@ simSingleCellProfiles <- function(
   sim.sce <- CreateSCEObject(counts = sim.counts,
                              cells.metadata = sim.cells.metadata,
                              genes.metadata = list.data[[3]])
-  single.cell.sim(object) <- sim.sce
+  single.cell.final(object) <- sim.sce
 
   message("DONE")
   return(object)

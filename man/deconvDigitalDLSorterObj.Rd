@@ -8,8 +8,9 @@ deconvDigitalDLSorterObj(
   object,
   name.data,
   batch.size = 128,
-  transpose = FALSE,
-  normalize = FALSE,
+  normalize = TRUE,
+  simplify.set = NULL,
+  simplify.majority = NULL,
   verbose = TRUE
 )
 }
@@ -23,10 +24,19 @@ it is not provided, the first dataset will be used.}
 \item{batch.size}{Number of samples per gradient update. If unspecified,
 \code{batch.size} will default to 128.}
 
-\item{transpose}{Transpose data for set features (genes) as columns and
-samples as rows. \code{TRUE} by default.}
-
 \item{normalize}{Normalize data before deconvolution. \code{TRUE} by default.}
+
+\item{simplify.set}{List specifying which cell types should be compressed
+into a new label whose name will be the list item. See examples for details.
+The results are stored in a list with normal and simpli.majority results
+(if provided). The name of the element in the list is \code{'simpli.set'}.}
+
+\item{simplify.majority}{List specifying which cell types should be compressed
+into the cell types with greater proportion in each sample. Unlike
+\code{simplify.set}, it allows to maintain the complexity of the results
+while compressing the information, because it is not created a new label.
+The results are stored in a list with normal and simpli.set results
+(if provided). The name of the element in the list is \code{'simpli.majority'}.}
 
 \item{verbose}{Show messages during the execution.}
 }
@@ -48,7 +58,7 @@ own data. If you want to use a pre-trained model, see
 \code{\link{deconvDigitalDLSorter}}.
 }
 \examples{
-DDLSChung <- trainDigitalDLSorterModel(
+DDLSChung <- deconvDigitalDLSorterObj(
   object = DDLSChung,
   batch.size = 128,
   num.epochs = 20

@@ -2,7 +2,8 @@
 % Please edit documentation in R/loadData.R
 \name{loadRealSCProfiles}
 \alias{loadRealSCProfiles}
-\title{Load scRNA-Seq data into a \code{DigitalDLSorter} object.}
+\title{Load real scRNA-Seq data into a \code{DigitalDLSorter} object for simulating
+new profiles.}
 \usage{
 loadRealSCProfiles(
   single.cell.real,
@@ -17,14 +18,14 @@ loadRealSCProfiles(
 \item{single.cell.real}{If data is provided from files, \code{single.cell.real}
 must be a vector with three elements: single-cell counts, cells metadata and
 genes metadata. If data is provided from a \code{SingleCellExperiment} object,
-singlecell counts must be in \code{assay} slot, cells metadata in
+single-cell counts must be in \code{assay} slot, cells metadata in
 \code{colData} and genes metadata in \code{rowData}.}
 
-\item{cell.ID.column}{Name or number of the column in cells.metadata
+\item{cell.ID.column}{Name or number of the column in cells metadata
 corresponding with cell names in expression matrix.}
 
-\item{gene.ID.column}{Name or number of the column in genes.metadata
-corresponding with the nonation used for features/genes.}
+\item{gene.ID.column}{Name or number of the column in genes metadata
+corresponding with the names used for features/genes.}
 
 \item{min.counts}{Minimum gene counts to filter (0 by default).}
 

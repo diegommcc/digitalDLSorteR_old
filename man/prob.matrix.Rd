@@ -3,7 +3,8 @@
 \name{prob.matrix}
 \alias{prob.matrix}
 \alias{prob.matrix<-}
-\title{Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes} object.}
+\title{Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes}
+object.}
 \usage{
 prob.matrix(object)
 
@@ -16,5 +17,6 @@ prob.matrix(object) <- value
 rows.}
 }
 \description{
-Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes} object.
+Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes}
+object.
 }

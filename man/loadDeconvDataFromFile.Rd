@@ -2,7 +2,7 @@
 % Please edit documentation in R/dnnModel.R
 \name{loadDeconvDataFromFile}
 \alias{loadDeconvDataFromFile}
-\title{Load data to deconvolute from text file.}
+\title{Load data to deconvolute from tabulated text file.}
 \usage{
 loadDeconvDataFromFile(object, file.path, name.data = NULL)
 }

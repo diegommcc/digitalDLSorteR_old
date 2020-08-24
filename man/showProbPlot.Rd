@@ -4,7 +4,7 @@
 \alias{showProbPlot}
 \title{Show probability plots generated with \code{\link{generateTrainAndTestBulkProbMatrix}}.}
 \usage{
-showProbPlot(object, type.data, set, type.plot = "maxprob")
+showProbPlot(object, type.data, set, type.plot = "nminx")
 }
 \arguments{
 \item{object}{\code{DigitalDLSorter} object with \code{prob.cell.types} slot
@@ -17,7 +17,7 @@ generating the probability matrix show.}
 
 \item{type.plot}{Character determining which type of visualitation show.
 It can be \code{boxplot}, \code{violinplot}, \code{linesplot} or
-\code{maxprob}.}
+\code{nmin}.}
 }
 \value{
 \code{ggplot} object.

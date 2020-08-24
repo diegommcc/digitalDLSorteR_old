@@ -9,11 +9,15 @@ corrExpPredPlot(
   object,
   facet.by,
   color.by,
-  colors = color.list,
+  colors,
+  corr = "pearson",
   filter.sc = TRUE,
+  pos.x.label = 0.01,
+  pos.y.label = 0.95,
   ncol = NULL,
   nrow = NULL,
-  title = NULL
+  title = NULL,
+  theme = theme_grey()
 )
 }
 \arguments{

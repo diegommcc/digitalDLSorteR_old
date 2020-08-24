@@ -1,13 +1,14 @@
 #' @include AllClasses.R
 NULL
 
-## all_generics file
-
-## getters and setters for ProbMatrixCellTypes class ---------------------------
+################################################################################
+############## getters and setters for ProbMatrixCellTypes class ###############
+################################################################################
 
 ## prob.matrix
 
-#' @title Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes} object.
+#' @title Get and set \code{prob.matrix} slot in a \code{ProbMatrixCellTypes}
+#' object.
 #'
 #' @param object A \code{ProbMatrixCellTypes} object.
 #'
@@ -91,9 +92,12 @@ setMethod(f = "plots<-",
           })
 
 
-## getters and setters for DigitalDLSorterDNN class ----------------------------
+################################################################################
+############## getters and setters for DigitalDLSorterDNN class ################
+################################################################################
 
 ## model
+
 #' @title Get and set \code{model} slot in a \code{DigitalDLSorterDNN} object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
@@ -305,8 +309,9 @@ setMethod(f = "eval.stats.samples<-",
             return(object)
           })
 
-
-## getters and setters for DigitalDLSorter class -------------------------------
+################################################################################
+################ getters and setters for DigitalDLSorter class #################
+################################################################################
 
 ## single.cell.real
 
@@ -365,31 +370,31 @@ setMethod(f = "zinb.params<-",
             return(object)
           })
 
-## single.cell.sim
+## single.cell.final
 
-#' @title Get and set \code{single.cell.sim} slot in a \code{DigitalDLSorter}
+#' @title Get and set \code{single.cell.final} slot in a \code{DigitalDLSorter}
 #' object.
 #'
 #' @param object A \code{DigitalDLSorter} object.
 #'
-#' @rdname single.cell.sim
-#' @export single.cell.sim
+#' @rdname single.cell.final
+#' @export single.cell.final
 #'
-setGeneric("single.cell.sim", function(object) standardGeneric("single.cell.sim"))
-setMethod(f = "single.cell.sim",
+setGeneric("single.cell.final", function(object) standardGeneric("single.cell.final"))
+setMethod(f = "single.cell.final",
           signature = "DigitalDLSorter",
-          definition = function(object) object@single.cell.sim)
+          definition = function(object) object@single.cell.final)
 
 #' @param value A \code{SingleCellExperiment} object with real and simulated
 #' single-cell profiles.
-#' @rdname single.cell.sim
-#' @export single.cell.sim<-
+#' @rdname single.cell.final
+#' @export single.cell.final<-
 #'
-setGeneric("single.cell.sim<-", function(object, value) standardGeneric("single.cell.sim<-"))
-setMethod(f = "single.cell.sim<-",
+setGeneric("single.cell.final<-", function(object, value) standardGeneric("single.cell.final<-"))
+setMethod(f = "single.cell.final<-",
           signature = "DigitalDLSorter",
           definition = function(object, value) {
-            object@single.cell.sim <- value
+            object@single.cell.final <- value
             return(object)
           })
 
@@ -650,63 +655,24 @@ setMethod(f = "project<-",
           })
 
 
-
-## generic for save function: save as RDA a keras model
-# setGeneric("save", function(object, file, name) standardGeneric("save"))
-#
-# setMethod("save", "DigitalDLSorterDNN", definition = function(object, file, name) {
-#   if ("keras.engine.sequential.Sequential" %in% class(model(object))) {
-#     object <- list(object)
-#     names(object) <- name
-#     object[[1]] <- .saveModelToJSON(object[[1]])
-#     base::save(list = names(object), file = file, envir = list2env(object))
-#   } else if (class(model(object)) == "list") {
-#     object <- list(object)
-#     names(object) <- name
-#     base::save(list = names(object), file = file, envir = list2env(object))
-#   } else {
-#     stop("No valid DigitalDLSorterDNN object")
-#   }
-# })
-
-# setMethod("save", "DigitalDLSorter", definition = function(object, file, name) {
-#   if (!is.null(trained.model(object))) {
-#     if ("keras.engine.sequential.Sequential" %in% class(model(object@trained.model))) {
-#       name.var <- deparse(substitute(object))
-#       object <- .saveModelFromJSON(object)
-#       assign(x = eval(substitute(name.var)), value = object)
-#       base::save(name.var, file = file)
-#     } else if (class(model(object)) == "list") {
-#       name.var <- deparse(substitute(object))
-#       assign(x = eval(substitute(name.var)), value = object)
-#       base::save(get(name.var), file = file)
-#     } else {
-#       stop("No valid DigitalDLSorterDNN object")
-#     }
-#   } else {
-#     base::save(object, file = file)
-#   }
-#
-# })
-
-
 #' Save \code{DigitalDLSorter} object as RDS file.
 #'
 #' Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS files.
-#' We developed this generic with the aim of changing the behavior of the function
-#' and saving the structure and weights of DNN model as text objects. This is
-#' because \code{keras} models are not able to be stored natively as R objects
+#' We developed this generic with the aim of changing the behavior of the base
+#' function and saving the structure and weights of DNN model as R native objects.
+#' This is because \code{keras} models are not able to be stored natively as R objects
 #' (e.g. RData or RDS files). By saving the structure as JSON character object and
 #' weights as list object, it is possible recovering the model and carrying
-#' out perdictions.
+#' out predictions. If \code{trained.model} slot is empty, the function will have
+#' the usual behavior.
 #'
 #' With this option, the state of optimizer is not saved, only architecture and
 #' weights. It is possible to save completely the model as HDF5 file with
 #' \code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
 #' object with \code{\link{loadTrainedModelFromH5}} function.
 #'
-#' Moreover, if you want to save the object as rda file, it is possible
-#' by transforming before the model to an allowed R object with \code{preparingToSave}
+#' Moreover, if you want to save the object as RDA file, it is possible
+#' by converting the model to an allowed R object with \code{\link{preparingToSave}}
 #' function.
 #
 #' @inheritParams saveRDS
@@ -783,11 +749,47 @@ setMethod("saveRDS", "DigitalDLSorter", definition = function(
   )
 })
 
-## falta documentación
 
+#' Plot a bar plot with deconvoluted cell type proportions.
+#'
+#' This function allows to plot a bar plot with the deconvoluted cell type
+#' proportions of a given bulk RNA-seq sample using ggplot2.
+#'
+#' @param data \code{DigitalDLSorter} object with \code{deconv.results} slot or
+#' \code{data.frame}/\code{matrix} with cell types as columns and samples as
+#' rows.
+#' @param colors Vector with colors that will be used.
+#' @param simplified Vector with cell types that will be compressed into the
+#' cell type with more probability in each sample by majority voting. This option
+#' is intended for cases with exclusive cell types that they have not sense that
+#' appear in the same sample.
+#' @param color.line Color of border bars.
+#' @param x.label Label of x axis.
+#' @param rm.x.text Logical value indicating if remove x axis ticks (names of
+#' samples).
+#' @param title Title of plot.
+#' @param legend.title Title of legend plot.
+#' @param angle Angle of text ticks.
+#' @param name.data If a DigitalDLSorter is given, name of the element that
+#' stores the results in \code{deconv.results} slot. If not, forget it.
+#'
+#' @export
+#'
+#' @examples
+#' ## Using a matrix
+#' barPlotCellTypes(deconvResults)
+#'
+#' ## Using a DigitalDLSorter object
+#' barPlotCellTypes(DDLS.Chung)
+#'
+#' @rdname barPlotCellTypes
+#'
+#' @seealso \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
+#'
 setGeneric("barPlotCellTypes", function(
   data,
-  colors = NULL,
+  colors,
+  simplify = NULL,
   color.line = NA,
   x.label = "Bulk samples",
   rm.x.text = FALSE,
@@ -799,13 +801,16 @@ setGeneric("barPlotCellTypes", function(
   standardGeneric("barPlotCellTypes")
 })
 
+#' @export
+#'
+#' @rdname barPlotCellTypes
 setMethod(f = "barPlotCellTypes",
           signature(data = "DigitalDLSorter"),
           definition = function(
             data,
-            name.data = NULL,
-            simplified = FALSE,
             colors = NULL,
+            name.data = NULL,
+            simplify = NULL,
             color.line = NA,
             x.label = "Bulk samples",
             rm.x.text = FALSE,
@@ -819,11 +824,18 @@ setMethod(f = "barPlotCellTypes",
               message("'name.data' not provided. By default, the first results are taken")
               name.data <- 1
             }
-            if (simplified) {
+            if (!is.null(simplify)) {
               if (!is(deconv.results(data)[[name.data]], "list")) {
                 stop("No simplified results available")
               } else {
-                res <- deconv.results(data)[[name.data]][[2]]
+                if (simplify != "simpli.set" && simplify != "simpli.majority") {
+                  stop("simplify argument must be one of the next options: ",
+                       "'simpli.set' or 'simpli.majority'")
+                } else if (!any(simplify == names(deconv.results(data)[[name.data]]))) {
+                  stop(paste(simplify, "data are not present in DigitalDLSorter object"))
+                }
+
+                res <- deconv.results(data)[[name.data]][[simplify]]
               }
             } else {
               if (is(deconv.results(data)[[name.data]], "list")) {
@@ -832,7 +844,6 @@ setMethod(f = "barPlotCellTypes",
                 res <- deconv.results(data)[[name.data]]
               }
             }
-
             plot <- .barPlot(
               data = res,
               colors = colors,
@@ -846,11 +857,14 @@ setMethod(f = "barPlotCellTypes",
             return(plot)
           })
 
+#' @export
+#'
+#' @rdname barPlotCellTypes
 setMethod(f = "barPlotCellTypes",
           signature(data = "ANY"),
           definition = function(
             data,
-            colors = NULL,
+            colors,
             color.line = NA,
             x.label = "Bulk samples",
             rm.x.text = FALSE,

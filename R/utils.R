@@ -26,7 +26,7 @@ getProbMatrix <- function(object, type.data) {
 #'  generating the probability matrix show.
 #' @param type.plot Character determining which type of visualitation show.
 #' It can be \code{boxplot}, \code{violinplot}, \code{linesplot} or
-#' \code{maxprob}.
+#' \code{nmin}.
 #'
 #' @return \code{ggplot} object.
 #'
@@ -45,7 +45,7 @@ showProbPlot <- function(
   object,
   type.data,
   set,
-  type.plot = "maxprob"
+  type.plot = "nminx"
 ) {
   if (class(object) != "DigitalDLSorter") {
     stop("The object provided is not of DigitalDLSorter class")
@@ -57,8 +57,8 @@ showProbPlot <- function(
     stop("ProbMatrixCellTypes object has not saved plots")
   } else if (set < 1 | set > 6) {
     stop("set argument must be a number from 1 to 6")
-  } else if (!any(type.plot == c("violinplot", "boxplot", "linesplot", "maxprob"))) {
-    stop("type.plot argument must be one of the next options: violinplot, boxplot, linesplot or maxprob")
+  } else if (!any(type.plot == c("violinplot", "boxplot", "linesplot", "nmix"))) {
+    stop("type.plot argument must be one of the next options: violinplot, boxplot, linesplot or nmix")
   }
   return(object@prob.cell.types[[type.data]]@plots[[set]][[type.plot]])
 }
@@ -66,7 +66,7 @@ showProbPlot <- function(
 
 .barPlot <- function(
   data,
-  colors = color.list,
+  colors,
   color.line = NA,
   x.label = "Bulk samples",
   rm.x.text = FALSE,
@@ -78,11 +78,13 @@ showProbPlot <- function(
 
   p <- ggplot(data = df.res, aes(x = Var1, y = Proportion, fill = Var2)) +
     geom_bar(stat = "identity", color = color.line) + theme_classic()
-  if (!is.null(colors)) {
+  if (!missing(colors)) {
     if (length(colors) < length(unique(df.res$Var2)))
       stop("Number of colors introduced is not enough to the number of cell types")
-    p <- p + scale_fill_manual(values = colors)
+  } else {
+    colors <- color.list()
   }
+  p <- p + scale_fill_manual(values = colors)
   if (is.null(x.label)) {
     p <- p + theme(axis.title.x = element_blank())
   } else {

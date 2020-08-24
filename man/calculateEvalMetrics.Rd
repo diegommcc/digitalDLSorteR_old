@@ -4,10 +4,10 @@
 \alias{calculateEvalMetrics}
 \title{Calculate evaluation metrics for predicted cell types in test data.}
 \usage{
-calculateEvalMetrics(object, metrics = c("MAE", "MSE"))
+calculateEvalMetrics(object, metrics = c("MAE", "MSE"), simplify = NULL)
 }
 \arguments{
-\item{object}{\code{DigitalDLSorter} object with \code{single.cell.sim} and
+\item{object}{\code{DigitalDLSorter} object with \code{single.cell.final} and
 \code{prob.cell.types} slots.}
 
 \item{metrics}{Metrics used for evaluating the performance of the model. Mean

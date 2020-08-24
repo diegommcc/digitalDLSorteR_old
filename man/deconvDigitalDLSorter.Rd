@@ -9,8 +9,9 @@ deconvDigitalDLSorter(
   data,
   model = "breast",
   batch.size = 128,
-  transpose = FALSE,
-  normalize = FALSE,
+  normalize = TRUE,
+  simplify.set = NULL,
+  simplify.majority = NULL,
   verbose = TRUE
 )
 }
@@ -18,17 +19,21 @@ deconvDigitalDLSorter(
 \item{data}{A matrix bulk gene expression with}
 
 \item{model}{Pre-trained DNN model to use for deconvoluting process.
-For the moment, the available
-models are for deconvoluting RNA-Seq samples from breast cancer ('breast') and
-colon cancer ('colon') environments.}
+For the moment, the available models are for RNA-Seq samples from breast
+cancer ('breast') environment.}
 
 \item{batch.size}{Number of samples per gradient update. If unspecified,
 \code{batch.size} will default to 128.}
 
-\item{transpose}{Transpose data for set features (genes) as columns and
-samples as rows. \code{TRUE} by default.}
-
 \item{normalize}{Normalize data before deconvolution. \code{TRUE} by default.}
+
+\item{simplify.set}{List specifying which cell types should be compressed
+into a new label whose name will be the list item. See examples for details.}
+
+\item{simplify.majority}{List specifying which cell types should be compressed
+into the cell types with greater proportion in each sample. Unlike
+\code{simplify.set}, it allows to maintain the complexity of the results
+while compressing the information, because it is not created a new label.}
 
 \item{verbose}{Show messages during the execution.}
 }
@@ -38,9 +43,11 @@ A \code{data.frame} with samples (\eqn{i}) as rows and cell types
 type in \eqn{i} sample.
 }
 \description{
-Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
-quantifying the proportion of cell types present in a bulk sample. See in
-Details the available models.
+Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion
+of cell types present in a bulk sample. See in Details the available models.
+For situations where there are cell types exclusive to each other because
+it does not make sense that they appear together, see arguments
+\code{simplify.set} and \code{simplify.majority}.
 }
 \details{
 This method uses a pre-trained Deep Neural Network model to enumerate
@@ -56,11 +63,29 @@ see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
 while the last uses \code{DigitalDLSorter} objects.
 }
 \examples{
-DDLSChung <- trainDigitalDLSorterModel(
-  object = DDLSChung,
-  batch.size = 128,
-  num.epochs = 20
+res.1 <- deconvDigitalDLSorter(
+  data = TCGA.breast.small,
+  model = "breast",
+  normalize = TRUE
 )
+
+## simplify arguments
+simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+                 Bcells = c("Bmem", "BGC"))
+## in this case,  the item names from list will be the new labels
+res.2 <- deconvDigitalDLSorter(
+  TCGA.breast.small,
+  model = "breast",
+  normalize = TRUE,
+  simplify.set = simplify)
+
+## in this case, the cell type with greatest proportion will be the new label
+## the rest of proportion cell types will be added to the greatest
+res.3 <- deconvDigitalDLSorter(
+  TCGA.breast.small,
+  model = "breast",
+  normalize = TRUE,
+  simplify.majority = simplify)
 
 }
 \references{
@@ -70,5 +95,5 @@ immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
 doi: \url{10.1038/ncomms15081}.
 }
 \seealso{
-\code{\link{deconvDigitalDLSorterObj}}.
+\code{\link{deconvDigitalDLSorterObj}}
 }

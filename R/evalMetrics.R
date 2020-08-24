@@ -5,12 +5,28 @@
 NULL
 
 
+## internal function to store default colors in order to avoid modify default
+## colors in ggplot2
+color.list <- function() {
+  color.list <- c(
+    RColorBrewer::brewer.pal(12, "Paired"), "#d45b91", "#374738",
+    RColorBrewer::brewer.pal(12, "Set3"),
+    RColorBrewer::brewer.pal(8, "Pastel2"), "#333333", "#5D5D5D",
+    "#888888", "#B3B3B3"
+  )
 
-color.list <- c(RColorBrewer::brewer.pal(12, "Paired"),
-                RColorBrewer::brewer.pal(12, "Set3"),
-                RColorBrewer::brewer.pal(8, "Pastel2"),
-                "#333333", "#5D5D5D",
-                "#888888", "#B3B3B3")
+  color.list.2 <- c(
+    RColorBrewer::brewer.pal(12, "Paired"), "#d45b91", "#374738",
+    RColorBrewer::brewer.pal(12, "Set3"),
+    RColorBrewer::brewer.pal(8, "Pastel2"),
+    "#333333", "#5D5D5D",
+    "#888888", "#B3B3B3"
+  )
+  color.list.2[11] <- "#e3dc5b"
+  color.list.2[15] <- "#60c4b4"
+
+  return(color.list.2)
+}
 
 
 #' Calculate evaluation metrics for predicted cell types in test data.
@@ -30,7 +46,7 @@ color.list <- c(RColorBrewer::brewer.pal(12, "Paired"),
 #' \code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
 #' object).
 #'
-#' @param object \code{DigitalDLSorter} object with \code{single.cell.sim} and
+#' @param object \code{DigitalDLSorter} object with \code{single.cell.final} and
 #' \code{prob.cell.types} slots.
 #' @param metrics Metrics used for evaluating the performance of the model. Mean
 #' absolute error (MAE) and mean squared error (MSE) by default.
@@ -122,7 +138,7 @@ calculateEvalMetrics <- function(
 ## square error
 .SqrErr <- function(x) (x$Prob - x$Pred)**2
 ## proportional square error
-.ppSqrErr <- function(x) x$SqrErr / x$pBin
+.ppSqrErr <- function(x) x$SqrErr / (x$pBin**2)
 
 ## absolute error
 .AbsErr <- function(x) abs(x$Prob - x$Pred)
@@ -200,14 +216,18 @@ se <- function(x) sqrt(var(x)/length(x))
 }
 
 .labelsErrorFacet <- function(object, error, facet.by, filter.sc) {
+  ## mean filtering sc profiles or not
+  if (!filter.sc) index.err <- 2
+  else index.err <- 3
+
   if (error %in% c("AbsErr", "ppAbsErr")) {
-    info <- trained.model(object)@eval.stats.samples[[2]]$MAE[[facet.by]]
+    info <- trained.model(object)@eval.stats.samples[[index.err]]$MAE[[facet.by]]
     if (error == "AbsErr")
       info <- info[, c(facet.by, "MAE.mean")]
     else if (error == "ppAbsErr")
       info <- info[, c(facet.by, "ppMAE.mean")]
   } else if (error %in% c("SqrErr", "ppSqrErr")) {
-    info <- trained.model(object)@eval.stats.samples[[2]]$MSE[[facet.by]]
+    info <- trained.model(object)@eval.stats.samples[[index.err]]$MSE[[facet.by]]
     if (error == "SqrErr")
       info <- info[, c(facet.by, "MSE.mean")]
     else if (error == "ppSqrErr")
@@ -270,7 +290,8 @@ se <- function(x) sqrt(var(x)/length(x))
 #'
 plotDistError <- function(
   object,
-  error = "AbsErr",
+  error,
+  colors,
   x.by = "pBin",
   facet.by = "nMix",
   color.by = "nMix",
@@ -279,7 +300,6 @@ plotDistError <- function(
   pos.x.label = 4.6,
   pos.y.label = 1,
   type = "violinplot",
-  colors = color.list,
   ylimit = NULL,
   nrow = NULL,
   ncol = NULL,
@@ -307,6 +327,9 @@ plotDistError <- function(
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
+  }
+  if (missing(colors)) {
+    colors <- color.list()
   }
   if (length(colors) < length(unique(amd[[color.by]]))) {
     stop("Colors provided are not enought")
@@ -417,12 +440,12 @@ plotDistError <- function(
 corrExpPredPlot <- function(
   object,
   facet.by,
-  corr = "pearson",
   color.by,
-  colors = color.list,
+  colors,
+  corr = "pearson",
   filter.sc = TRUE,
   pos.x.label = 0.01,
-  pos.y.label = 0.92,
+  pos.y.label = 0.95,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -442,9 +465,13 @@ corrExpPredPlot <- function(
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
+    # print(amd)
+  }
+  if (missing(colors)) {
+    colors <- color.list()
   }
   if (length(colors) < length(unique(amd[[color.by]]))) {
-    stop("Colors provided are not enought") ## generador de colores
+    stop("Colors provided are not enought")
   }
   if (is.null(title))
     title.plot <- "Correlation Expected/Predicted"
@@ -456,8 +483,8 @@ corrExpPredPlot <- function(
                             position = "jitter") +
     geom_abline(linetype = "dashed", colour = "gray40") +
     scale_color_manual(values = colors, name = color.by) +
-    scale_x_continuous(labels = c(0, 0.25, 0.5, 0.75, 1)) +
-    scale_y_continuous(labels = c(0, 0.25, 0.5, 0.75, 1)) +
+    scale_x_continuous(limits = c(0, 1), labels = c(0, 0.25, 0.5, 0.75, 1)) +
+    scale_y_continuous(limits = c(0, 1), labels = c(0, 0.25, 0.5, 0.75, 1)) +
     ggtitle(title.plot) + xlab("Expected") + ylab("Predicted") +
     stat_smooth(method = "lm", colour = "darkblue", alpha = 0.8, size = 0.8) +
     guides(colour = guide_legend(override.aes = list(size = 1.5))) +
@@ -507,10 +534,10 @@ corrExpPredPlot <- function(
 
 blandAltmanLehPlot <- function(
   object,
+  colors,
   facet.by,
   color.by,
   log.2 = TRUE,
-  colors = color.list,
   filter.sc = FALSE,
   density = TRUE,
   ncol = NULL,
@@ -528,12 +555,16 @@ blandAltmanLehPlot <- function(
     stop("Evaluation metrics are not well built, use 'calculateEvalMetrics'")
   } else if (!color.by %in% c("nMix", "CellType")) {
     stop("'color.by' provided is not valid. Options available are: nMix, CellType")
-  } else if (!facet.by %in% c("nMix", "CellType")) {
-    stop("'facet.by' provided is not valid. Options available are: nMix, CellType")
   }
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
+  }
+  if (missing(colors)) {
+    colors <- color.list()
+  }
+  if (length(colors) < length(unique(amd[[color.by]]))) {
+    stop("Colors provided are not enought")
   }
   if (log.2) {
     amd <- amd %>% mutate(
@@ -557,9 +588,16 @@ blandAltmanLehPlot <- function(
   else
     title.plot <- title
 
-  plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = amd[[color.by]])) +
-    theme + geom_point(size = 0.05) +
-    scale_color_manual(values = color.list, name = color.by) +
+  plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = amd[[color.by]]))
+
+  if (!is.null(facet.by)) {
+    if (!facet.by %in% c("nMix", "CellType")) {
+      stop("'facet.by' provided is not valid. Options available are: nMix, CellType")
+    }
+    plot <- plot + facet_wrap(as.formula(paste("~", facet.by)))
+  }
+  plot <- plot + theme + geom_point(size = 0.05) +
+    scale_color_manual(values = colors, name = color.by) +
     scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
     geom_hline(aes(yintercept = mean(Diff) + 1.96 * sd(Diff)),
@@ -567,7 +605,6 @@ blandAltmanLehPlot <- function(
     geom_hline(aes(yintercept = mean(Diff) - 1.96* sd(Diff)),
                linetype = "dashed", colour = "red") +
     xlab(x.lab) + ylab(y.lab) +
-    facet_wrap(as.formula(paste("~", facet.by))) +
     ggtitle(title.plot) +
     guides(colour = guide_legend(override.aes = list(size = 1.5))) +
     theme(plot.title = element_text(face = "bold", hjust = 0.5),

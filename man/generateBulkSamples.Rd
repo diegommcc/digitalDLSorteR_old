@@ -9,11 +9,12 @@ generateBulkSamples(
   type.data = "both",
   file.backend = NULL,
   threads = 2,
+  compression.level = NULL,
   verbose = TRUE
 )
 }
 \arguments{
-\item{object}{\code{DigitalDLSorter} object with \code{single.cell.sim} and
+\item{object}{\code{DigitalDLSorter} object with \code{single.cell.final} and
 \code{prob.cell.types} slots.}
 
 \item{type.data}{Type of data to generate among 'train', 'test' or 'both'

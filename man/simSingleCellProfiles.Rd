@@ -29,7 +29,7 @@ then 1000 cell profiles will be simulated).}
 \item{verbose}{Show messages during the execution.}
 }
 \value{
-A \code{DigitalDLSorter} object with \code{single.cell.sim} slot containing
+A \code{DigitalDLSorter} object with \code{single.cell.final} slot containing
 a \code{SingleCellExperiment} object with the simulated single-cell profiles.
 }
 \description{

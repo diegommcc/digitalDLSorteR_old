@@ -6,17 +6,21 @@
 \usage{
 plotDistError(
   object,
-  error = "AbsErr",
+  error,
+  colors,
   x.by = "pBin",
   facet.by = "nMix",
   color.by = "nMix",
   filter.sc = TRUE,
+  error.labels = FALSE,
+  pos.x.label = 4.6,
+  pos.y.label = 1,
   type = "violinplot",
-  colors = color.list,
   ylimit = NULL,
   nrow = NULL,
   ncol = NULL,
-  title = NULL
+  title = NULL,
+  theme = theme_grey()
 )
 }
 \arguments{
@@ -27,6 +31,10 @@ containing metrics in \code{eval.stats.samples} slot.}
 absolute error (\code{"AbsErr"}), proportional absolute error
 (\code{"ppAbsErr"}), squared error (\code{"SqrErr"}) or proportional
 squared error (\code{"ppSqrErr"}).}
+
+\item{colors}{Vector of colors to use. Only vectors with a number of colors
+equal to or greater than the levels of \code{color.by} will be accepted.
+By default is used a list of custom colors provided by us.}
 
 \item{x.by}{Variable used for x axis. When \code{facet.by} is not \code{NULL},
 the best option is \code{pBin} (probability bin). The options
@@ -45,10 +53,6 @@ are \code{nMix} (by number of different cell types) and \code{CellType}
 \item{filter.sc}{Filter prediction errors of single-cell profiles. If
 \code{TRUE}, (by default) only will be shown predition errors of bulk samples.}
 
-\item{colors}{Vector of colors to use. Only vectors with a number of colors
-equal to or greater than the levels of \code{color.by} will be accepted.
-By default is used a list of custom colors provided by us.}
-
 \item{ylimit}{Upper limit in y axis if it is needed. \code{NULL} by default.}
 
 \item{nrow}{Number of rows if \code{facet.by} is different than \code{NULL}.}
@@ -56,6 +60,8 @@ By default is used a list of custom colors provided by us.}
 \item{ncol}{Number of columns if \code{facet.by} is different than \code{NULL}.}
 
 \item{title}{Title of the plot.}
+
+\item{theme}{Ggplot theme.}
 }
 \description{
 Generate violin plot showing how errors are distributed. There are different

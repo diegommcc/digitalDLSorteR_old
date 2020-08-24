@@ -15,12 +15,13 @@ saveRDS(
 }
 \description{
 Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS files.
-We developed this generic with the aim of changing the behavior of the function
-and saving the structure and weights of DNN model as text objects. This is
-because \code{keras} models are not able to be stored natively as R objects
+We developed this generic with the aim of changing the behavior of the base
+function and saving the structure and weights of DNN model as R native objects.
+This is because \code{keras} models are not able to be stored natively as R objects
 (e.g. RData or RDS files). By saving the structure as JSON character object and
 weights as list object, it is possible recovering the model and carrying
-out perdictions.
+out predictions. If \code{trained.model} slot is empty, the function will have
+the usual behavior.
 }
 \details{
 With this option, the state of optimizer is not saved, only architecture and
@@ -28,8 +29,8 @@ weights. It is possible to save completely the model as HDF5 file with
 \code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
 object with \code{\link{loadTrainedModelFromH5}} function.
 
-Moreover, if you want to save the object as rda file, it is possible
-by transforming before the model to an allowed R object with \code{preparingToSave}
+Moreover, if you want to save the object as RDA file, it is possible
+by converting the model to an allowed R object with \code{\link{preparingToSave}}
 function.
 }
 \seealso{

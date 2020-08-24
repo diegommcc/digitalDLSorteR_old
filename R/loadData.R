@@ -194,9 +194,9 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                min.counts, "and min.cells = ", min.cells,
                "does not have entries"))
   }
-  message("\n=== Filtering features by min.counts and min.cells:")
-  message(paste("  - Selected features:",  dim(counts)[1]))
-  message(paste("  - Discarded features:", dim.bef[1] - dim(counts)[1]))
+  message("=== Filtering features by min.counts and min.cells:")
+  message(paste("    - Selected features:",  dim(counts)[1]))
+  message(paste("    - Discarded features:", dim.bef[1] - dim(counts)[1]))
 
   genes.metadata <- genes.metadata[genes.metadata[, gene.ID.column] %in%
                                      rownames(counts), , drop = FALSE]
@@ -255,12 +255,13 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   if (isTRUE(real)) {
     arg <- "single.cell.real"
   } else {
-    arg <- "single.cell.sim"
+    arg <- "single.cell.final"
   }
   if (is.null(single.cell)) {
     stop(paste(arg, "cannot be NULL"))
   } else if (is.null(cell.ID.column) || is.null(gene.ID.column)) {
-    stop("cell.ID.column and gene.ID.column are mandatory Please look ?loadRealSCProfiles or ?loadFinalSCProfiles")
+    stop("cell.ID.column and gene.ID.column are mandatory Please look ",
+         "?loadRealSCProfiles or ?loadFinalSCProfiles")
   }
 
   # load data from the allowed sources
@@ -318,12 +319,12 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #' @param single.cell.real If data is provided from files, \code{single.cell.real}
 #' must be a vector with three elements: single-cell counts, cells metadata and
 #' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
-#' singlecell counts must be in \code{assay} slot, cells metadata in
+#' single-cell counts must be in \code{assay} slot, cells metadata in
 #' \code{colData} and genes metadata in \code{rowData}.
-#' @param cell.ID.column Name or number of the column in cells.metadata
+#' @param cell.ID.column Name or number of the column in cells metadata
 #' corresponding with cell names in expression matrix.
-#' @param gene.ID.column Name or number of the column in genes.metadata
-#' corresponding with the nonation used for features/genes.
+#' @param gene.ID.column Name or number of the column in genes metadata
+#' corresponding with the names used for features/genes.
 #' @param min.counts Minimum gene counts to filter (0 by default).
 #' @param min.cells Minimum of cells with more than min.counts (0 by default).
 #' @param project Name of the project for \code{DigitaDLSorter} object.
@@ -385,7 +386,7 @@ loadRealSCProfiles <- function(
 #' object must contains single-cell counts in \code{assay} slot, cells metadata
 #' in \code{colData} slot and genes metadata in \code{rowData}.
 #'
-#' @param single.cell.real If data is provided from files, \code{single.cell.real}
+#' @param single.cell.final If data is provided from files, \code{single.cell.real}
 #' must be a vector with three elements: single-cell counts, cells metadata and
 #' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
 #' singlecell counts must be in \code{assay} slot, cells metadata in
@@ -413,7 +414,7 @@ loadRealSCProfiles <- function(
 #' )
 #'
 loadFinalSCProfiles <- function(
-  single.cell.real,
+  single.cell.final,
   cell.ID.column = 1,
   gene.ID.column = 1,
   min.counts = 0,
@@ -425,11 +426,12 @@ loadFinalSCProfiles <- function(
     cell.ID.column = cell.ID.column,
     gene.ID.column = gene.ID.column,
     min.cells = min.cells,
-    min.counts = min.counts
+    min.counts = min.counts,
+    real = FALSE
   )
   ddls.object <- new(
     Class = "DigitalDLSorter",
-    single.cell.sim = single.cell.final,
+    single.cell.final = single.cell.final,
     project = project,
     version = packageVersion(pkg = "digitalDLSorteR")
   )

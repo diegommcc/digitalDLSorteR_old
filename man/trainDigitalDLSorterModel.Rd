@@ -12,6 +12,7 @@ trainDigitalDLSorterModel(
   freq.val = 0.1,
   loss = "kullback_leibler_divergence",
   metrics = c("accuracy", "mean_absolute_error", "categorical_accuracy"),
+  simplify = NULL,
   view.metrics.plot = TRUE,
   verbose = TRUE
 )
