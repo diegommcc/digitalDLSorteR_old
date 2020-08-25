@@ -376,7 +376,7 @@ setMethod(
   cat("   ", dim(se)[2], "features and", dim(se)[1], "samples: ")
   n.bulk <- sum(grepl("Bulk\\.*", rowData(se)[[1]]))
   n.sc <- abs(n.bulk - dim(se)[1])
-  cat(n.bulk, "bulk samples and", n.sc, "single-cell samples\n")
+  cat(n.bulk, "bulk profiles and", n.sc, "single-cell profiles\n")
   # if (is.null(rowData(se)[[1]])) rownames.se <- "---"
   # else rownames.se <- S4Vectors:::selectSome(rowData(se)[[1]], 6)
   # if (identical(colnames(se), character(0))) colnames.se <- "---"

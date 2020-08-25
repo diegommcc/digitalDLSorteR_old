@@ -27,7 +27,7 @@ NULL
 #' @param object \code{DigitalDLSorter} object with \code{final.data} slot.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
-#' @param numm.epochs Number of epochs to train the model.
+#' @param num.epochs Number of epochs to train the model.
 #' @param val Boolean that determine if a validation subset is used during
 #' training (\code{FALSE} by default).
 #' @param freq.val Number between 0.1 and 0.5 that determine the number of
@@ -73,7 +73,6 @@ trainDigitalDLSorterModel <- function(
   loss = "kullback_leibler_divergence",
   metrics = c("accuracy", "mean_absolute_error",
               "categorical_accuracy"),
-  simplify = NULL,
   view.metrics.plot = TRUE,
   verbose = TRUE
 ) {
@@ -141,7 +140,7 @@ trainDigitalDLSorterModel <- function(
     # with validation subset. generator divide train set in two subsets
     n.val <- ceiling(n.train * freq.val)
     if (verbose) {
-      message(paste("\n=== Training DNN with", n.train - n.val, "samples and evaluating with",
+      message(paste("\n=== Training DNN with", n.train - n.val, "samples and validating with",
                     n.val, "samples:\n"))
     }
     train.generator <- .trainGenerator(
@@ -154,7 +153,7 @@ trainDigitalDLSorterModel <- function(
     )
     val.generator <- .trainGenerator(
       object = object,
-      type.data = type.data,
+      type.data = "train",
       batch.size = batch.size,
       shuffle = FALSE,
       min.index = 0,

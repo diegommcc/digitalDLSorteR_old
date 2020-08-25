@@ -134,7 +134,8 @@ generateTrainAndTestBulkProbMatrix <- function(
                "cell.type.column: must be equal to cell.type.column in cells.metadata (colData slot of single.cell.final)",
                "from: frequency from which the cell type can appear",
                "to: frequency up to which the cell type can appear", sep = "\n   - "))
-  } else if (sum(proportions.train) != 100 |  sum(proportions.test) != 100) {
+  } else if (sum(abs(proportions.train)) != 100 ||
+             sum(abs(proportions.test)) != 100) {
     stop("Proportions provided must add up to 100")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
