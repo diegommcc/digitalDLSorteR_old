@@ -597,7 +597,7 @@ blandAltmanLehPlot <- function(
   } else if (!is(trained.model(object)@eval.stats.samples[[1]], "tbl_df")) {
     stop("Evaluation metrics are not well built, use 'calculateEvalMetrics'")
   } else if (!is.null(color.by)) {
-    if (color.by %in% c("nMix", "CellType")) {
+    if (!color.by %in% c("nMix", "CellType")) {
       stop("'color.by' provided is not valid. Options available are: nMix, CellType")
     }
   }
