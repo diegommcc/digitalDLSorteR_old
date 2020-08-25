@@ -301,6 +301,7 @@ plotDistError <- function(
   error.labels = FALSE,
   pos.x.label = 4.6,
   pos.y.label = NULL,
+  size.point = 0.1,
   type = "violinplot",
   ylimit = NULL,
   nrow = NULL,
@@ -376,7 +377,7 @@ plotDistError <- function(
       )
     }
   }
-  plot <- plot + geom_point(size = 0.1, aes(colour = .data[[color.by]]),
+  plot <- plot + geom_point(size = size.point, aes(colour = .data[[color.by]]),
                             position = "jitter")
   if (type == "violinplot")
     plot <- plot + geom_violin(trim = TRUE, scale = "width", fill = NA)
@@ -455,6 +456,7 @@ corrExpPredPlot <- function(
   pos.x.label = 0.01,
   pos.y.label = 0.95,
   sep.labels = 0.15,
+  size.point = 0.1,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -488,7 +490,7 @@ corrExpPredPlot <- function(
     title.plot <- title
 
   plot <- ggplot(amd, aes(x = Prob, y = Pred)) + theme
-  plot <- plot + geom_point(size = 0.1, aes(colour = .data[[color.by]]),
+  plot <- plot + geom_point(size = size.point, aes(colour = .data[[color.by]]),
                             position = "jitter") +
     geom_abline(linetype = "dashed", colour = "gray40") +
     scale_color_manual(values = colors, name = color.by) +
@@ -580,6 +582,7 @@ blandAltmanLehPlot <- function(
   filter.sc = FALSE,
   density = TRUE,
   color.density = "darkblue",
+  size.point = 0.05,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -633,7 +636,7 @@ blandAltmanLehPlot <- function(
       stop("Colors provided are not enought")
     }
     plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = .data[[color.by]])) +
-      geom_point(size = 0.05) +
+      geom_point(size = size.point) +
       scale_color_manual(values = colors, name = color.by) +
       guides(colour = guide_legend(override.aes = list(size = 1.5)))
   } else {
@@ -642,7 +645,7 @@ blandAltmanLehPlot <- function(
       colors <- colors[1]
     }
     plot <- ggplot(amd, aes(x = Mean, y = Diff)) +
-      geom_point(size = 0.05, color = colors)
+      geom_point(size = size.point, color = colors)
   }
 
 
