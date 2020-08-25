@@ -20,6 +20,7 @@ Imports:
     DelayedArray,
     HDF5Array,
     pbapply,
+    S4Vectors,
     dplyr,
     tools,
     reshape2,

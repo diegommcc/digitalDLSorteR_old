@@ -401,17 +401,34 @@ setMethod(
              "  ", zinbwave::nFactors(zinb.model), " latent factor(s).\n"))
 }
 
+.allSlotsNull <- function(object) {
+  list.slots <- list(
+    "single.cell.real", "zinb.params", "single.cell.final", "prob.cell.types",
+    "bulk.sim", "final.data", "trained.model", "deconv.data", "deconv.results"
+  )
+  res <- all(unlist(lapply(list.slots, function(x) is.null(do.call("@", list(object, x))))))
+  if (res) return(TRUE)
+  else return(FALSE)
+}
+
 
 setMethod(f = "show",
           signature = "DigitalDLSorter",
           definition = function(object) {
-            cat("An object of class", class(object), "\n")
+            if (.allSlotsNull(object)) {
+              cat("An empty object of class", class(object), "\n")
+              opt <- options(show.error.messages = FALSE)
+              on.exit(options(opt))
+              stop()
+            } else {
+              cat("An object of class", class(object), "\n")
+            }
             if (!is.null(object@single.cell.real)) {
               cat("Real single-cell profiles:\n")
               .sceShow(object@single.cell.real)
             } else {
               cat("Real single-cell profiles:\n")
-              .sceShow(DataFrame())
+              .sceShow(S4Vectors::DataFrame())
             }
             if (!is.null(object@zinb.params)) {
               .zinbModelShow(object@zinb.params@model)
