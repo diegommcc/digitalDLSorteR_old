@@ -308,7 +308,8 @@ plotDistError <- function(
   nrow = NULL,
   ncol = NULL,
   title = NULL,
-  theme = theme_grey()
+  theme = theme_grey(),
+  ...
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -356,7 +357,7 @@ plotDistError <- function(
            "CellType or NULL")
     }
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
-                              nrow = nrow, ncol = ncol)
+                              nrow = nrow, ncol = ncol, ...)
     if (error.labels) {
       labels <- .labelsErrorFacet(object, error, facet.by, filter.sc)
       plot <- plot + geom_text(x = pos.x.label, y = pos.y.label,
