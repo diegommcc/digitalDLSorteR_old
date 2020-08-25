@@ -368,7 +368,7 @@ plotDistError <- function(
       )
     }
   }
-  plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
+  plot <- plot + geom_point(size = 0.1, aes(colour = .data[[color.by]]),
                             position = "jitter")
   if (type == "violinplot")
     plot <- plot + geom_violin(trim = TRUE, scale = "width", fill = NA)
@@ -479,7 +479,7 @@ corrExpPredPlot <- function(
     title.plot <- title
 
   plot <- ggplot(amd, aes(x = Prob, y = Pred)) + theme
-  plot <- plot + geom_point(size = 0.1, aes(colour = amd[[color.by]]),
+  plot <- plot + geom_point(size = 0.1, aes(colour = .data[[color.by]]),
                             position = "jitter") +
     geom_abline(linetype = "dashed", colour = "gray40") +
     scale_color_manual(values = colors, name = color.by) +
@@ -588,7 +588,7 @@ blandAltmanLehPlot <- function(
   else
     title.plot <- title
 
-  plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = amd[[color.by]]))
+  plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = .data[[color.by]]))
 
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
