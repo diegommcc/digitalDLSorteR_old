@@ -222,16 +222,18 @@ se <- function(x) sqrt(var(x)/length(x))
 
   if (error %in% c("AbsErr", "ppAbsErr")) {
     info <- trained.model(object)@eval.stats.samples[[index.err]]$MAE[[facet.by]]
-    if (error == "AbsErr")
+    if (error == "AbsErr") {
       info <- info[, c(facet.by, "MAE.mean")]
-    else if (error == "ppAbsErr")
+    } else if (error == "ppAbsErr") {
       info <- info[, c(facet.by, "ppMAE.mean")]
+    }
   } else if (error %in% c("SqrErr", "ppSqrErr")) {
     info <- trained.model(object)@eval.stats.samples[[index.err]]$MSE[[facet.by]]
-    if (error == "SqrErr")
+    if (error == "SqrErr") {
       info <- info[, c(facet.by, "MSE.mean")]
-    else if (error == "ppSqrErr")
+    } else if (error == "ppSqrErr") {
       info <- info[, c(facet.by, "ppMSE.mean")]
+    }
   }
   info[, 2] <- paste0("M", error, " = ", round(info[, 2], 3))
   colnames(info) <- c(facet.by, error)
@@ -298,7 +300,7 @@ plotDistError <- function(
   filter.sc = TRUE,
   error.labels = FALSE,
   pos.x.label = 4.6,
-  pos.y.label = 1,
+  pos.y.label = NULL,
   type = "violinplot",
   ylimit = NULL,
   nrow = NULL,
@@ -340,6 +342,12 @@ plotDistError <- function(
     title.plot <- title
   plot <- ggplot(amd, aes(x = factor(.data[[x.by]]), y = .data[[error]])) +
     theme
+  if (is.null(pos.y.label)) {
+    if (is.null(ylimit))
+      pos.y.label <- max(amd[[error]]) - (max(amd[[error]]) / 10)
+    else
+      pos.y.label <- ylimit - (ylimit / 10)
+  }
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
       stop("'facet.by' provided is not valid. Options available are: nMix, ",
@@ -446,6 +454,7 @@ corrExpPredPlot <- function(
   filter.sc = TRUE,
   pos.x.label = 0.01,
   pos.y.label = 0.95,
+  sep.labels = 0.15,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -502,30 +511,60 @@ corrExpPredPlot <- function(
       labels <- .labelsCCCFacet(amd, facet.by, filter.sc)
       plot <- plot + geom_text(x = pos.x.label, y = pos.y.label,
                                aes(label = .data[["ccc"]]),
-                               data = labels,
+                               data = labels, hjust = 0,
                                size = size.ann)
-    } else {
+    } else if (corr == "pearson") {
       plot <- plot + stat_cor(method = "pearson",
                               label.x = pos.x.label,
                               label.y = pos.y.label,
                               size = size.ann)
+    } else if (corr == "both") {
+      labels <- .labelsCCCFacet(amd, facet.by, filter.sc)
+      plot <- plot + stat_cor(method = "pearson",
+                              label.x = pos.x.label,
+                              label.y = pos.y.label,
+                              size = size.ann)
+      plot <- plot + geom_text(
+        x = pos.x.label, y = pos.y.label - sep.labels,
+        aes(label = .data[["ccc"]]), hjust = 0,
+        data = labels,
+        size = size.ann
+      )
+    } else {
+      stop("Argument corr invalid. Only supported 'pearson' and 'ccc'")
     }
   } else {
     size.ann <- 4
     if (corr == "ccc") {
       label <- yardstick::ccc(amd, Prob, Pred)$.estimate
       plot <- plot + annotate(
-        "text",
+        "text", hjust = 0,
         x = pos.x.label,
         y = pos.y.label,
         label = paste0("CCC = ", round(label, 3)),
         size = size.ann
       )
-    } else {
+    } else if (corr == "pearson") {
       plot <- plot + stat_cor(method = "pearson",
                               label.x = pos.x.label,
                               label.y = pos.y.label,
                               size = size.ann)
+    } else if (corr == "both") {
+      label <- yardstick::ccc(amd, Prob, Pred)$.estimate
+      plot <- plot + stat_cor(
+        method = "pearson",
+        label.x = pos.x.label,
+        label.y = pos.y.label,
+        size = size.ann
+      ) + annotate(
+        "text", hjust = 0,
+        x = pos.x.label,
+        y = pos.y.label - sep.labels,
+        label = paste0("CCC = ", round(label, 3)),
+        size = size.ann
+      )
+    } else {
+      stop("Argument corr invalid. Only supported 'pearson' and 'ccc'")
     }
   }
   return(plot)
@@ -540,6 +579,7 @@ blandAltmanLehPlot <- function(
   log.2 = TRUE,
   filter.sc = FALSE,
   density = TRUE,
+  color.density = "darkblue",
   ncol = NULL,
   nrow = NULL,
   title = NULL,
@@ -553,19 +593,16 @@ blandAltmanLehPlot <- function(
          "'calculateEvalMetrics'")
   } else if (!is(trained.model(object)@eval.stats.samples[[1]], "tbl_df")) {
     stop("Evaluation metrics are not well built, use 'calculateEvalMetrics'")
-  } else if (!color.by %in% c("nMix", "CellType")) {
-    stop("'color.by' provided is not valid. Options available are: nMix, CellType")
+  } else if (!is.null(color.by)) {
+    if (color.by %in% c("nMix", "CellType")) {
+      stop("'color.by' provided is not valid. Options available are: nMix, CellType")
+    }
   }
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
   }
-  if (missing(colors)) {
-    colors <- color.list()
-  }
-  if (length(colors) < length(unique(amd[[color.by]]))) {
-    stop("Colors provided are not enought")
-  }
+
   if (log.2) {
     amd <- amd %>% mutate(
       Mean = (log2(Prob + 0.001) + log2(Pred + 0.001)) / 2,
@@ -588,7 +625,26 @@ blandAltmanLehPlot <- function(
   else
     title.plot <- title
 
-  plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = .data[[color.by]]))
+
+
+  if (!is.null(color.by)) {
+    if (missing(colors)) colors <- color.list()
+    if (length(colors) < length(unique(amd[[color.by]]))) {
+      stop("Colors provided are not enought")
+    }
+    plot <- ggplot(amd, aes(x = Mean, y = Diff, colour = .data[[color.by]])) +
+      geom_point(size = 0.05) +
+      scale_color_manual(values = colors, name = color.by) +
+      guides(colour = guide_legend(override.aes = list(size = 1.5)))
+  } else {
+    if (missing(colors)) {
+      colors <- color.list()
+      colors <- colors[1]
+    }
+    plot <- ggplot(amd, aes(x = Mean, y = Diff)) +
+      geom_point(size = 0.05, color = colors)
+  }
+
 
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
@@ -596,9 +652,7 @@ blandAltmanLehPlot <- function(
     }
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)))
   }
-  plot <- plot + theme + geom_point(size = 0.05) +
-    scale_color_manual(values = colors, name = color.by) +
-    scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
+  plot <- plot + theme + scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
     geom_hline(aes(yintercept = mean(Diff) + 1.96 * sd(Diff)),
                linetype = "dashed", colour = "red") +
@@ -606,11 +660,12 @@ blandAltmanLehPlot <- function(
                linetype = "dashed", colour = "red") +
     xlab(x.lab) + ylab(y.lab) +
     ggtitle(title.plot) +
-    guides(colour = guide_legend(override.aes = list(size = 1.5))) +
     theme(plot.title = element_text(face = "bold", hjust = 0.5),
           legend.title = element_text(face = "bold"))
   if (density)
-    plot <- plot + stat_density_2d(colour = "black", alpha = 0.5, linetype = "dashed")
+    plot <- plot + stat_density_2d(colour = color.density,
+                                   alpha = 0.9,
+                                   linetype = "dashed")
 
   return(plot)
 }
