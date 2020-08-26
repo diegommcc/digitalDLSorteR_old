@@ -464,7 +464,8 @@ corrExpPredPlot <- function(
   ncol = NULL,
   nrow = NULL,
   title = NULL,
-  theme = theme_grey()
+  theme = theme_grey(),
+  ...
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -512,7 +513,7 @@ corrExpPredPlot <- function(
            "CellType or NULL")
     }
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
-                              nrow = nrow, ncol = ncol)
+                              nrow = nrow, ncol = ncol, ...)
     size.ann <- 3
     if (corr == "ccc") {
       labels <- .labelsCCCFacet(amd, facet.by, filter.sc)
@@ -592,7 +593,8 @@ blandAltmanLehPlot <- function(
   ncol = NULL,
   nrow = NULL,
   title = NULL,
-  theme = theme_grey()
+  theme = theme_grey(),
+  ...
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -659,7 +661,8 @@ blandAltmanLehPlot <- function(
     if (!facet.by %in% c("nMix", "CellType")) {
       stop("'facet.by' provided is not valid. Options available are: nMix, CellType")
     }
-    plot <- plot + facet_wrap(as.formula(paste("~", facet.by)))
+    plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
+                              nrow = nrow, ncol = ncol, ...)
   }
   plot <- plot + theme + scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
