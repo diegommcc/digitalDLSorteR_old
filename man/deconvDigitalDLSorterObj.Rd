@@ -2,7 +2,7 @@
 % Please edit documentation in R/dnnModel.R
 \name{deconvDigitalDLSorterObj}
 \alias{deconvDigitalDLSorterObj}
-\title{Deconvolute bulk gene expression samples (RNA-Seq).}
+\title{Deconvolute bulk gene expression samples (bulk RNA-Seq).}
 \usage{
 deconvDigitalDLSorterObj(
   object,
@@ -46,7 +46,7 @@ A \code{data.frame} with samples (\eqn{i}) as rows and cell types
 type in \eqn{i} sample.
 }
 \description{
-Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
+Deconvolute bulk gene expression samples (bulk RNA-Seq) enumerating and
 quantifying the proportion of cell types present in a bulk sample. This
 function needs a \code{DigitalDLSorter} object with a trained DNN model
 (\code{\link{trained.model}} slot) and bulk samples for deconvoluting in

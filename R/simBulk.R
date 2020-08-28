@@ -76,7 +76,7 @@ NULL
 #' 18 more samples will be formed than there are cells in \code{single.cell.final} slot.
 #' @param exclusive.types Vector of cell types which allows to establish cell types that
 #' biologically do not make sense to be mixed during the generation of bulk samples.
-#' Som samples presents this exclusive cell types.
+#' Some samples presents this exclusive cell types.
 #' If it is equal to NULL (by default), all cell types will be mixed when generating
 #' bulk samples.
 #' @param verbose Show informative messages during the execution.

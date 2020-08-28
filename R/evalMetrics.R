@@ -28,34 +28,38 @@ color.list <- function() {
 }
 
 
-#' Calculate evaluation metrics for predicted cell types in test data.
+################################################################################
+######################## Calculate evaluation metrics ##########################
+################################################################################
+
+
+#' Calculate evaluation metrics for bulk RNA-seq samples from test data.
 #'
-#' Calculate evaluation metrics for predicted cell types in test data in order
+#' Calculate evaluation metrics for bulk RNA-seq samples from test data in order
 #' to know the performance of the model. By default, absolute error (AbsErr),
 #' proportional absolute error (ppAbsErr), squared error (SqrErr) and
 #' proportional squared error (ppSqrErr) are calculated for each cell type in
 #' each test sample. Moreover, each one of these metrics are aggregated using
-#' mean by four criteria: each test sample (\code{Sample}), each cell type
+#' their mean values by four criteria: each test sample (\code{Sample}), each cell type
 #' (\code{CellType}), probability bins by 0.1 (\code{pBin}), number of different
-#' cell types present in the sample \code{nMix} and a combination of pBin and
-#' nMix (\code{pBinNMix}). Finally, the process is repeated only for bulk
-#' samples, removing single-cell profiles.
-#'
-#' Evaluation metrics are available in \code{eval.stats.samples} slot of
+#' cell types present in the sample \code{nMix} and a combination of \code{pBin} and
+#' \code{nMix} (\code{pBinNMix}). Finally, the process is repeated only for bulk
+#' samples, removing single-cell profiles from the evaluation. Evaluation metrics
+#' are available in \code{eval.stats.samples} slot of
 #' \code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
 #' object).
 #'
 #' @param object \code{DigitalDLSorter} object with \code{single.cell.final} and
-#' \code{prob.cell.types} slots.
+#' \code{DigitalDLSorterDNN} slots.
 #' @param metrics Metrics used for evaluating the performance of the model. Mean
 #' absolute error (MAE) and mean squared error (MSE) by default.
 #'
-#' @return A DigitalDLSorter object with \code{trained.model} slot containing a
+#' @return A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot containing a
 #' \code{DigitalDLSorterDNN} object with \code{eval.stats.samples} slot.
 #'
 #' @export
 #'
-#' @seealso \code{\link{violinError}} \code{\link{corrExpPredPlot}}
+#' @seealso \code{\link{distErrorPlot}} \code{\link{corrExpPredPlot}}
 #' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
@@ -65,8 +69,7 @@ color.list <- function() {
 #'
 calculateEvalMetrics <- function(
   object,
-  metrics = c("MAE", "MSE"),
-  simplify = NULL
+  metrics = c("MAE", "MSE")
 ) {
   if (!is(object, "DigitalDLSorter")) {
     stop("The provided object is not of DigitalDLSorter class")
@@ -88,20 +91,20 @@ calculateEvalMetrics <- function(
   ## extract information
   testProbsDeconv <- final.data(object, "test")@metadata[[1]]
   predictionsDeconv <- trained.model(object)@predict.results
-  if (!is.null(simplify)) {
-    if (!any(simplify %in% colnames(testProbsDeconv))) {
-      stop("Cell types provided are not in prediction matrices")
-    }
-    index <- which(colnames(testProbsDeconv) %in% simplify)
-    .filf <- function(ma, index) {
-      ma <- t(apply(ma, FUN = .sumMajority, MARGIN = 1, index = index))
-      ma[, colSums(ma) == 0] <- NULL
-      return(ma)
-    }
-    res <- lapply(X = list(testProbsDeconv, predictionsDeconv), FUN = .filf, index = index)
-    testProbsDeconv <- res[[1]]
-    predictionsDeconv <- res[[2]]
-  }
+  # if (!is.null(simplify)) {
+  #   if (!any(simplify %in% colnames(testProbsDeconv))) {
+  #     stop("Cell types provided are not in prediction matrices")
+  #   }
+  #   index <- which(colnames(testProbsDeconv) %in% simplify)
+  #   .filf <- function(ma, index) {
+  #     ma <- t(apply(ma, FUN = .sumMajority, MARGIN = 1, index = index))
+  #     ma[, colSums(ma) == 0] <- NULL
+  #     return(ma)
+  #   }
+  #   res <- lapply(X = list(testProbsDeconv, predictionsDeconv), FUN = .filf, index = index)
+  #   testProbsDeconv <- res[[1]]
+  #   predictionsDeconv <- res[[2]]
+  # }
 
   ## results test
   tmd <- as_tibble(x = testProbsDeconv)
@@ -130,7 +133,6 @@ calculateEvalMetrics <- function(
   trained.model(object)@eval.stats.samples <- list(raw = amd,
                                                    allData = eval.stats,
                                                    filData = eval.stats.f)
-
   return(object)
 }
 
@@ -243,12 +245,17 @@ se <- function(x) sqrt(var(x)/length(x))
 }
 
 
-## error: AbsErr, ppAbsErr, SqrErr, ppSqrErr
+################################################################################
+########################## Distribution error plots ############################
+################################################################################
 
-#' Generate boxplot or violin plot showing how errors are distributed.
+
+#' Generate box plot or violin plot showing how errors are distributed.
 #'
-#' Generate violin plot showing how errors are distributed. There are different
-#' possibilities of showing the results. See examples for more information.
+#' Generate violin plot showing how errors are distributed by
+#' proportion bins of 0.1. The errors can be displayed all mixed or split based on
+#' cell type (\code{CellType}) or number of cell types present in the sample
+#' (\code{nMix}). See \code{facet.by} argument and examples for more information.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
 #' containing metrics in \code{eval.stats.samples} slot.
@@ -256,27 +263,34 @@ se <- function(x) sqrt(var(x)/length(x))
 #' absolute error (\code{"AbsErr"}), proportional absolute error
 #' (\code{"ppAbsErr"}), squared error (\code{"SqrErr"}) or proportional
 #' squared error (\code{"ppSqrErr"}).
+#' @param colors Vector of colors to use. Only vectors with a number of colors
+#' equal to or greater than the levels of \code{color.by} will be accepted.
+#' By default it is used a list of custom colors provided by the package.
 #' @param x.by Variable used for x axis. When \code{facet.by} is not \code{NULL},
 #' the best option is \code{pBin} (probability bin). The options
 #' are \code{nMix} (by number of different cell types), \code{CellType}
 #' (by cell type) and \code{pBin}.
-#' @param facet.by Variable used for showing data in different panels. If it is
+#' @param facet.by Variable used to display data in different panels. If it is
 #' \code{NULL}, the plot is not separated into different panels. The options
 #' are \code{nMix} (by number of different cell types) and \code{CellType}
 #' (by cell type).
 #' @param color.by Variable used to color data. The options
-#' are \code{nMix} (by number of different cell types) and \code{CellType}
-#' (by cell type).
-#' @param filter.sc Filter prediction errors of single-cell profiles. If
-#' \code{TRUE}, (by default) only will be shown predition errors of bulk samples.
-#' @param colors Vector of colors to use. Only vectors with a number of colors
-#' equal to or greater than the levels of \code{color.by} will be accepted.
-#' By default is used a list of custom colors provided by us.
+#' are \code{nMix} and \code{CellType}.
+#' @param filter.sc Boolean indicating if filter single-cell profiles and only
+#' display errors associated with bulk samples (\code{TRUE} by default).
+#' @param error.labels Boolean indicating if show average error as annotation.
+#' @param pos.x.label Position on the X axis of the errors annotations.
+#' @param pos.y.label Position on the Y axis of the errors annotations.
+#' @param size.point Size of points (0.1 by default).
+#' @param alpha.point Alpha of points (0.1 by default).
+#' @param type Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last by default.
 #' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
 #' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
 #' @param title Title of the plot.
-#' @param theme Ggplot theme.
+#' @param theme ggplot theme.
+#' @param ... Additional argument for \code{facet_wrap} ggplot function if
+#' \code{facet.by} is not equal to \code{NULL}.
 #'
 #' @export
 #'
@@ -284,11 +298,24 @@ se <- function(x) sqrt(var(x)/length(x))
 #' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
-#' DDLSChung <- violinError(
+#' distErrorPlot(
 #'   object = DDLSChung,
-#'
+#'   error = "AbsErr",
+#'   facet.by = "CellType",
+#'   color.by = "nMix",
+#'   error.labels = TRUE,
+#'   theme = theme_bw()
 #' )
 #'
+#' distErrorPlot(
+#'   object = DDLSChung,
+#'   error = "AbsErr",
+#'   x.by = "CellType",
+#'   facet.by = NULL,
+#'   filter.sc = FALSE,
+#'   color.by = "CellType",
+#'   error.labels = TRUE
+#' )
 distErrorPlot <- function(
   object,
   error,
@@ -416,44 +443,80 @@ distErrorPlot <- function(
   return(df)
 }
 
+
+################################################################################
+######################### Correlation Pred/Exp plots ###########################
+################################################################################
+
 #' Generate correlation plot between predicted and expected cell type
-#' proportions.
+#' proportions from test samples.
 #'
 #' Generate correlation plot between predicted and expected cell type
-#' proportions.
+#' proportions from test samples. The correlation plots can be displayed all
+#' mixed or split based on cell type (\code{CellType}) or the number of cell
+#' types present in the sample (\code{nMix}). See \code{facet.by} argument
+#' and examples for more information. Moreover, a correlation value selected by
+#' user is displayed as annotation on the plots. See \code{corr} argument for details.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
 #' containing metrics in \code{eval.stats.samples} slot.
-#' @param facet.by Variable used for showing data in different panels. If it is
+#' @param colors Vector of colors to use. Only vectors with a number of colors
+#' equal to or greater than the levels of \code{color.by} will be accepted.
+#' By default it is used a list of custom colors provided by the package.
+#' @param facet.by Variable used to display data in different panels. If it is
 #' \code{NULL}, the plot is not separated into different panels. The options
 #' are \code{nMix} (by number of different cell types) and \code{CellType}
 #' (by cell type).
 #' @param color.by Variable used to color data. The options
-#' are \code{nMix} (by number of different cell types) and \code{CellType}
-#' (by cell type).
-#' @param colors Vector with colors for the plot.
-#' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
+#' are \code{nMix} and \code{CellType}.
+#' @param corr Correlation value displayed as annotation. The available metrics
+#' are Pearson's correlation coefficient (\code{'pearson'}) and concordance
+#' correlation coefficient (\code{'ccc'}). The argument can be equal to
+#' \code{'pearson'}, \code{'ccc'} or \code{'both'} (by default).
+#' @param filter.sc Boolean indicating if filter single-cell profiles and only
+#' display correlations of results associated with bulk samples (\code{TRUE} by default).
+#' @param error.labels Boolean indicating if show average error as annotation.
+#' @param pos.x.label Position on the X axis of the errors annotations. 0.95 by default.
+#' @param pos.y.label Position on the Y axis of the errors annotations. 0.1 by default.
+#' @param sep.labels Space separating annotations if \code{corr} is equal to \code{'both'}.
+#' 0.15 by default.
+#' @param size.point Size of points (0.1 by default).
+#' @param alpha.point Alpha of points (0.1 by default).
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
 #' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
 #' @param title Title of the plot.
+#' @param theme ggplot theme.
+#' @param ... Additional argument for \code{facet_wrap} ggplot function if
+#' \code{facet.by} is not equal to \code{NULL}.
 #'
 #' @export
 #'
-#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
+#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{distErrorPlot}}
 #' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
-#' DDLSChung <- violinError(
+#' ## correlations by cell type
+#' corrExpPredPlot(
 #'   object = DDLSChung,
-#'
+#'   facet.by = "CellType",
+#'   color.by = "CellType",
+#'   corr = "both"
 #' )
-#'
+#' ## correlations of all samples mixed
+#' corrExpPredPlot(
+#'   DDLSChung,
+#'   facet.by = NULL,
+#'   color.by = "CellType",
+#'   corr = "ccc",
+#'   pos.x.label = 0.2,
+#'   alpha.point = 0.3
+#' )
 corrExpPredPlot <- function(
   object,
-  facet.by,
-  color.by,
   colors,
-  corr = "pearson",
+  facet.by = NULL,
+  color.by = "CellType",
+  corr = "both",
   filter.sc = TRUE,
   pos.x.label = 0.01,
   pos.y.label = 0.95,
@@ -480,7 +543,6 @@ corrExpPredPlot <- function(
   amd <- trained.model(object)@eval.stats.samples[[1]]
   if (filter.sc) {
     amd <- amd %>% filter(Prob > 0 & Prob < 1)
-    # print(amd)
   }
   if (missing(colors)) {
     colors <- color.list()
@@ -571,20 +633,81 @@ corrExpPredPlot <- function(
         size = size.ann
       )
     } else {
-      stop("Argument corr invalid. Only supported 'pearson' and 'ccc'")
+      stop("Argument corr invalid. Only supported 'pearson', 'ccc' and 'both'")
     }
   }
   return(plot)
 }
 
 
+
+################################################################################
+######################## Bland-Altman agreement plot ###########################
+################################################################################
+
+#' Generate Bland-Altman agreement plot between predicted and expected cell type
+#' proportions from test samples.
+#'
+#' Generate  Bland-Altman agreement plot between predicted and expected cell type
+#' proportions from test samples. The  Bland-Altman agreement plots can be displayed all
+#' mixed or split based on cell type (\code{CellType}) or the number of cell
+#' types present in the sample (\code{nMix}). See \code{facet.by} argument
+#' and examples for more information.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
+#' containing metrics in \code{eval.stats.samples} slot.
+#' @param colors Vector of colors to use. Only vectors with a number of colors
+#' equal to or greater than the levels of \code{color.by} will be accepted.
+#' By default it is used a list of custom colors provided by the package.
+#' @param facet.by Variable used to display data in different panels. If it is
+#' \code{NULL}, the plot is not separated into different panels. The options
+#' are \code{nMix} (by number of different cell types) and \code{CellType}
+#' (by cell type).
+#' @param color.by Variable used to color data. The options
+#' are \code{nMix} and \code{CellType}.
+#' @param log2 If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
+#' by default).
+#' @param filter.sc Boolean indicating if filter single-cell profiles and only
+#' display correlations of results associated with bulk samples (\code{TRUE} by default).
+#' @param density Boolean indicating if show density lines (\code{TRUE} by default).
+#' @param color.density Color of density lines if \code{density} argument is
+#' equal to \code{TRUE}.
+#' @param size.point Size of points (0.1 by default).
+#' @param alpha.point Alpha of points (0.1 by default).
+#' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param title Title of the plot.
+#' @param theme ggplot theme.
+#' @param ... Additional argument for \code{facet_wrap} ggplot function if
+#' \code{facet.by} is not equal to \code{NULL}.
+#'
+#' @export
+#'
+#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
+#' \code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
+#'
+#' @examples
+#' ## Bland-Altman plot by cell type
+#' blandAltmanLehPlot(
+#'   object = DDLSChung,
+#'   facet.by = "CellType",
+#'   color.by = "CellType",
+#'   corr = "both"
+#' )
+#' ## Bland-Altman plot of all samples mixed
+#' blandAltmanLehPlot(
+#'   object = DDLSChung,
+#'   facet.by = NULL,
+#'   color.by = "CellType",
+#'   alpha.point = 0.3
+#' )
 blandAltmanLehPlot <- function(
   object,
   colors,
   facet.by,
   color.by,
-  log.2 = TRUE,
-  filter.sc = FALSE,
+  log.2 = FALSE,
+  filter.sc = TRUE,
   density = TRUE,
   color.density = "darkblue",
   size.point = 0.05,
@@ -634,9 +757,6 @@ blandAltmanLehPlot <- function(
     title.plot <- paste("Bland-Altman Agreement Plot", add.title)
   else
     title.plot <- title
-
-
-
   if (!is.null(color.by)) {
     if (missing(colors)) colors <- color.list()
     if (length(colors) < length(unique(amd[[color.by]]))) {
@@ -654,8 +774,6 @@ blandAltmanLehPlot <- function(
     plot <- ggplot(amd, aes(x = Mean, y = Diff)) +
       geom_point(size = size.point, color = colors, alpha = alpha.point)
   }
-
-
   if (!is.null(facet.by)) {
     if (!facet.by %in% c("nMix", "CellType")) {
       stop("'facet.by' provided is not valid. Options available are: nMix, CellType")
@@ -677,18 +795,57 @@ blandAltmanLehPlot <- function(
     plot <- plot + stat_density_2d(colour = color.density,
                                    alpha = 0.9,
                                    linetype = "dashed")
-
   return(plot)
 }
 
 
+
+################################################################################
+############################### Bar error plot #################################
+################################################################################
+
+#' Generate bar error plot and its dispersion by cell types or by number of
+#' different cell types in test bulk samples.
+#'
+#' Generate bar error plot and its dispersion by cell types (\code{CellType})
+#' or by number of different cell types (\code{nMix}) in test bulk samples.
+#'
+#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
+#' containing metrics in \code{eval.stats.samples} slot.
+#' @param error MAE or MSE.
+#' By default it is used a list of custom colors provided by the package.
+#' @param by Variable used to display errors.
+#' @param dispersion Standard error (\code{'se'}) or standard deviation (\code{'sd'}).
+#' The first by default.
+#' @param filter.sc Boolean indicating if filter single-cell profiles and only
+#' display correlations of results associated with bulk samples (\code{TRUE} by default).
+#' @param angle Angle of ticks.
+#' @param title Title of the plot.
+#' @param theme ggplot theme.
+#'
+#' @export
+#'
+#' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
+#' \code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
+#'
+#' @examples
+#' barErrorPlot(
+#'   object = DDLSChung,
+#'   error = "MSE",
+#'   by = "CellType"
+#' )
+#'
+#' barErrorPlot(
+#'   object = DDLSChung,
+#'   error = "MAE",
+#'   by = "nMix"
+#' )
 barErrorPlot <- function(
   object,
   error,
   by,
   dispersion = "se",
   filter.sc = TRUE,
-  colors = color.list,
   title = NULL,
   angle = 90,
   theme = theme_grey()

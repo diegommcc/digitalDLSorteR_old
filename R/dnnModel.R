@@ -789,9 +789,9 @@ deconvDigitalDLSorter <- function(
 }
 
 
-#' Deconvolute bulk gene expression samples (RNA-Seq).
+#' Deconvolute bulk gene expression samples (bulk RNA-Seq).
 #'
-#' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
+#' Deconvolute bulk gene expression samples (bulk RNA-Seq) enumerating and
 #' quantifying the proportion of cell types present in a bulk sample. This
 #' function needs a \code{DigitalDLSorter} object with a trained DNN model
 #' (\code{\link{trained.model}} slot) and bulk samples for deconvoluting in
@@ -865,7 +865,7 @@ deconvDigitalDLSorterObj <- function(
     stop("'name.data' provided is not present in object")
   }
 
-  ## check if model is json format or compiled
+  # checking if model is json format or compiled
   if (is.list(trained.model(object)@model)) {
     model.comp <- .loadModelFromJSON(trained.model(object))
     trained.model(object) <- model.comp
@@ -939,10 +939,10 @@ deconvDigitalDLSorterObj <- function(
          " with feature names in the same notation used in training data")
   }
   # this can do it more elegant and probably more efficient
-  ## filtering features missing in training data
+  # filtering features missing in training data
   filter.features <- rownames(deconv.counts) %in% features(model)
   deconv.counts <- deconv.counts[filter.features, ]
-  ## set features missing in deconv.data
+  # set features missing in deconv.data
   fill.features <- !features(model) %in% rownames(deconv.counts)
   m.new <- matrix(0L, nrow = sum(fill.features), ncol = ncol(deconv.counts))
   rownames(m.new) <- features(model)[fill.features]

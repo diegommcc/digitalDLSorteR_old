@@ -11,7 +11,7 @@
 #'
 #' The cell types considered in this model are 13, four of them being the
 #' intrinsic molecular subtypes of breast cancer: ER+, HER2+, ER+/HER2+, TNBC,
-#' Stromal, Monocyte, TCD4me (memory CD4+ T cells), BGC (germinal center B cells),
+#' Stromal, Monocyte, TCD4mem (memory CD4+ T cells), BGC (germinal center B cells),
 #' Bmem (memory B cells), DC (dendritic cells), Macrophage, TCD8 (CD8+ T cells)
 #' and TCD4reg (regulatory CD4+ T cells).
 #'

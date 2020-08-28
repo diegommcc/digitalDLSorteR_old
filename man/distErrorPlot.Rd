@@ -2,7 +2,7 @@
 % Please edit documentation in R/evalMetrics.R
 \name{distErrorPlot}
 \alias{distErrorPlot}
-\title{Generate boxplot or violin plot showing how errors are distributed.}
+\title{Generate box plot or violin plot showing how errors are distributed.}
 \usage{
 distErrorPlot(
   object,
@@ -37,24 +37,35 @@ squared error (\code{"ppSqrErr"}).}
 
 \item{colors}{Vector of colors to use. Only vectors with a number of colors
 equal to or greater than the levels of \code{color.by} will be accepted.
-By default is used a list of custom colors provided by us.}
+By default it is used a list of custom colors provided by the package.}
 
 \item{x.by}{Variable used for x axis. When \code{facet.by} is not \code{NULL},
 the best option is \code{pBin} (probability bin). The options
 are \code{nMix} (by number of different cell types), \code{CellType}
 (by cell type) and \code{pBin}.}
 
-\item{facet.by}{Variable used for showing data in different panels. If it is
+\item{facet.by}{Variable used to display data in different panels. If it is
 \code{NULL}, the plot is not separated into different panels. The options
 are \code{nMix} (by number of different cell types) and \code{CellType}
 (by cell type).}
 
 \item{color.by}{Variable used to color data. The options
-are \code{nMix} (by number of different cell types) and \code{CellType}
-(by cell type).}
+are \code{nMix} and \code{CellType}.}
 
-\item{filter.sc}{Filter prediction errors of single-cell profiles. If
-\code{TRUE}, (by default) only will be shown predition errors of bulk samples.}
+\item{filter.sc}{Boolean indicating if filter single-cell profiles and only
+display errors associated with bulk samples (\code{TRUE} by default).}
+
+\item{error.labels}{Boolean indicating if show average error as annotation.}
+
+\item{pos.x.label}{Position on the X axis of the errors annotations.}
+
+\item{pos.y.label}{Position on the Y axis of the errors annotations.}
+
+\item{size.point}{Size of points (0.1 by default).}
+
+\item{alpha.point}{Alpha of points (0.1 by default).}
+
+\item{type}{Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last by default.}
 
 \item{ylimit}{Upper limit in y axis if it is needed. \code{NULL} by default.}
 
@@ -64,18 +75,36 @@ are \code{nMix} (by number of different cell types) and \code{CellType}
 
 \item{title}{Title of the plot.}
 
-\item{theme}{Ggplot theme.}
+\item{theme}{ggplot theme.}
+
+\item{...}{Additional argument for \code{facet_wrap} ggplot function if
+\code{facet.by} is not equal to \code{NULL}.}
 }
 \description{
-Generate violin plot showing how errors are distributed. There are different
-possibilities of showing the results. See examples for more information.
+Generate violin plot showing how errors are distributed by
+proportion bins of 0.1. The errors can be displayed all mixed or split based on
+cell type (\code{CellType}) or number of cell types present in the sample
+(\code{nMix}). See \code{facet.by} argument and examples for more information.
 }
 \examples{
-DDLSChung <- violinError(
+distErrorPlot(
   object = DDLSChung,
-
+  error = "AbsErr",
+  facet.by = "CellType",
+  color.by = "nMix",
+  error.labels = TRUE,
+  theme = theme_bw()
 )
 
+distErrorPlot(
+  object = DDLSChung,
+  error = "AbsErr",
+  x.by = "CellType",
+  facet.by = NULL,
+  filter.sc = FALSE,
+  color.by = "CellType",
+  error.labels = TRUE
+)
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}

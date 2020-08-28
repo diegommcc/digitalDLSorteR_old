@@ -2,35 +2,33 @@
 % Please edit documentation in R/evalMetrics.R
 \name{calculateEvalMetrics}
 \alias{calculateEvalMetrics}
-\title{Calculate evaluation metrics for predicted cell types in test data.}
+\title{Calculate evaluation metrics for bulk RNA-seq samples from test data.}
 \usage{
-calculateEvalMetrics(object, metrics = c("MAE", "MSE"), simplify = NULL)
+calculateEvalMetrics(object, metrics = c("MAE", "MSE"))
 }
 \arguments{
 \item{object}{\code{DigitalDLSorter} object with \code{single.cell.final} and
-\code{prob.cell.types} slots.}
+\code{DigitalDLSorterDNN} slots.}
 
 \item{metrics}{Metrics used for evaluating the performance of the model. Mean
 absolute error (MAE) and mean squared error (MSE) by default.}
 }
 \value{
-A DigitalDLSorter object with \code{trained.model} slot containing a
+A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot containing a
 \code{DigitalDLSorterDNN} object with \code{eval.stats.samples} slot.
 }
 \description{
-Calculate evaluation metrics for predicted cell types in test data in order
+Calculate evaluation metrics for bulk RNA-seq samples from test data in order
 to know the performance of the model. By default, absolute error (AbsErr),
 proportional absolute error (ppAbsErr), squared error (SqrErr) and
 proportional squared error (ppSqrErr) are calculated for each cell type in
 each test sample. Moreover, each one of these metrics are aggregated using
-mean by four criteria: each test sample (\code{Sample}), each cell type
+their mean values by four criteria: each test sample (\code{Sample}), each cell type
 (\code{CellType}), probability bins by 0.1 (\code{pBin}), number of different
-cell types present in the sample \code{nMix} and a combination of pBin and
-nMix (\code{pBinNMix}). Finally, the process is repeated only for bulk
-samples, removing single-cell profiles.
-}
-\details{
-Evaluation metrics are available in \code{eval.stats.samples} slot of
+cell types present in the sample \code{nMix} and a combination of \code{pBin} and
+\code{nMix} (\code{pBinNMix}). Finally, the process is repeated only for bulk
+samples, removing single-cell profiles from the evaluation. Evaluation metrics
+are available in \code{eval.stats.samples} slot of
 \code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
 object).
 }
@@ -41,6 +39,6 @@ DDLSChung <- calculateEvalMetrics(
 
 }
 \seealso{
-\code{\link{violinError}} \code{\link{corrExpPredPlot}}
+\code{\link{distErrorPlot}} \code{\link{corrExpPredPlot}}
 \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 }
