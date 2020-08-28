@@ -4,25 +4,26 @@
 \alias{loadTrainedModelFromH5}
 \title{Load from HDF5 file a trained DigitalDLSorter DNN model.}
 \usage{
-loadTrainedModelFromH5(object, file.path, reset.slot = TRUE)
+loadTrainedModelFromH5(object, file.path, reset.slot = FALSE)
 }
 \arguments{
-\item{object}{\code{DigitalDLSorter} object with \code{trained.model} slot.}
+\item{object}{\code{\link{DigitalDLSorter}} object with \code{trained.model} slot.}
 
-\item{file.path}{Valid file path where storing model.}
+\item{file.path}{Valid file path where model are stored.}
 
 \item{reset.slot}{Remove \code{trained.slot} if it already exists.
-A new DigitalDLSorterDNN object will be formed, but it will not contain other
-slots.}
+A new \code{\link{DigitalDLSorterDNN}} object will be formed, but it will not contain other
+slots (\code{FALSE} by default).}
 }
 \description{
-Load from HDF5 file a trained DigitalDLSorter DNN model and incorporate
-it in DigitalDLSorter object.
+Load from HDF5 file a trained DigitalDLSorter DNN model into
+a \code{\link{DigitalDLSorter}} object. Note that HDF5 file must be a keras
+valid trained model.
 }
 \examples{
 
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}},
-\code{\link{loadTrainedModel}}
+\code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModelObj}}
+\code{\link{saveTrainedModelAsH5}}
 }

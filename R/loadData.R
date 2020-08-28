@@ -180,8 +180,13 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-.filterGenes <- function(counts, genes.metadata, gene.ID.column,
-                         min.counts, min.cells) {
+.filterGenes <- function(
+  counts,
+  genes.metadata,
+  gene.ID.column,
+  min.counts,
+  min.cells
+) {
   if (min.counts == 0 & min.cells == 0) {
     return(list(counts, genes.metadata))
   } else if (min.counts < 0 | min.cells < 0) {
@@ -205,8 +210,14 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 }
 
 
-.extractDataFromSCE <- function(SCEobject, cell.ID.column = 1, gene.ID.column = 1,
-                                min.counts = 0, min.cells = 0, filtering = TRUE) {
+.extractDataFromSCE <- function(
+  SCEobject,
+  cell.ID.column,
+  gene.ID.column,
+  min.counts,
+  min.cells,
+  filtering = TRUE
+) {
   # extract cells.metadata
   cells.metadata <- SingleCellExperiment::colData(SCEobject)
   if (any(dim(cells.metadata) == 0)) {
@@ -235,7 +246,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                type.metadata = "genes.metadata",
                arg = "gene.ID.column")
 
-  # filter genes by min.counts and min.cells only when proccess data
+  # filter genes by min.counts and min.cells only when process data
   if (isTRUE(filtering)) {
     filtered.genes <- .filterGenes(counts = counts,
                                    genes.metadata = genes.metadata,
@@ -296,6 +307,10 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                          genes.metadata = list.data[[3]]))
 }
 
+################################################################################
+########################## Load real single-cell data ##########################
+################################################################################
+
 
 #' Load real scRNA-Seq data into a \code{DigitalDLSorter} object for simulating
 #' new profiles.
@@ -303,6 +318,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #' Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
 #' or from a \code{SingleCellExperiment} object. Provided data must be composed
 #' by three pieces of information:
+#'
 #' \itemize{
 #'   \item Single-cell counts: genes in rows and cells in columns.
 #'   \item Cells metadata: with annotations (columns) for each cell (rows).
@@ -316,6 +332,14 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #' object must contains single-cell counts in \code{assay} slot, cells metadata
 #' in \code{colData} slot and genes metadata in \code{rowData}.
 #'
+#' The difference with \code{\link{loadFinalSCProfiles}} is that data loaded with
+#' this functions will be used for estimating ZINB-WaVE parameters and simulating
+#' new single-cell profiles in order to increase the signal of cell types. On the
+#' other side, \code{\link{loadFinalSCProfiles}} loads data on \code{single.cell.final}
+#' slot, so this scRNA-seq profiles will be used directly for simulating bulk samples.
+#' In this case, data must be enough cells for each cell type and enough cells
+#' for simulating bulk profiles.
+#'
 #' @param single.cell.real If data is provided from files, \code{single.cell.real}
 #' must be a vector with three elements: single-cell counts, cells metadata and
 #' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
@@ -327,7 +351,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #' corresponding with the names used for features/genes.
 #' @param min.counts Minimum gene counts to filter (0 by default).
 #' @param min.cells Minimum of cells with more than min.counts (0 by default).
-#' @param project Name of the project for \code{DigitaDLSorter} object.
+#' @param project Name of the project for \code{DigitalDLSorter} object.
 #'
 #' @export
 #'
@@ -335,12 +359,12 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #'
 #' @examples
 #' DDLSChung <- loadRealSCProfiles(
-#'   single.cell.real = breast.chung.data,
+#'   single.cell.real = sc.chung.breast,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
 #'   min.cells = 0,
 #'   min.counts = 0,
-#'   project = "Chung_etal_2017"
+#'   project = "Chung_example"
 #' )
 #'
 loadRealSCProfiles <- function(
@@ -368,6 +392,10 @@ loadRealSCProfiles <- function(
 }
 
 
+################################################################################
+########################## Load final single-cell data #########################
+################################################################################
+
 #' Load final real scRNA-Seq data into a \code{DigitalDLSorter} object
 #'
 #' Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
@@ -386,6 +414,14 @@ loadRealSCProfiles <- function(
 #' object must contains single-cell counts in \code{assay} slot, cells metadata
 #' in \code{colData} slot and genes metadata in \code{rowData}.
 #'
+#' #' The difference with \code{\link{loadFinalSCProfiles}} is that data loaded with
+#' this functions will be used for estimating ZINB-WaVE parameters and simulating
+#' new single-cell profiles in order to increase the signal of cell types. On the
+#' other side, \code{\link{loadFinalSCProfiles}} loads data on \code{single.cell.final}
+#' slot, so this scRNA-seq profiles will be used directly for simulating bulk samples.
+#' In this case, data must be enough cells for each cell type and enough cells
+#' for simulating bulk profiles.
+#'
 #' @param single.cell.final If data is provided from files, \code{single.cell.real}
 #' must be a vector with three elements: single-cell counts, cells metadata and
 #' genes metadata. If data is provided from a \code{SingleCellExperiment} object,
@@ -394,7 +430,7 @@ loadRealSCProfiles <- function(
 #' @param cell.ID.column Name or number of the column in cells.metadata
 #' corresponding with cell names in expression matrix.
 #' @param gene.ID.column Name or number of the column in genes.metadata
-#' corresponding with the nonation used for features/genes.
+#' corresponding with the notation used for features/genes.
 #' @param min.counts Minimum gene counts to filter (0 by default).
 #' @param min.cells Minimum of cells with more than min.counts (0 by default).
 #' @param project Name of the project for \code{DigitaDLSorter} object.
@@ -405,12 +441,12 @@ loadRealSCProfiles <- function(
 #'
 #' @examples
 #' DDLSChung <- loadFinalSCProfiles(
-#'   single.cell.real = breast.chung.data,
+#'   single.cell.real = sc.chung.breast,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
 #'   min.cells = 0,
 #'   min.counts = 0,
-#'   project = "Chung_etal_2017"
+#'   project = "Chung_example"
 #' )
 #'
 loadFinalSCProfiles <- function(

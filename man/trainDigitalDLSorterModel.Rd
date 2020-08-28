@@ -2,7 +2,7 @@
 % Please edit documentation in R/dnnModel.R
 \name{trainDigitalDLSorterModel}
 \alias{trainDigitalDLSorterModel}
-\title{Train DigitalDLSorter DNN model.}
+\title{Train \code{DigitalDLSorter} Deep Neural Network model.}
 \usage{
 trainDigitalDLSorterModel(
   object,
@@ -12,58 +12,57 @@ trainDigitalDLSorterModel(
   freq.val = 0.1,
   loss = "kullback_leibler_divergence",
   metrics = c("accuracy", "mean_absolute_error", "categorical_accuracy"),
-  simplify = NULL,
   view.metrics.plot = TRUE,
   verbose = TRUE
 )
 }
 \arguments{
-\item{object}{\code{DigitalDLSorter} object with \code{final.data} slot.}
+\item{object}{\code{\link{DigitalDLSorter}} object with \code{final.data} slot.}
 
 \item{batch.size}{Number of samples per gradient update. If unspecified,
 \code{batch.size} will default to 128.}
 
-\item{val}{Boolean that determine if a validation subset is used during
+\item{num.epochs}{Number of epochs to train the model.}
+
+\item{val}{Boolean that determines if a validation subset is used during
 training (\code{FALSE} by default).}
 
-\item{freq.val}{Number between 0.1 and 0.5 that determine the number of
+\item{freq.val}{Number between 0.1 and 0.5 that determines the number of
 samples from training data that will be used as validation subset.}
 
 \item{loss}{Character indicating loss function selected for training the model
-(Kullback-Leibler divergence by default).
-See \code{keras} documentation for more details.}
+(Kullback-Leibler divergence by default). Look at keras documentation to see
+available loss functions.}
 
-\item{metrics}{Vector fo metrics used to evaluate the performance of the model
+\item{metrics}{Vector of metrics used to evaluate the performance of the model
 during training and on test data (\code{c("accuracy", "mean_absolute_error",
 "categorical_accuracy")} by default)}
 
 \item{verbose}{Boolean indicating if show the progression of the model during
-training. Beisdes, it is shown information about the architecture of the model
+training. Besides, it is shown information about the architecture of the model
 (\code{TRUE} by default).}
-
-\item{numm.epochs}{Number of epochs to train the model.}
 
 \item{view.metrics.plots}{Boolean indicating if show progression plots of loss
 and metrics during training (\code{TRUE} by default). \code{keras} for R allows
-to see the progression of the model during training if you are working in RStudio.}
+to see the progression of the model during training if you are working on RStudio.}
 }
 \value{
-A DigitalDLSorter object with \code{trained.model} slot containing
-a \code{\link{DigitalDLSorterDNN}} object. For more information about the
-structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
+containing a \code{\link{DigitalDLSorterDNN}} object. For more information
+about the structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
 }
 \description{
-Train DigitalDLSorter Deep Neural Network model with data store in
+Train \code{\link{DigitalDLSorter}} Deep Neural Network model with data store in
 \code{final.data} slot. Moreover, model is evaluated on test data and
 prediction results are produced.
 }
 \details{
-All the steps related with Deep Neural Network are performed by using
-\code{keras} package, a API in R for \code{keras} in Python available from CRAN.
-We recommend use the guide of installation available on \url{https://keras.rstudio.com/}
-in order to set a custom configuration (type of backend used, CPU or
-GPU, etc.). In the vignette of \code{digitalDLSorteR} we show the main steps for
-the installation.
+All steps related with Deep Neural Network in \code{digitalDLSorteR} package
+are performed by using \code{keras} package, an API in R for \code{keras}
+in Python available from CRAN. We recommend use the guide of installation
+available on \url{https://keras.rstudio.com/}
+in order to set a custom configuration (type of back-end used, CPU or
+GPU, etc.).
 
 Although \code{trainDigitalDLSorterModel} allows to select a custom loss
 function used during training, we recommend using Kullback-Leibler divergence
@@ -72,11 +71,13 @@ architecture of the DNN and its construction, see Torroja and Sanchez-Cabo,
 2019.
 }
 \examples{
+\dontrun{
 DDLSChung <- trainDigitalDLSorterModel(
   object = DDLSChung,
   batch.size = 128,
   num.epochs = 20
 )
+}
 
 }
 \references{
@@ -85,5 +86,5 @@ immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. 
 \url{10.3389/fgene.2019.00978}
 }
 \seealso{
-\code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.
+\code{\link{plotTrainingHistory}} \code{\link{deconvDigitalDLSorterModel}}
 }

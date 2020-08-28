@@ -24,14 +24,14 @@ breast.chung.generic
 DigitalDLSorter DNN model built and trained with single-cell data
 from Chung et al., 2017 (GSE75688). This model allows the enumeration and
 quantification of immune infiltrated cell types in breast cancer environment.
-This dataset consists in single-cell profiles from 11 patients from different
+This data set consists in single-cell profiles from 11 patients from different
 tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
 The analysis and characterization of the cells was carried out by the authors
 of \code{digitalDLSorteR} package.
 }
 \details{
 The cell types considered in this model are 7. They are the generic groups
-from cell types considered in specific version. The cell types are B cells,
+from cell types considered in specific version: B cells,
 T CD4+ cells, T CD8+ cells, monocytes, dendritic cells, stromal cells and
 tumor cells.
 

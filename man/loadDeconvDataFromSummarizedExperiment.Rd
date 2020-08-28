@@ -15,12 +15,12 @@ loadDeconvDataFromSummarizedExperiment(object, se.object, name.data = NULL)
 object.}
 }
 \description{
-Load data in \code{DigitalDLSorter} object to deconvolute from
+Load data in \code{\link{DigitalDLSorter}} object to deconvolute from
 \code{SummarizedExperiment} object.
 }
 \examples{
 
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+\code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModel}}
 }

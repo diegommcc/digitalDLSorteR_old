@@ -2,8 +2,8 @@
 % Please edit documentation in R/simSingleCell.R
 \name{estimateZinbwaveParams}
 \alias{estimateZinbwaveParams}
-\title{Estimate parameteres for ZINB-WaVE model for simulating single-cell expression
-profiles.}
+\title{Estimate parameters for ZINB-WaVE model for simulating new single-cell
+expression profiles.}
 \usage{
 estimateZinbwaveParams(
   object,
@@ -13,53 +13,56 @@ estimateZinbwaveParams(
   cell.cov.columns,
   gene.cov.columns,
   set.type = "All",
-  threads = 2,
+  threads = 1,
   verbose = TRUE
 )
 }
 \arguments{
-\item{object}{DigitalDLSorter object with a \code{single.cell.real} slot.}
+\item{object}{\code{\link{DigitalDLSorter}} object with a \code{single.cell.real} slot.}
 
-\item{cell.ID.column}{Name or number of the column in cells.metadata
+\item{cell.ID.column}{Name or number of the column in cells metadata
 corresponding with cell names in expression matrix.}
 
-\item{gene.ID.column}{Name or number of the column in genes.metadata
-corresponding with the nonation used for features/genes.}
+\item{gene.ID.column}{Name or number of the column in genes metadata
+corresponding with the notation used for features/genes.}
 
-\item{cell.type.column}{Name or number of the column in cells.metadata
-corresponding with the cell type of each cell.}
+\item{cell.type.column}{Name or number of the column in cells metadata
+corresponding with cell type of each cell.}
 
-\item{cell.cov.columns}{Name or number of columns in cells.metadata that
-will be used as covariates in the model.}
+\item{cell.cov.columns}{Name or number of columns in cells metadata that
+will be used as covariates in the model during the estimation.}
 
-\item{gene.cov.columns}{Name or number of columns in genes.metadata that will
-be used as covariates in the model.}
+\item{gene.cov.columns}{Name or number of columns in genes metadata that will
+be used as covariates in the model during estimation.}
 
 \item{set.type}{Cell type to evaluate. 'All' by default.}
 
-\item{threads}{Number of threads used for the estimation. For setting this environment
-\code{BiocParallel} package is used.}
+\item{threads}{Number of threads used for the estimation. For setting the parallel
+environment \code{BiocParallel} package is used.}
 
-\item{verbose}{Show messages during the execution}
+\item{verbose}{Show informative messages during the execution.}
 }
 \value{
-A DigitalDLSorter object with \code{zinb.params} slot with a ZinbParams
-object containing the estimated ZINB-WaVE parameters from real single-cell data.
+A \code{DigitalDLSorter} object with \code{zinb.params} slot containing
+a \code{ZinbParams} object. This object contains the estimated ZINB parameters
+from real single-cell data.
 }
 \description{
-Estimate simulation parameters for the ZINB-WaVE model from a real single-cell
-dataset.
+Estimate parameters for the ZINB-WaVE model from a real single-cell
+data set using ZINB-WaVE model.
 }
 \details{
 ZINB-WaVE is a flexible model for zero-inflated count data. This function
 carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
 (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
 following a zero-inflated negative binomial (ZINB) distribution. The estimated
-paramters will be used for the simulation of new single-cell expression profiles.
-To do this, we use \code{zinbEstimate} function from \code{splatter} package
-(Zappia et al., 2017),
-that is a wrapper around \code{zinbFit} function from \code{zinbwave} package.
-For details about the model, see Risso et al., 2018.
+parameters will be used for the simulation of new single-cell expression profiles
+by sampling a negative binomial distribution and introducing dropouts from a
+binomial distribution.
+To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function from
+\code{splatter} package (Zappia et al., 2017),
+that is a wrapper around \code{zinbFit} function from \code{zinbwave} package
+(Risso et al., 2018). For more details about the model, see Risso et al., 2018.
 }
 \examples{
 DDLSChung <- estimateZinbwaveParams(
@@ -69,7 +72,6 @@ DDLSChung <- estimateZinbwaveParams(
   cell.type.column = "Cell_type",
   cell.cov.columns = c("Patient", "Sample_type"),
   gene.cov.columns = "gene_length",
-  threads = 4,
   verbose = TRUE
 )
 

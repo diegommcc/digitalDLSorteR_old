@@ -14,10 +14,14 @@ corrExpPredPlot(
   filter.sc = TRUE,
   pos.x.label = 0.01,
   pos.y.label = 0.95,
+  sep.labels = 0.15,
+  size.point = 0.1,
+  alpha.point = 1,
   ncol = NULL,
   nrow = NULL,
   title = NULL,
-  theme = theme_grey()
+  theme = theme_grey(),
+  ...
 )
 }
 \arguments{

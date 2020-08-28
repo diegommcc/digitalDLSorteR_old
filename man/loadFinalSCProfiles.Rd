@@ -24,7 +24,7 @@ singlecell counts must be in \code{assay} slot, cells metadata in
 corresponding with cell names in expression matrix.}
 
 \item{gene.ID.column}{Name or number of the column in genes.metadata
-corresponding with the nonation used for features/genes.}
+corresponding with the notation used for features/genes.}
 
 \item{min.counts}{Minimum gene counts to filter (0 by default).}
 
@@ -49,14 +49,23 @@ On the other hand, if data is provided as \code{SingleCellExperiment}, the
 object must contains single-cell counts in \code{assay} slot, cells metadata
 in \code{colData} slot and genes metadata in \code{rowData}.
 }
+\details{
+#' The difference with \code{\link{loadFinalSCProfiles}} is that data loaded with
+this functions will be used for estimating ZINB-WaVE parameters and simulating
+new single-cell profiles in order to increase the signal of cell types. On the
+other side, \code{\link{loadFinalSCProfiles}} loads data on \code{single.cell.final}
+slot, so this scRNA-seq profiles will be used directly for simulating bulk samples.
+In this case, data must be enough cells for each cell type and enough cells
+for simulating bulk profiles.
+}
 \examples{
 DDLSChung <- loadFinalSCProfiles(
-  single.cell.real = breast.chung.data,
+  single.cell.real = sc.chung.breast,
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",
   min.cells = 0,
   min.counts = 0,
-  project = "Chung_etal_2017"
+  project = "Chung_example"
 )
 
 }

@@ -3,8 +3,8 @@
 \docType{data}
 \name{sc.chung.breast}
 \alias{sc.chung.breast}
-\title{Subset from the original dataset used for generating \code{breast.chung}
-model.}
+\title{Subset from the original dataset used for generating \code{breast.chung.generic}
+\code{breast.chung.specific}}
 \format{An object of class \code{SingleCellExperiment} with 23555 rows and 22 columns.}
 \source{
 \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}
@@ -13,14 +13,16 @@ model.}
 sc.chung.breast
 }
 \description{
-'Toy' subset from the original data set used for generating \code{breast.chung}
-model in order to show some examples in vignette and documentation. Data
-are provided as a \code{SingleCellExperiment} object with counts in
+'Toy' subset from the original data set used for generating \code{breast.chung.generic}
+and \code{breast.chung.specific} models  in order to show some examples in
+vignette and documentation. Data is stored as a \code{SingleCellExperiment}
+object with counts in
 \code{assay} slot, cells metadata in \code{colData} slot and genes metadata
 in \code{rowData} slot.
 }
 \details{
-For more information about the complete data set, see \code{?breast.chung}.
+For more information about the complete data set, see \code{breast.chung.generic} or
+\code{breast.chung.specific}.
 }
 \references{
 Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,

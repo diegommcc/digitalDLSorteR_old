@@ -24,19 +24,19 @@ breast.chung.specific
 DigitalDLSorter DNN model built and trained with single-cell data
 from Chung et al., 2017 (GSE75688). This model allows the enumeration and
 quantification of immune infiltrated cell types in breast cancer environment.
-This dataset consists in single-cell profiles from 11 patients from different
+This data set consists in single-cell profiles from 11 patients from different
 tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
-The analysis and characterization of the cells was carried out by the authors
+The analysis and characterization of cells was carried out by the authors
 of \code{digitalDLSorteR} package.
 }
 \details{
 The cell types considered in this model are 13, four of them being the
-intrinsic molecular subtypes of breast cancer: ER+, HER2+, ER+ and HER2+, TNBC, Stromal,
-Monocyte, Tme (memory CD4+ T cells), BGC (germinal center B cells),
+intrinsic molecular subtypes of breast cancer: ER+, HER2+, ER+/HER2+, TNBC,
+Stromal, Monocyte, TCD4me (memory CD4+ T cells), BGC (germinal center B cells),
 Bmem (memory B cells), DC (dendritic cells), Macrophage, TCD8 (CD8+ T cells)
-and Treg (regulatory CD4+ T cells).
+and TCD4reg (regulatory CD4+ T cells).
 
-The genes considered are 23.260 in SYMBOL notation.
+The genes considered are 23.260 in Symbol notation.
 
 The model consists in 2 hidden layers with 200 neurons per layer trained with
 'kullback_leibler_divergence' loss function  batch size equal to 128 and

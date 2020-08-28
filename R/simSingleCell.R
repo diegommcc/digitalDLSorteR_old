@@ -2,39 +2,48 @@
 #'
 NULL
 
-#' Estimate parameteres for ZINB-WaVE model for simulating single-cell expression
-#' profiles.
+
+################################################################################
+######################### Estimate Zinbwave parameters #########################
+################################################################################
+
+
+#' Estimate parameters for ZINB-WaVE model for simulating new single-cell
+#' expression profiles.
 #'
-#' Estimate simulation parameters for the ZINB-WaVE model from a real single-cell
-#' dataset.
+#' Estimate parameters for the ZINB-WaVE model from a real single-cell
+#' data set using ZINB-WaVE model.
 #'
 #' ZINB-WaVE is a flexible model for zero-inflated count data. This function
 #' carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
 #' (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
 #' following a zero-inflated negative binomial (ZINB) distribution. The estimated
-#' paramters will be used for the simulation of new single-cell expression profiles.
-#' To do this, we use \code{zinbEstimate} function from \code{splatter} package
-#' (Zappia et al., 2017),
-#' that is a wrapper around \code{zinbFit} function from \code{zinbwave} package.
-#' For details about the model, see Risso et al., 2018.
+#' parameters will be used for the simulation of new single-cell expression profiles
+#' by sampling a negative binomial distribution and introducing dropouts from a
+#' binomial distribution.
+#' To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function from
+#' \code{splatter} package (Zappia et al., 2017),
+#' that is a wrapper around \code{zinbFit} function from \code{zinbwave} package
+#' (Risso et al., 2018). For more details about the model, see Risso et al., 2018.
 #
-#' @param object DigitalDLSorter object with a \code{single.cell.real} slot.
-#' @param cell.ID.column Name or number of the column in cells.metadata
+#' @param object \code{\link{DigitalDLSorter}} object with a \code{single.cell.real} slot.
+#' @param cell.ID.column Name or number of the column in cells metadata
 #' corresponding with cell names in expression matrix.
-#' @param gene.ID.column Name or number of the column in genes.metadata
-#' corresponding with the nonation used for features/genes.
-#' @param cell.type.column Name or number of the column in cells.metadata
-#' corresponding with the cell type of each cell.
-#' @param cell.cov.columns Name or number of columns in cells.metadata that
-#' will be used as covariates in the model.
-#' @param gene.cov.columns Name or number of columns in genes.metadata that will
-#' be used as covariates in the model.
+#' @param gene.ID.column Name or number of the column in genes metadata
+#' corresponding with the notation used for features/genes.
+#' @param cell.type.column Name or number of the column in cells metadata
+#' corresponding with cell type of each cell.
+#' @param cell.cov.columns Name or number of columns in cells metadata that
+#' will be used as covariates in the model during the estimation.
+#' @param gene.cov.columns Name or number of columns in genes metadata that will
+#' be used as covariates in the model during estimation.
 #' @param set.type Cell type to evaluate. 'All' by default.
-#' @param threads Number of threads used for the estimation. For setting this environment
-#' \code{BiocParallel} package is used.
-#' @param verbose Show messages during the execution
-#' @return A DigitalDLSorter object with \code{zinb.params} slot with a ZinbParams
-#' object containing the estimated ZINB-WaVE parameters from real single-cell data.
+#' @param threads Number of threads used for the estimation. For setting the parallel
+#' environment \code{BiocParallel} package is used.
+#' @param verbose Show informative messages during the execution.
+#' @return A \code{DigitalDLSorter} object with \code{zinb.params} slot containing
+#' a \code{ZinbParams} object. This object contains the estimated ZINB parameters
+#' from real single-cell data.
 #'
 #' @export
 #'
@@ -48,7 +57,6 @@ NULL
 #'   cell.type.column = "Cell_type",
 #'   cell.cov.columns = c("Patient", "Sample_type"),
 #'   gene.cov.columns = "gene_length",
-#'   threads = 4,
 #'   verbose = TRUE
 #' )
 #'
@@ -73,7 +81,7 @@ estimateZinbwaveParams <- function(
   cell.cov.columns,
   gene.cov.columns,
   set.type = "All",
-  threads = 2,
+  threads = 1,
   verbose = TRUE
 ) {
   if (class(object) != "DigitalDLSorter") {
@@ -140,8 +148,6 @@ estimateZinbwaveParams <- function(
   snowParam <- BiocParallel::SnowParam(workers = threads, type = "SOCK")
 
   if (set.type == "All") {
-    # list.data[[1]] <- as.matrix(list.data[[1]])
-    # list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0, ]
     formula.cell.model <- as.formula(paste("~", paste(c(cell.cov.columns,
                                                    cell.type.column),
                                                  collapse = "+")))
@@ -152,7 +158,7 @@ estimateZinbwaveParams <- function(
                     "and", cell.type.column, "columns:"))
       message("\t", formula.cell.model, "\n")
     }
-    # coge siempre un tipo celular menos !!!!!!!!!!!!
+    ## check in future: number of cell types
     sdm <- model.matrix(formula.cell.model,
                         data = list.data[[2]][match(colnames(list.data[[1]]),
                                                     list.data[[2]][, cell.ID.column]), ])
@@ -164,8 +170,6 @@ estimateZinbwaveParams <- function(
       cell.IDs <- list.data[[2]][which(list.data[[2]][, cell.type.column] == set.type),
                                  cell.ID.column]
       list.data [[1]] <- list.data[[1]][, cell.IDs]
-      # list.data[[1]] <- as.matrix(list.data[[1]])
-      # list.data[[1]] <- list.data[[1]][rowSums(list.data[[1]]) > 0,]
 
       # update object with cells used
       sce <- CreateSCEObject(counts = list.data[[1]],
@@ -257,33 +261,41 @@ estimateZinbwaveParams <- function(
   }
 }
 
-#' Simulate single-cell expression profiles.
+################################################################################
+######################## Simulate single-cell profiles #########################
+################################################################################
+
+
+#' Simulate new single-cell expression profiles using the estimated ZINB parameters.
 #'
 #' Simulate single-cell expression profiles by randomly sampling from a negative
-#' binomial distribution using ZINB-WaVE parameters estimated and introducing
-#' dropouts by sampling from a binomial distribution with ZINB-WaVE model
-#' estimated..
+#' binomial distribution using ZINB parameters estimated by ZINB-WaVE model
+#' and introducing dropouts by sampling from a binomial distribution with
+#' ZINB-WaVE model estimated.
 #'
+#' Before this step, see \code{\link{estimateZinbwaveParams}}.
 #' As described in Torroja and Sanchez-Cabo, 2019, this function simulates a determined
-#' number of transcriptional profiles for each cell type by randomly sampling
-#' from a negative binomial distribution with their corresponding ZINB-WaVE model
-#' estimated \eqn{\mu} and \eqn{\sigma^2} parameters and introducing dropouts by
-#' sampling from a binomial distribution with ZINB-WaVE model estimated. For
-#' more details about the estimated parameters by ZINB-WaVE model, see
-#' Risso et al. 2018.
+#' number of transcriptional profiles for each cell type provided by randomly sampling
+#' from a negative binomial distribution with \eqn{\mu} and \eqn{\theta}
+#' estimated parameters and introducing dropouts by sampling from a binomial
+#' distribution with pi probability. All paramteres are estimated from
+#' single-cell real data using \code{\link{estimateZinbwaveParams}} function.
+#' It uses the ZINB-WaVE model (Risso et al., 2018). For more details about
+#' the model, see \code{\link{estimateZinbwaveParams}}.
 #
-#' @param object DigitalDLSorter object with a \code{single.cell.real} and
+#' @param object \code{\link{DigitalDLSorter}} object with \code{single.cell.real} and
 #' \code{zinb.params} slots.
-#' @param cell.ID.column Name or number of the column in cells.metadata
+#' @param cell.ID.column Name or number of the column in cells metadata
 #' corresponding with cell names in expression matrix.
-#' @param cell.type.column Name or number of the column in cells.metadata
+#' @param cell.type.column Name or number of the column in cells metadata
 #' corresponding with the cell type of each cell.
 #' @param n.cells Number of simulated cells generated by cell type (i.e.
 #' if you have 10 different cell types on your dataset, if \code{n.cells = 100},
 #' then 1000 cell profiles will be simulated).
-#' @param verbose Show messages during the execution.
-#' @return A \code{DigitalDLSorter} object with \code{single.cell.final} slot containing
-#' a \code{SingleCellExperiment} object with the simulated single-cell profiles.
+#' @param verbose Show informative messages during the execution.
+#' @return A \code{\link{DigitalDLSorter}} object with \code{single.cell.final}
+#' slot containing a \code{SingleCellExperiment} object with the simulated
+#' single-cell profiles.
 #'
 #' @export
 #'
@@ -294,7 +306,7 @@ estimateZinbwaveParams <- function(
 #'   object = DDLSChung,
 #'   cell.ID.column = "Cell_ID",
 #'   cell.type.column = "Cell_type",
-#'   n.cells = 100,
+#'   n.cells = 10,
 #'   verbose = TRUE
 #' )
 #'
@@ -332,10 +344,9 @@ simSingleCellProfiles <- function(
   list.data <- .extractDataFromSCE(SCEobject = single.cell.real(object),
                                    filtering = FALSE)
   zinb.object <- zinb.params(object)
-  # check if zinb.params and single.cell.real have the same dimensions
-  # en el caso de que set.type sea != All, tendré que eliminar los tipos celulares
-  # del cells.metadata. además hay un rowSums > 0 que puede cambiar el número de genes.
-  # Lo mejor será quitar esas filas al cargar los datos
+  # check if zinb.params and single.cell.real have the same dimensions:
+  # introduce changes if set != All
+
   dim.scr <- dim(list.data[[1]])
   if (!zinb.params(object)@nGenes == dim.scr[1] |
       !zinb.params(object)@nCells == dim.scr[2]) {

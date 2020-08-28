@@ -4,18 +4,18 @@
 #' DigitalDLSorter DNN model built and trained with single-cell data
 #' from Chung et al., 2017 (GSE75688). This model allows the enumeration and
 #' quantification of immune infiltrated cell types in breast cancer environment.
-#' This dataset consists in single-cell profiles from 11 patients from different
+#' This data set consists in single-cell profiles from 11 patients from different
 #' tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
-#' The analysis and characterization of the cells was carried out by the authors
+#' The analysis and characterization of cells was carried out by the authors
 #' of \code{digitalDLSorteR} package.
 #'
 #' The cell types considered in this model are 13, four of them being the
-#' intrinsic molecular subtypes of breast cancer: ER+, HER2+, ER+ and HER2+, TNBC, Stromal,
-#' Monocyte, Tme (memory CD4+ T cells), BGC (germinal center B cells),
+#' intrinsic molecular subtypes of breast cancer: ER+, HER2+, ER+/HER2+, TNBC,
+#' Stromal, Monocyte, TCD4me (memory CD4+ T cells), BGC (germinal center B cells),
 #' Bmem (memory B cells), DC (dendritic cells), Macrophage, TCD8 (CD8+ T cells)
-#' and Treg (regulatory CD4+ T cells).
+#' and TCD4reg (regulatory CD4+ T cells).
 #'
-#' The genes considered are 23.260 in SYMBOL notation.
+#' The genes considered are 23.260 in Symbol notation.
 #'
 #' The model consists in 2 hidden layers with 200 neurons per layer trained with
 #' 'kullback_leibler_divergence' loss function  batch size equal to 128 and
@@ -52,13 +52,13 @@
 #' DigitalDLSorter DNN model built and trained with single-cell data
 #' from Chung et al., 2017 (GSE75688). This model allows the enumeration and
 #' quantification of immune infiltrated cell types in breast cancer environment.
-#' This dataset consists in single-cell profiles from 11 patients from different
+#' This data set consists in single-cell profiles from 11 patients from different
 #' tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
 #' The analysis and characterization of the cells was carried out by the authors
 #' of \code{digitalDLSorteR} package.
 #'
 #' The cell types considered in this model are 7. They are the generic groups
-#' from cell types considered in specific version. The cell types are B cells,
+#' from cell types considered in specific version: B cells,
 #' T CD4+ cells, T CD8+ cells, monocytes, dendritic cells, stromal cells and
 #' tumor cells.
 #'
@@ -93,16 +93,18 @@
 "breast.chung.generic"
 
 
-#' Subset from the original dataset used for generating \code{breast.chung}
-#' model.
+#' Subset from the original dataset used for generating \code{breast.chung.generic}
+#' \code{breast.chung.specific}
 #'
-#' 'Toy' subset from the original data set used for generating \code{breast.chung}
-#' model in order to show some examples in vignette and documentation. Data
-#' are provided as a \code{SingleCellExperiment} object with counts in
+#' 'Toy' subset from the original data set used for generating \code{breast.chung.generic}
+#' and \code{breast.chung.specific} models  in order to show some examples in
+#' vignette and documentation. Data is stored as a \code{SingleCellExperiment}
+#' object with counts in
 #' \code{assay} slot, cells metadata in \code{colData} slot and genes metadata
 #' in \code{rowData} slot.
 #'
-#' For more information about the complete data set, see \code{?breast.chung}.
+#' For more information about the complete data set, see \code{breast.chung.generic} or
+#' \code{breast.chung.specific}.
 #'
 #' @source \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}
 #'

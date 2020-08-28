@@ -2,7 +2,8 @@
 % Please edit documentation in R/simBulk.R
 \name{prepareDataForTraining}
 \alias{prepareDataForTraining}
-\title{Generate training and test final data for training DNN model.}
+\title{Prepare training and test final data for training and evaluation
+Deep Neural Network model.}
 \usage{
 prepareDataForTraining(
   object,
@@ -15,7 +16,7 @@ prepareDataForTraining(
 )
 }
 \arguments{
-\item{object}{\code{DigitalDLSorter} object with \code{single.cell.final} and
+\item{object}{\code{\link{DigitalDLSorter}} object with \code{single.cell.final} and
 \code{prob.cell.types} slots.}
 
 \item{type.data}{Type of data to generate among 'train', 'test' or 'both'
@@ -24,35 +25,50 @@ prepareDataForTraining(
 \item{combine}{Character determining if combine training data. Can be 'both',
 'bulk' or 'single-cell' ('both' by default). Note that test data is always combined.}
 
-\item{file.backend}{Valid file path where to save the HDF5 file used as backend.
-If it is equal to \code{NULL} (by default), the data are produced and loaded in memory.}
+\item{file.backend}{A valid file path where to save the HDF5 file used as
+back-end. If it is equal to \code{NULL} (by default), the data are loaded in memory.}
 
-\item{verbose}{Show messages during the execution.}
+\item{number.cols}{HDF5 file is saved by column chunks in order to improve
+the time executions during the DNN training. This is because
+\code{\link{trainDigitalDLSorterModel}} only access to data by columns. You can
+provided the number of columns that are stored together in each chunk. Note
+that the more columns the more RAM is used, although time times are improved.}
+
+\item{verbose}{Show informative messages during the execution.}
 }
 \value{
-A DigitalDLSorter object with \code{final.data} slot containing
+A \code{\link{DigitalDLSorter}} object with \code{final.data} slot containing
 a list with one or two entries (depending on selected \code{type.data} argument):
 'train' and 'test'. Each entry contains a \code{SummarizedExperiment} object
 with single-cell and bulk samples combined in \code{assay} slot, sample names in
 \code{rowData} slot and feature names in \code{colData} slot.
 }
 \description{
-Generate training and test final data for training Deep Neural Network model.
-To do this, first single-cell and bulk profiles are combined into a single
-expression matrix. Then, counts per million (CPM) in log2-space are computed and
-normalized. Finally, all samples are shuffled in order to avoid biases
-during training. Note that expression matrix is transposed in order to prepare
-data for training.
+Prepare training and test final data for training and evaluating Deep Neural
+Network model. Expression matrix is normalized by CPMs (counts per million)
+in log2-space and normalized. Samples are shuffled in order to
+avoid biases during training. Note that expression matrix is transposed
+in order to prepare data for training.
 }
 \details{
-\code{digitalDLSorteR} allows the use of HDF5 files as backend for the resulting data
-using \code{DelayedArray} and \code{HDF5Array} frameworks in cases of generating
-too large expression matrix to work with it loaded in memory. You need to provide
-a valid file path to store the resulting file with '.h5' extension. The data
-will be accessible from R without being loaded into memory. This option
-slightly slows down execution times, since subsequent transformations of data
-will be carried out by chunks instead of using all data. We
-recommend this options due to the large size of the simulated matrices.
+This function allows you to select which kind of data you want to
+use for training: single-cell profiles, bulk profiles or a combination of both.
+See \code{combine} argument for details. We recommend the use of the combination
+or the bulk profiles, since the results are better. For test data, profiles
+are combined in any case, but during the evaluation of results you can filter
+single-cell profiles (see \code{\link{calculateEvalMetrics}}).
+
+\code{digitalDLSorteR} allows the use of HDF5 files as back-end for the
+resulting data using \code{DelayedArray} and \code{HDF5Array} packages in
+cases of generating too large expression matrix. This functionality allows
+you to work without keeping the data loaded in memory, which will be of
+vital importance during some computationally heavy steps such as neural network
+training. You must provide a valid file path in \code{file.backend} argument
+to store the resulting file with
+'.h5' extension. The data will be accessible from R without being loaded into
+memory. This option slightly slows down execution times, since subsequent
+transformations of data will be carried out by chunks instead of using all
+data. We recommend this option due to the large size of the simulated matrices.
 }
 \examples{
 ## loading all data in memory
@@ -61,7 +77,7 @@ DDLSChung <- prepareDataForTraining(
   type.data = "both",
   verbose = TRUE
 )
-
+\dontrun{
 ## using HDF5 as backend
 DDLSChung <- prepareDataForTraining(
   object = DDLSChung,
@@ -70,6 +86,7 @@ DDLSChung <- prepareDataForTraining(
   file.backend = "DDLSChung.final.data.combined.h5",
   verbose = TRUE
 )
+}
 
 }
 \seealso{

@@ -1,22 +1,24 @@
 #' @importFrom dplyr %>%
 #' @import keras
+#' @importFrom tools file_path_sans_ext
 NULL
 
-# tensorflow::tf$compat$v1$disable_eager_execution()
-## this line should be in documentation or vignette, since it is a general option
+################################################################################
+######################## Train and evaluate DNN model ##########################
+################################################################################
 
-#' Train DigitalDLSorter DNN model.
+#' Train \code{DigitalDLSorter} Deep Neural Network model.
 #'
-#' Train DigitalDLSorter Deep Neural Network model with data store in
+#' Train \code{\link{DigitalDLSorter}} Deep Neural Network model with data store in
 #' \code{final.data} slot. Moreover, model is evaluated on test data and
 #' prediction results are produced.
 #'
-#' All the steps related with Deep Neural Network are performed by using
-#' \code{keras} package, a API in R for \code{keras} in Python available from CRAN.
-#' We recommend use the guide of installation available on \url{https://keras.rstudio.com/}
-#' in order to set a custom configuration (type of backend used, CPU or
-#' GPU, etc.). In the vignette of \code{digitalDLSorteR} we show the main steps for
-#' the installation.
+#' All steps related with Deep Neural Network in \code{digitalDLSorteR} package
+#' are performed by using \code{keras} package, an API in R for \code{keras}
+#' in Python available from CRAN. We recommend use the guide of installation
+#' available on \url{https://keras.rstudio.com/}
+#' in order to set a custom configuration (type of back-end used, CPU or
+#' GPU, etc.).
 #'
 #' Although \code{trainDigitalDLSorterModel} allows to select a custom loss
 #' function used during training, we recommend using Kullback-Leibler divergence
@@ -24,40 +26,42 @@ NULL
 #' architecture of the DNN and its construction, see Torroja and Sanchez-Cabo,
 #' 2019.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{final.data} slot.
+#' @param object \code{\link{DigitalDLSorter}} object with \code{final.data} slot.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
 #' @param num.epochs Number of epochs to train the model.
-#' @param val Boolean that determine if a validation subset is used during
+#' @param val Boolean that determines if a validation subset is used during
 #' training (\code{FALSE} by default).
-#' @param freq.val Number between 0.1 and 0.5 that determine the number of
+#' @param freq.val Number between 0.1 and 0.5 that determines the number of
 #' samples from training data that will be used as validation subset.
 #' @param loss Character indicating loss function selected for training the model
-#' (Kullback-Leibler divergence by default).
-#' See \code{keras} documentation for more details.
-#' @param metrics Vector fo metrics used to evaluate the performance of the model
+#' (Kullback-Leibler divergence by default). Look at keras documentation to see
+#' available loss functions.
+#' @param metrics Vector of metrics used to evaluate the performance of the model
 #' during training and on test data (\code{c("accuracy", "mean_absolute_error",
 #' "categorical_accuracy")} by default)
 #' @param view.metrics.plots Boolean indicating if show progression plots of loss
 #' and metrics during training (\code{TRUE} by default). \code{keras} for R allows
-#' to see the progression of the model during training if you are working in RStudio.
+#' to see the progression of the model during training if you are working on RStudio.
 #' @param verbose Boolean indicating if show the progression of the model during
-#' training. Beisdes, it is shown information about the architecture of the model
+#' training. Besides, it is shown information about the architecture of the model
 #' (\code{TRUE} by default).
-#' @return A DigitalDLSorter object with \code{trained.model} slot containing
-#' a \code{\link{DigitalDLSorterDNN}} object. For more information about the
-#' structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+#' @return A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
+#' containing a \code{\link{DigitalDLSorterDNN}} object. For more information
+#' about the structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
 #'
 #' @export
 #'
-#' @seealso \code{\link{plotTrainingHistory}}, \code{\link{deconvDigitalDLSorterModel}}.
+#' @seealso \code{\link{plotTrainingHistory}} \code{\link{deconvDigitalDLSorterModel}}
 #'
 #' @examples
+#' \dontrun{
 #' DDLSChung <- trainDigitalDLSorterModel(
 #'   object = DDLSChung,
 #'   batch.size = 128,
 #'   num.epochs = 20
 #' )
+#' }
 #'
 #' @references
 #' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
@@ -303,17 +307,17 @@ trainDigitalDLSorterModel <- function(
 
 #' Save on disk trained DigitalDLSorter DNN model as HDF5 file.
 #'
-#' Save on disk the trained model in HDF5 format.
+#' Save on disk the trained model in HDF5 format. Note that this function
+#' does not save the \code{\link{DigitalDLSorterDNN}} object, but the trained keras model.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
-#' @param file.path Valid file path where storing model.
+#' @param object \code{\link{DigitalDLSorter}} object with \code{trained.model} slot.
+#' @param file.path Valid file path where saving the model.
 #' @param overwrite Overwrite file if it already exists.
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{loadTrainedModel}}.
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{loadTrainedModel}}
 #'
-#' @examples
 #'
 saveTrainedModelAsH5 <- function(
   object,
@@ -358,26 +362,27 @@ saveTrainedModelAsH5 <- function(
 
 #' Load from HDF5 file a trained DigitalDLSorter DNN model.
 #'
-#' Load from HDF5 file a trained DigitalDLSorter DNN model and incorporate
-#' it in DigitalDLSorter object.
+#' Load from HDF5 file a trained DigitalDLSorter DNN model into
+#' a \code{\link{DigitalDLSorter}} object. Note that HDF5 file must be a keras
+#' valid trained model.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
-#' @param file.path Valid file path where storing model.
+#' @param object \code{\link{DigitalDLSorter}} object with \code{trained.model} slot.
+#' @param file.path Valid file path where model are stored.
 #' @param reset.slot Remove \code{trained.slot} if it already exists.
-#' A new DigitalDLSorterDNN object will be formed, but it will not contain other
-#' slots.
+#' A new \code{\link{DigitalDLSorterDNN}} object will be formed, but it will not contain other
+#' slots (\code{FALSE} by default).
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}},
-#' \code{\link{loadTrainedModel}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModelObj}}
+#' \code{\link{saveTrainedModelAsH5}}
 #'
 #' @examples
 #'
 loadTrainedModelFromH5 <- function(
   object,
   file.path,
-  reset.slot = TRUE
+  reset.slot = FALSE
 ) {
   if (class(object) != "DigitalDLSorter") {
     stop("The provided object is not of DigitalDLSorter class")
@@ -425,11 +430,11 @@ loadTrainedModelFromH5 <- function(
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
 #' @param title Title of plot.
 #' @param metrics Which metrics to plot. If it is equal to \code{NULL} (by default),
-#' all metrics will be plotted.
+#' all metrics available on \code{\link{DigitalDNSorter}} object  will be plotted.
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModelObj}}
 #'
 #' @examples
 #'
@@ -457,16 +462,17 @@ plotTrainingHistory <- function(
 
 #' Load data to deconvolute from tabulated text file.
 #'
-#' Load data to deconvolute from text file. Accepted formats are tsv and tas.gz.
+#' Load data to deconvolute from text file. Accepted formats are tsv and tsv.gz.
+#' You must specify the correct extension.
 #'
-#' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
+#' @param object \code{\link{DigitalDLSorter}} object with \code{trained.model} slot.
 #' @param file.path File path where data is stored.
-#' @param name.data Name with which the data is stored in \code{DigitalDLSorter}
-#' object. If \code{name.data} is not provided, basename of file is used.
+#' @param name.data Name with which the data is stored in \code{\link{DigitalDLSorter}}
+#' object. If \code{name.data} is not provided, base name of file is used.
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModel}}
 #'
 #' @examples
 #'
@@ -481,14 +487,14 @@ loadDeconvDataFromFile <- function(
   se.object <- SummarizedExperiment::SummarizedExperiment(
     assays = list(counts = .readTabFiles(file = file.path))
   )
-  ## generate name for data if is not provided
+  # generate name for data if is not provided
   if (is.null(name.data)) {
     name.data <- tools::file_path_sans_ext(basename(file.path))
   }
-  ## create or not a new list
+  # create or not a new list
   if (is.null(object@deconv.data)) list.data <- list()
   else list.data <- object@deconv.data
-  ## check if name.data exists
+  # check if name.data exists
   if (name.data %in% names(list.data)) {
     stop(paste(name.data, "data already exists in deconv.data slot"))
   }
@@ -505,7 +511,7 @@ loadDeconvDataFromFile <- function(
 
 #' Load data to deconvolute from \code{SummarizedExperiment} object.
 #'
-#' Load data in \code{DigitalDLSorter} object to deconvolute from
+#' Load data in \code{\link{DigitalDLSorter}} object to deconvolute from
 #' \code{SummarizedExperiment} object.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
@@ -515,7 +521,7 @@ loadDeconvDataFromFile <- function(
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}}, \code{\link{deconvDigitalDLSorterModel}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModel}}
 #'
 #' @examples
 #'
@@ -537,7 +543,7 @@ loadDeconvDataFromSummarizedExperiment <- function(
                   recommended that the provided data be of the same nature as",
                   "the data with which the model has been trained (e.g. TPMs)"))
   }
-  ## generate name for data if is not provided
+  # generate name for data if is not provided
   if (is.null(name.data)) {
     if (is.null(decov.data(object))) {
       name.data <- "deconv_1"
@@ -545,10 +551,10 @@ loadDeconvDataFromSummarizedExperiment <- function(
       name.data <- paste0("decon_", length(decov.data(object)) + 1)
     }
   }
-  ## create or not a new list
+  # create or not a new list
   if (is.null(deconv.data(object))) list.data <- list()
   else list.data <- deconv.data(object)
-  ## check if name.data exists
+  # check if name.data exists
   if (name.data %in% names(list.data)) {
     stop(paste(name.data, "data already exists in deconv.data slot"))
   }
@@ -595,7 +601,7 @@ loadDeconvDataFromSummarizedExperiment <- function(
   if (any(duplicated(unlist(index)))) {
     stop("It is not possible assign a determined cell type more than once")
   }
-  ## for more than 1 subset
+  # for more than 1 subset
   r <- 1
   for (n in index) {
     results <- t(apply(
@@ -639,7 +645,12 @@ loadDeconvDataFromSummarizedExperiment <- function(
 }
 
 
-#' Deconvolute bulk gene expression samples (RNA-Seq) using a pre-trained
+################################################################################
+##################### Deconvolution of new bulk samples ########################
+################################################################################
+
+
+#' Deconvolute bulk gene expression samples (bulk RNA-Seq) using a pre-trained
 #' DigitalDLSorter model.
 #'
 #' Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion
@@ -650,61 +661,66 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #'
 #' This method uses a pre-trained Deep Neural Network model to enumerate
 #' and quantify the cell types present in bulk RNA-Seq samples. For the moment,
-#' the available models allow to deconvolute the immune infiltration in colorectal
-#' (\code{'colon.li'} (Li et al., 2017)) and breast cancer (\code{'breast.chung'}
-#' (Chung et al., 2017)).
+#' the available models allow to deconvolute the immune infiltration breast cancer
+#' (Chung et al., 2017) at two levels: specific cell types
+#' (\code{'breast.chung.specific'}) and generic cell types
+#' (\code{'breast.chung.generic'}). See \code{\link{breast.chung.generic}}
+#' and \code{\link{breast.chung.specific}} documentation for details.
 #'
 #' This function is oriented for users that only want to use the method for
-#' deconvoluting their bulk RNA-Seq samples. For users that are buliding their
-#' own model using the rest of functionalities of \code{digitalDLSoteR} package,
+#' deconvoluting their bulk RNA-Seq samples. For users that are building their
+#' own model from scRNA-seq,
 #' see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
 #' while the last uses \code{DigitalDLSorter} objects.
 #'
-#' @param data A matrix bulk gene expression with
+#' @param data A \code{matrix} or a \code{data.frame} with bulk gene expression
+#' of samples. Rows must be genes in symbol notation and columns must be samples.
 #' @param model Pre-trained DNN model to use for deconvoluting process.
 #' For the moment, the available models are for RNA-Seq samples from breast
-#' cancer ('breast') environment.
-#' @param batch.size Number of samples per gradient update. If unspecified,
-#' \code{batch.size} will default to 128.
+#' cancer (\code{'breast.chung.generic'} and \code{'breast.chung.specific'})
+#' environment.
+#' @param batch.size Number of samples loadad in-memory each time of deconvolution
+#' process. If unspecified, \code{batch.size} will default to 128.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
 #' @param simplify.set List specifying which cell types should be compressed
-#' into a new label whose name will be the list item. See examples for details.
+#' into a new label whose name will be the list name item. See examples for details.
 #' @param simplify.majority List specifying which cell types should be compressed
-#' into the cell types with greater proportion in each sample. Unlike
+#' into the cell type with greater proportions in each sample. Unlike
 #' \code{simplify.set}, it allows to maintain the complexity of the results
 #' while compressing the information, because it is not created a new label.
-#' @param verbose Show messages during the execution.
+#' @param verbose Show informative messages during the execution.
 #'
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
-#' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
-#' type in \eqn{i} sample.
+#' (\eqn{j}) as columns. Each entry represents the predicted proportion
+#' of \eqn{j} cell type in \eqn{i} sample.
 #'
 #' @export
 #'
 #' @seealso \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
-#' res.1 <- deconvDigitalDLSorter(
+#' results1 <- deconvDigitalDLSorter(
 #'   data = TCGA.breast.small,
-#'   model = "breast",
+#'   model = "breast.chung.specific",
 #'   normalize = TRUE
 #' )
 #'
 #' ## simplify arguments
 #' simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
 #'                  Bcells = c("Bmem", "BGC"))
+#'
 #' ## in this case,  the item names from list will be the new labels
-#' res.2 <- deconvDigitalDLSorter(
+#' results2 <- deconvDigitalDLSorter(
 #'   TCGA.breast.small,
-#'   model = "breast",
+#'   model = "breast.chung.specific",
 #'   normalize = TRUE,
 #'   simplify.set = simplify)
 #'
 #' ## in this case, the cell type with greatest proportion will be the new label
 #' ## the rest of proportion cell types will be added to the greatest
-#' res.3 <- deconvDigitalDLSorter(
+#' results3 <- deconvDigitalDLSorter(
 #'   TCGA.breast.small,
-#'   model = "breast",
+#'   model = "breast.chung.specific",
 #'   normalize = TRUE,
 #'   simplify.majority = simplify)
 #'
@@ -726,14 +742,16 @@ deconvDigitalDLSorter <- function(
   if (!is.matrix(data) && !is.data.frame(data)) {
     stop("'data' must be a matrix or data.frame")
   }
-  if (model == "breast") {
-    model.dnn <- digitalDLSorteR::breast.chung
+  if (model == "breast.specific") {
+    model.dnn <- digitalDLSorteR::breast.chung.specific
+  } else if (model == "breast.generic") {
+    model.dnn <- digitalDLSorteR::breast.chung.generic
   } else {
     stop("model provided does not exist")
   }
   model.dnn <- .loadModelFromJSON(model.dnn)
 
-  ## check data --> check if there are duplicated genes and aggregate
+  # check data --> check if there are duplicated genes and aggregate
   results <- .deconvCore(
     deconv.counts = data,
     model = model.dnn,
@@ -776,7 +794,7 @@ deconvDigitalDLSorter <- function(
 #' Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
 #' quantifying the proportion of cell types present in a bulk sample. This
 #' function needs a \code{DigitalDLSorter} object with a trained DNN model
-#' (\code{\link{trained.model}} slot) and data for deconvoluting store in
+#' (\code{\link{trained.model}} slot) and bulk samples for deconvoluting in
 #' \code{deconv.data} slot.
 #'
 #' This function is oriented for users that have trained a DNN model using their
@@ -786,7 +804,7 @@ deconvDigitalDLSorter <- function(
 #' @param object \code{\link{DigitalDLSorter}} object with \code{trained.data}
 #' and \code{deconv.data} slots.
 #' @param name.data Name of the data store in \code{DigitalDLSorter} object. If
-#' it is not provided, the first dataset will be used.
+#' it is not provided, the first data set will be used.
 #' @param batch.size Number of samples per gradient update. If unspecified,
 #' \code{batch.size} will default to 128.
 #' @param normalize Normalize data before deconvolution. \code{TRUE} by default.
@@ -800,7 +818,7 @@ deconvDigitalDLSorter <- function(
 #' while compressing the information, because it is not created a new label.
 #' The results are stored in a list with normal and simpli.set results
 #' (if provided). The name of the element in the list is \code{'simpli.majority'}.
-#' @param verbose Show messages during the execution.
+#' @param verbose Show informative messages during the execution.
 #' @return A \code{data.frame} with samples (\eqn{i}) as rows and cell types
 #' (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
 #' type in \eqn{i} sample.
@@ -810,10 +828,17 @@ deconvDigitalDLSorter <- function(
 #' @seealso \code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}
 #'
 #' @examples
+#' ## simplify arguments
+#' simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+#'                  Bcells = c("Bmem", "BGC"))
+#'
+#' ## all results are stored in DigitalDLSorter object
 #' DDLSChung <- deconvDigitalDLSorterObj(
 #'   object = DDLSChung,
-#'   batch.size = 128,
-#'   num.epochs = 20
+#'   name.data = "TCGA.small",
+#'   normalize = TRUE,
+#'   simplify.set = simplify,
+#'   simplify.majority = simplify
 #' )
 #'
 #' @references
@@ -924,7 +949,7 @@ deconvDigitalDLSorterObj <- function(
   deconv.counts <- rbind(deconv.counts, m.new)
   deconv.counts <- deconv.counts[features(model), ]
   if (verbose) {
-    message(paste("=== Filtering", sum(filter.features),
+    message(paste("=== Filtering", sum(!filter.features),
                   "features in data that are not present in training data\n"))
     message(paste("=== Setting", sum(fill.features),
                   "features that are not present in training data to zero\n"))

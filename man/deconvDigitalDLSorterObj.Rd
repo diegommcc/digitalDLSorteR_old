@@ -19,7 +19,7 @@ deconvDigitalDLSorterObj(
 and \code{deconv.data} slots.}
 
 \item{name.data}{Name of the data store in \code{DigitalDLSorter} object. If
-it is not provided, the first dataset will be used.}
+it is not provided, the first data set will be used.}
 
 \item{batch.size}{Number of samples per gradient update. If unspecified,
 \code{batch.size} will default to 128.}
@@ -38,7 +38,7 @@ while compressing the information, because it is not created a new label.
 The results are stored in a list with normal and simpli.set results
 (if provided). The name of the element in the list is \code{'simpli.majority'}.}
 
-\item{verbose}{Show messages during the execution.}
+\item{verbose}{Show informative messages during the execution.}
 }
 \value{
 A \code{data.frame} with samples (\eqn{i}) as rows and cell types
@@ -49,7 +49,7 @@ type in \eqn{i} sample.
 Deconvolute bulk gene expression samples (RNA-Seq) enumerating and
 quantifying the proportion of cell types present in a bulk sample. This
 function needs a \code{DigitalDLSorter} object with a trained DNN model
-(\code{\link{trained.model}} slot) and data for deconvoluting store in
+(\code{\link{trained.model}} slot) and bulk samples for deconvoluting in
 \code{deconv.data} slot.
 }
 \details{
@@ -58,10 +58,17 @@ own data. If you want to use a pre-trained model, see
 \code{\link{deconvDigitalDLSorter}}.
 }
 \examples{
+## simplify arguments
+simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+                 Bcells = c("Bmem", "BGC"))
+
+## all results are stored in DigitalDLSorter object
 DDLSChung <- deconvDigitalDLSorterObj(
   object = DDLSChung,
-  batch.size = 128,
-  num.epochs = 20
+  name.data = "TCGA.small",
+  normalize = TRUE,
+  simplify.set = simplify,
+  simplify.majority = simplify
 )
 
 }
