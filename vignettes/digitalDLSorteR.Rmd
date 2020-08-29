@@ -7,18 +7,19 @@ author:
     affiliation: Second Author's Affiliation
     email: corresponding@author.com
 package: digitalDLSorteR
-output: BiocStyle::html_document
-css: "style.css"
-toc: true
-toc_float: true
+output: 
+  BiocStyle::html_document:
+    toc: true
+    toc_float: true
+    css: "style.css"
 classoption: a4paper
 geometry: margin=3cm
 fontsize: 12pt
 abstract: |
-  Introduction of main functionalities of _digitalDLSorteR_. This package has 
+  Introduction of main functionalities of digitalDLSorteR. This package has 
   two goals. Firstly, to offer a set of pre-trained deconvolution models for 
   the prediction of cell composition in bulk RNA-seq samples quickly and easily. 
-  Secondly, _digitalDLSorteR_ provides all the necessary functions for the 
+  Secondly, digitalDLSorteR provides all the necessary functions for the 
   construction of new deconvolution models from scRNA-seq data. In this 
   vignette, both ways of use are explained with examples built into the package. 
 vignette: |
@@ -35,7 +36,7 @@ require(BiocStyle)
 ```
 
 
-# Introduction to _digitalDLSorteR_package
+# Introduction to _digitalDLSorteR_ package
 
 _digitalDLSorteR_ is a R package that implements a Deep Learning based method to 
 enumerate and quantify the cell type composition of bulk RNA-Seq samples. Our 
@@ -103,9 +104,10 @@ small subset of TCGA samples from breast sample. We are using the generic versio
 (`model = "breast.chung.generic"`), but it is also possible the use of a 
 specific (`model = "breast.chung.specific"`):
 
-```{r deconvoluteTCGA}
-# library(digitalDLSorteR)
+```{r deconvoluteTCGA, message=FALSE}
+library(digitalDLSorteR)
 
+# this line is to ensure compatibility with all machines
 tensorflow::tf$compat$v1$disable_eager_execution()
 
 deconvResults <- deconvDigitalDLSorter(
