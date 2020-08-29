@@ -1,26 +1,33 @@
 ---
 title: "digitalLDSorteR: R package for deconvolution of bulk RNA-Seq samples based on Deep Learning"
 author:
-- name: First Author
-  affiliation: First Author's Affiliation
-- name: Second Author
-  affiliation: Second Author's Affiliation
-  email: corresponding@author.com
+  - name: First Author
+    affiliation: First Author's Affiliation
+  - name: Second Author
+    affiliation: Second Author's Affiliation
+    email: corresponding@author.com
 package: digitalDLSorteR
-output:
+output: 
   BiocStyle::html_document
-    # css: "./css/style.css"
+    css: "style.css"
     toc: true
     toc_float: true
+classoption: a4paper
+geometry: margin=3cm
+fontsize: 12pt
 abstract: |
-  Introduction of main functionalities of digitalDLSorteR. This package has two goals. Firstly, to offer a set of pre-trained deconvolution models for the prediction of cell composition in bulk RNA-seq samples quickly and easily. Secondly, digitalDLSorteR provides all the necessary functions for the construction of new deconvolution models from scRNA-seq data. In this vignette, both ways of use are explained with examples built into the package. 
+  Introduction of main functionalities of _digitalDLSorteR_. This package has 
+  two goals. Firstly, to offer a set of pre-trained deconvolution models for 
+  the prediction of cell composition in bulk RNA-seq samples quickly and easily. 
+  Secondly, _digitalDLSorteR_ provides all the necessary functions for the 
+  construction of new deconvolution models from scRNA-seq data. In this 
+  vignette, both ways of use are explained with examples built into the package. 
 vignette: |
   %\VignetteIndexEntry{digitalLDSorteR: R package for deconvolution of bulk RNA-Seq samples based on Deep Learning}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
   %\VignettePackage{digitalDLSorteR}
 ---
-
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
@@ -29,9 +36,9 @@ require(BiocStyle)
 ```
 
 
-# Introduction to `digitalDLSorteR`package
+# Introduction to _digitalDLSorteR_package
 
-digitalDLSorteR is a R package that implements a Deep Learning based method to 
+_digitalDLSorteR_ is a R package that implements a Deep Learning based method to 
 enumerate and quantify the cell type composition of bulk RNA-Seq samples. Our 
 method makes use of a Deep Neural Network (DNN) model to adjust any cell type
 composition defined from a single-cell RNA-Seq (scRNA-Seq) data. 
@@ -98,7 +105,7 @@ small subset of TCGA samples from breast sample. We are using the generic versio
 specific (`model = "breast.chung.specific"`):
 
 ```{r deconvoluteTCGA}
-library(digitalDLSorteR)
+# library(digitalDLSorteR)
 
 tensorflow::tf$compat$v1$disable_eager_execution()
 
@@ -114,10 +121,10 @@ head(deconvResults)
 `deconvDigitalDLSorter` returns a data frame with the provided samples ($i$) in 
 rows and cell types considered by the model ($j$) in columns. Each entry 
 corresponds with the proportion of $j$ cell type in $i$ sample. In order to 
-evaluate the results quickly by a barplot, you can use the function 
+evaluate the results quickly by a bar plot, you can use the function 
 `barplotCellTypes` as follows:
 
-```{r resultsDeconvTCGA, fig.height=8, fig.width=8}
+```{r resultsDeconvTCGA}
 barPlotCellTypes(
   deconvResults, 
   rm.x.text = TRUE,
@@ -129,7 +136,7 @@ barPlotCellTypes(
 # Build your own model for deconvolution of bulk RNA-Seq samples in a determined 
 environment
 
-`digitalDLSorteR` allows to train new models from different scRNA-Seq data 
+_digitalDLSorteR_ allows to train new models from different scRNA-Seq data 
 in order to offer the possibility to generate models more suitable for 
 determined biological environments. For this, the steps described in the 
 following pipeline must be followed. As example, we are going to generate a 
@@ -139,7 +146,7 @@ available in the package.
 
 ## Load data into a `DigitalDLSorter` object
 
-First, we have to load data into a 'DigitalDLSorter` object, the core of the 
+First, we have to load data into a `DigitalDLSorter` object, the core of the 
 package. This S4 class contains all slots necessaries for storing the different 
 data generated during the building of the model. The 
 information that you must provided consists in three elements: 
@@ -166,7 +173,7 @@ this features and it is not necessary the simulation of new single-cell profiles
 you can use `loadFinalSCProfiles`, that loads data into `single.cell.final` slot. 
 In this vignette, we are going to present the large protocol.
 
-```{r loadData}
+```{r loadData, eval=FALSE}
 DDLSChung <- loadRealSCProfiles(
   single.cell.real = sc.chung.breast,
   cell.ID.column = "Cell_ID",
@@ -180,7 +187,7 @@ In this case, we are loading single-cell profiles from a `SingleCellExperiment`
 object, but it is also possible to load it from tsv files and sparse matrices. 
 The code would be as follows (this box-code will not be run):
 
-```{r loadFromFile, eval = FALSE}
+```{r loadFromFile, eval=FALSE}
 ## this code will not be run
 filesChung <- c("countsMatrix.tsv.gz",
                 "cellsMetadata.tsv.gz",
@@ -202,7 +209,7 @@ profiles
 If data is loaded into `single.cell.real` slot, new simulated single-cell profiles
 based on real profiles will be generated. The goal is the oversampling of low
 frequency cell types in order to increase their signal and 
-train the model in a balanced way. For this, digitalDLSorteR uses the
+train the model in a balanced way. For this, _digitalDLSorteR_ uses the
 ZINB-WaVE framework () to estimate the parameters of a ZINB (zero-inflated 
 negative binomial) distribution to simulate new single-cell profiles. This 
 model was chosen due to its ability to accommodate not only the variability 
@@ -216,15 +223,15 @@ that corresponds with cell types. Moreover, you can add cell covariates based
 on your experimental design such as patient or gender and gene covariates such 
 as gene length. This process may take a few minutes to run because it 
 is poorly optimized in the original packages, so be patient. For this vignette, 
-ZINB-WaVE model is loaded from digitalDLSorteR package in order to avoid the 
+ZINB-WaVE model is loaded from _digitalDLSorteR_ package in order to avoid the 
 wait. In any case, you can adjust the number of threads to use in some steps 
 of the estimation with `threads` argument. It is used for this proposal 
 `r Biocpkg("BiocParallel")` package. 
 
 ```{r zinbwaveEstimation, eval=FALSE}
 ## this code will not be run
-DDLSChung <- estimateZinbwaveParams(
-  object = DDLSChung,
+DDLSChungSmall <- estimateZinbwaveParams(
+  object = DDLSChungSmall,
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",
   cell.type.column = "Cell_type",
@@ -235,12 +242,12 @@ DDLSChung <- estimateZinbwaveParams(
 )
 ```
 
-The resulting model is stored in `zinb.params` slot. You can access with its getter function:
+The resulting model is stored in `zinb.params` slot. You can access with its 
+getter function:
 
 ```{r}
-zinb.params(DDLSChung)
+DDLSChungSmall
 ```
-
 
 ## Simulate new single-cell profiles using the estimated parameters
 
@@ -254,8 +261,8 @@ will be generated. For example, if your data set is composed by 10 cell types an
 `n.cells` is equal to 10, the number of simulated profiles will be 100. 
 
 ```{r}
-DDLSChung <- simSingleCellProfiles(
-  object = DDLSChung,
+DDLSChungSmall <- simSingleCellProfiles(
+  object = DDLSChungSmall,
   cell.ID.column = "Cell_ID",
   cell.type.column = "Cell_type",
   n.cells = 10,
@@ -306,15 +313,15 @@ generated by the first method.
 
 ```{r}
 probMatrix <- data.frame(
-  Cell_types = c("ER+", "HER2+", "ER+ and HER2+", "TNBC",
+  Cell_type = c("ER+", "HER2+", "ER+ and HER2+", "TNBC",
                  "Stromal", "Monocyte", "Tme", "BGC",
                  "Bmem", "DC", "Macrophage", "TCD8", "Treg"),
   from = c(rep(30, 4), 1, rep(0, 8)),
   to = c(rep(70, 4), 50, rep(15, 8))
 )
 
-DDLSChung <- generateTrainAndTestBulkProbMatrix(
-  object = DDLSChung,
+DDLSChungSmall <- generateTrainAndTestBulkProbMatrix(
+  object = DDLSChungSmall,
   cell.type.column = "Cell_type",
   prob.design = probMatrix,
   num.bulk.samples = 200,
@@ -335,16 +342,20 @@ last distributions of train samples:
 
 ```{r}
 lapply(c(1, 6), function(x) {
-  showProbPlot(DDLS.Chung.1,
+  showProbPlot(DDLSChungSmall,
                type.data = "train", set = x, type.plot = "boxplot")
 })
 ```
 
+Probably, distributions presents different medians between cell types or 
+similar things. This is because of the low number of samples that are being 
+simulated.
 
-## Simulate bulk RN-seq profiles with known cell composition
+
+## Simulate bulk RNA-seq profiles with known cell composition
 
 As in tissues the expression levels of each gene from a bulk RNA-seq experiment 
-represent the summation of different cells, digitalDLSorteR simulates new 
+represent the summation of different cells, _digitalDLSorteR_ simulates new 
 profiles by adding the expression levels of each gene from single-cell profiles 
 according to the proportions generated in the previous step. Therefore, the 
 bulk matrix expression will be simulated according the Equation \#eq:bulk:
@@ -379,11 +390,19 @@ This step is carried out by `generateBulkSamples` function as shown in the
 following code box:
 
 ```{r generateBulkSamples}
-DDLSChung <- generateBulkSamples(
-  DDLSChung,
+DDLSChungSmall <- generateBulkSamples(
+  DDLSChungSmall,
   type.data = "both"
 )
 ```
+
+You can see the show message from the object in order to know information
+about the steps done.
+
+```{r}
+DDLSChungSmall
+```
+
 
 This way of use will load all bulk samples in -memory. If the number of bulk 
 samples increases, It is possible to use HDF5 files as a back-end for storing 
@@ -422,10 +441,10 @@ be noted that, as in the previous step, it is possible to use HDF5Array files
 as back-end to store the samples that will be used for training.
 
 ```{r prepareDataForTraining}
-DDLSChung <- prepareDataForTraining(
-  object = DDLSChung,
+DDLSChungSmall <- prepareDataForTraining(
+  object = DDLSChungSmall,
   type.data = "both",
-  combine = "bulk",
+  combine = "both",
   verbose = TRUE
 )
 ```
@@ -435,94 +454,189 @@ DDLSChung <- prepareDataForTraining(
 
 With data stored in `final.data` slot, Deep Neural Network will be trained 
 and evaluated. This step is performed by `trainDigitalDLSorterModel` function and
-uses `r CRANpkg("keras")` framework for all steps related qith Deep Learning. 
+uses `r CRANpkg("keras")` framework for all steps related with Deep Learning. 
 `r CRANpkg("keras")` package is an interface to keras module of Python for 
-high level Deep Learning. If you want to know details about the architecture 
-of the model and hyperparameters that presents, see Torroja and Sanchez-Cabo, 2019. 
+high level Deep Learning. If you want to know more information about architecture
+and hyperparameters of the Deep Neural Network implemented in _digitalDLSorteR_, 
+see Torroja and Sanchez-Cabo, 2019. 
 
 The use is very simple, only is needed specify the number of epochs and the 
-batch size used. In this example, we are going to use 5 epochs, but for a good 
-training, you should test different values. With 20 epochs should be enough.
+batch size used. In this example, we are going to use 5 epochs in order to 
+reduce execution times, but for a good training, you should test different 
+values. With 20 epochs should be enough. Moreover, you can specify the 
+loss function and the metrics used during training. We are groin to use all default
+parameters: Kullback-Leibler divergence as loss function and 
+accuracy and mean absolute error as metrics. 
 
 ```{r}
-DDLSChung <- trainDigitalDLSorterModel(
-  object = DDLSChung,
-  num.epochs = 5
+DDLSChungSmall <- trainDigitalDLSorterModel(
+  object = DDLSChungSmall,
+  num.epochs = 5,
+  view.metrics.plot = FALSE
+)
+```
+
+After that, `DDLSChung` contains in `trained.model` slot a `DigitalDLSorterDNN` object
+with all the information relative to the model: trained keras model, history 
+of metrics during training, prediction results on test data and resulting metrics 
+from prediction over test data. 
+
+Obviously, this is only an example and metrics are horrible in general, since the
+number of samples and the number of epochs are very low. 
+
+
+## Evaluation of trained model
+
+In spite of training metrics and resulting metrics from predict on test data 
+are informative about the performance of the model, a more exhaustive analysis 
+of the performance model on test data is important to do. For this task, 
+_digitalDLSorteR_ offers a set of visualization functions for representing varied 
+error metrics in different ways.
+
+First, we have to use `calculateErrorMetrics` in order to obtain the error metrics
+that will be represented. By default, absolute error (AbsErr),
+proportional absolute error (ppAbsErr), squared error (SqrErr) and
+proportional squared error (ppSqrErr) are calculated for each sample from test 
+data. Moreover, each one of these metrics are aggregated using their average 
+values by three criteria: each cell type (`CellType`), probability bins of 0.1 
+(`pBin`), number of differen cell types present in the samples (`nMix`) and a 
+combination of `pBin` and `nMix` (`pBinMix`). Finally, all computation are 
+repeated only for bulk samples, removing single-cell profiles 
+from the evaluation.
+
+```{r calculateEval}
+DDLSChungSmall <- calculateEvalMetrics(DDLSChungSmall)
+```
+
+The results are stored in `eval.stats.samples` slot of `DigitalDLSorterDNN` 
+object. Then, we can represent error metrics with the following functions. 
+
+
+### Distribution of errors by different variables
+
+`distErrorPlot` function allows to represent the distribution of errors by 
+different ways. Moreover, it allows to split charts in different panels 
+representing how errors are distributed by a determined variable. The variables
+available are cell types (`CellType`) and number of cell types present in samples
+(`nMix`). In the following example, we are going to represent the overall 
+erros by cell types. 
+
+```{r distErr1}
+distErrorPlot(
+  DDLSChungSmall,
+  error = "AbsErr",
+  x.by = "CellType",
+  color.by = "CellType", 
+  error.labels = FALSE, 
+  type = "boxplot",
+  size.point = 1
+)
+```
+
+Now, if you want to know if there are some bias in direction to a specific cell type
+in determined proportions, you can use the next code:
+
+```{r distErr2}
+distErrorPlot(
+  DDLSChungSmall,
+  error = "AbsErr",
+  facet.by = "CellType",
+  color.by = "nMix", 
+  error.labels = TRUE, 
+  type = "violinplot",
+  size.point = 1
+)
+```
+
+It is also possible to represent errors by number of different cell types present
+in samples: 
+
+```{r distErr3}
+distErrorPlot(
+  DDLSChungSmall,
+  error = "AbsErr",
+  color.by = "CellType", 
+  facet.by = "nMix",
+  type = "boxplot",
+  size.point = 1
+)
+```
+
+It is also possible to represent the mean error values with their
+corresponding dispersion values with `barErrorPlot` plot.
+
+```{r barError}
+barErrorPlot(DDLSChungSmall, error = "MAE", by = "CellType")
+```
+
+
+
+### Correlation plots between predicted and expected proportions
+
+We can generate correlations plots in order to evaluate how well the 
+predictions fit the actual proportions. By default, Pearson's coefficient 
+correlation $R$ and concordance correlation coefficient (CCC) are shown as 
+annotations in plots.
+
+```{r corr1}
+corrExpPredPlot(
+  DDLSChungSmall,
+  color.by = "CellType",
+  size.point = 1,
+  corr = "both"
+)
+```
+
+As in the previous case, the charts can be divided according to some variable:
+
+```{r corr2}
+corrExpPredPlot(
+  DDLSChungSmall,
+  color.by = "CellType",
+  facet.by = "CellType",
+  size.point = 1,
+  corr = "both"
 )
 ```
 
 
-
-
-
-# Getting started
-
-To enable the _Bioconductor_ style in your R Markdown vignette you need to include the following in the `DESCRIPTION` file:
-
-    VignetteBuilder: knitr
-    Suggests: BiocStyle, knitr, rmarkdown
-
-
-# Style macros
-
-_BiocStyle_ introduces the following macros for referring to _R_ packages:
-
-* `r Biocpkg("IRanges")`, for _Bioconductor_ software, annotation and experiment data packages,
-* `r CRANpkg("data.table")`, for _R_ packages available on CRAN,
-* `r Githubpkg("rstudio/rmarkdown")`, for _R_ packages available on GitHub,
-* `r Rpackage("MyPkg")`, for _R_ packages that are _not_ available on _Bioconductor_, CRAN or GitHub.
-
-
-# Figures
-
-Assign captions to figures in the code chunk option `fig.cap` to automatically number them, and to be able to reference them, see Figure \@ref(fig:plot). The figure label is generated from the code chunk label by prefixing it with `fig:`.
-
-```{r plot, fig.cap="Regular figure. The first sentence of the figure caption is automatically emphasized to serve as figure title.", echo=FALSE}
-plot(cars)
+```{r corr3}
+corrExpPredPlot(
+  DDLSChungSmall,
+  color.by = "CellType",
+  facet.by = "nMix",
+  size.point = 1,
+  corr = "both"
+)
 ```
 
-Small and wide figures can be specified by `fig.small` and `fig.wide` code chunk options.
+### Bland-Altman agreement plots
 
-```{r small, fig.cap="Small figure. A plot produced by a code chunk with option `fig.small = TRUE`.", fig.small=TRUE, echo=FALSE}
-plot(cars)
+`blandAltmanLehPlot` has the same behavior that the previous examples:
+
+```{r bland1}
+blandAltmanLehPlot(
+  DDLSChungSmall, 
+  color.by = "CellType",
+  log.2 = FALSE,
+  size.point = 1,
+  filter.sc = TRUE,
+  density = TRUE,
+)
 ```
 
-```{r wide, fig.cap="Wide figure. A plot produced by a code chunk with option `fig.wide = TRUE`.", fig.wide=TRUE, echo=FALSE}
-plot(cars)
+```{r bland2}
+blandAltmanLehPlot(
+  DDLSChungSmall, 
+  color.by = "nMix",
+  facet.by = "nMix",
+  log.2 = FALSE,
+  size.point = 1,
+  filter.sc = TRUE,
+  density = TRUE,
+)
 ```
 
-
-# Equations
-
-To number and reference equations, put them in equation environments and assign labels to them, see Equation \@ref(eq:binom).
-
-\begin{equation}
-  f\left(k\right) = \binom{n}{k} p^k\left(1-p\right)^{n-k}
-  (\#eq:binom)
-\end{equation}
-
-
-# Tables
-
-Like figures, tables with captions will also be numbered and can be referenced, see Table \@ref(tab:table).
-
-Fruit   | Price
-------- | -----
-bananas | 1.2
-apples  | 1.0
-oranges | 2.5
-
-: (\#tab:table) A simple table. With caption.
-
-
-# Cross-references
-
-Apart from referencing figures (Section \@ref(figures)), tables (Section \@ref(tables)), and equations (Section \@ref(equations)), you can also use the same syntax to refer to sections by their default labels generated by pandoc.
-
-
-# Side notes
-
-Footnotes are displayed as side notes on the right margin^[this is a side note entered as a footnote], which has the advantage that they appear close to the place where they are defined.
 
 
 # Session info {.unnumbered}

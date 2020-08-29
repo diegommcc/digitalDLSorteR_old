@@ -97,8 +97,13 @@ estimateZinbwaveParams <- function(
   }
 
   # extract data from SCE to list
-  list.data <- .extractDataFromSCE(SCEobject = single.cell.real(object),
-                                   filtering = FALSE)
+  list.data <- .extractDataFromSCE(
+    SCEobject = single.cell.real(object),
+    filtering = FALSE,
+    cell.ID.column = cell.ID.column,
+    gene.ID.column = gene.ID.column,
+    new.data = FALSE
+  )
   # check if params are correct
   mapply(function(x, y) {
     .checkColumn(metadata = list.data[[2]],
@@ -323,7 +328,7 @@ simSingleCellProfiles <- function(
   object,
   cell.ID.column,
   cell.type.column,
-  n.cells = 100,
+  n.cells,
   verbose = TRUE
 ) {
   if (is.null(zinb.params(object))) {
@@ -339,10 +344,13 @@ simSingleCellProfiles <- function(
     warning("single.cell.final slot already has a SingleCellExperiment object. Note that it will be overwritten\n",
             call. = FALSE, immediate. = TRUE)
   }
-
   # extract data
-  list.data <- .extractDataFromSCE(SCEobject = single.cell.real(object),
-                                   filtering = FALSE)
+  list.data <- .extractDataFromSCE(
+    SCEobject = single.cell.real(object),
+    cell.ID.column = cell.ID.column,
+    filtering = FALSE,
+    new.data = FALSE
+  )
   zinb.object <- zinb.params(object)
   # check if zinb.params and single.cell.real have the same dimensions:
   # introduce changes if set != All

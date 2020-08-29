@@ -156,7 +156,7 @@ generateTrainAndTestBulkProbMatrix <- function(
     stop("None of proportions can be equal to zero")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
-    warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten",
+    warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n\n",
             call. = FALSE, immediate. = TRUE)
   }
   if (!all(unlist(lapply(X = list(proportions.train, proportions.test),
@@ -166,7 +166,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 
   # extract data from SCE to list
   list.data <- .extractDataFromSCE(SCEobject = single.cell.final(object),
-                                   filtering = FALSE)
+                                   filtering = FALSE, new.data = FALSE)
 
   # check if cell.type.column is correct
   .checkColumn(metadata = list.data[[2]],
@@ -865,7 +865,7 @@ generateBulkSamples <- function(
 
   if (type.data == "both") {
     if (!is.null(object@bulk.sim)) {
-      warning("'bulk.sim' slot will be overwritten\n",
+      warning("'bulk.sim' slot will be overwritten\n\n",
               call. = FALSE, immediate. = TRUE)
     }
     bulk.counts <- lapply(
@@ -889,7 +889,7 @@ generateBulkSamples <- function(
     object@bulk.sim <- bulk.counts
   } else {
     if (!is.null(object@bulk.sim) && type.data %in% names(object@bulk.sim)) {
-      warning(paste(type.data, "data in 'bulk.sim' slot will be overwritten"),
+      warning(paste(type.data, "data in 'bulk.sim' slot will be overwritten", "\n\n"),
               call. = FALSE, immediate. = TRUE)
     }
     if (verbose) {
@@ -1081,7 +1081,7 @@ prepareDataForTraining <- function(
       stop(paste(type.data, "data is not present in bulk.sim slot"))
   }
   if (!is.null(object@final.data)) {
-    warning("'final.data' slot will be overwritten",
+    warning("'final.data' slot will be overwritten \n\n",
             call. = FALSE, immediate. = TRUE)
   }
   if (is.null(file.backend)) {
@@ -1118,7 +1118,7 @@ prepareDataForTraining <- function(
       X = c("train", "test"),
       FUN = function(x) {
         if (verbose) {
-          message(paste("\n=== Preparing", x, "counts\n"))
+          message(paste("\n=== Preparing", x, "counts"))
         }
         combineBulkSCProfiles(
           object = object,

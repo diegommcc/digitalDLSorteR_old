@@ -38,10 +38,10 @@ color.list <- function() {
 #' Calculate evaluation metrics for bulk RNA-seq samples from test data in order
 #' to know the performance of the model. By default, absolute error (AbsErr),
 #' proportional absolute error (ppAbsErr), squared error (SqrErr) and
-#' proportional squared error (ppSqrErr) are calculated for each cell type in
+#' proportional squared error (ppSqrErr) are calculated for
 #' each test sample. Moreover, each one of these metrics are aggregated using
-#' their mean values by four criteria: each test sample (\code{Sample}), each cell type
-#' (\code{CellType}), probability bins by 0.1 (\code{pBin}), number of different
+#' their mean values by three criteria: each cell type
+#' (\code{CellType}), probability bins of 0.1 (\code{pBin}), number of different
 #' cell types present in the sample \code{nMix} and a combination of \code{pBin} and
 #' \code{nMix} (\code{pBinNMix}). Finally, the process is repeated only for bulk
 #' samples, removing single-cell profiles from the evaluation. Evaluation metrics
@@ -252,7 +252,7 @@ se <- function(x) sqrt(var(x)/length(x))
 
 #' Generate box plot or violin plot showing how errors are distributed.
 #'
-#' Generate violin plot showing how errors are distributed by
+#' Generate violin plot or box plot showing how errors are distributed by
 #' proportion bins of 0.1. The errors can be displayed all mixed or split based on
 #' cell type (\code{CellType}) or number of cell types present in the sample
 #' (\code{nMix}). See \code{facet.by} argument and examples for more information.
@@ -321,7 +321,7 @@ distErrorPlot <- function(
   error,
   colors,
   x.by = "pBin",
-  facet.by = "nMix",
+  facet.by = NULL,
   color.by = "nMix",
   filter.sc = TRUE,
   error.labels = FALSE,
@@ -392,9 +392,9 @@ distErrorPlot <- function(
     }
   } else {
     if (error.labels) {
-      if (x.by == "nMix") {
+      if (x.by == "nMix" && is(pos.x.label, "numeric")) {
         pos.x.label <- levels(factor(amd[[x.by]]))[1]
-      } else if (x.by == "CellType") {
+      } else if (x.by == "CellType" && is(pos.x.label, "numeric")) {
         pos.x.label <- unique(amd[[x.by]])[1]
       }
       plot <- plot + annotate(
@@ -704,8 +704,8 @@ corrExpPredPlot <- function(
 blandAltmanLehPlot <- function(
   object,
   colors,
-  facet.by,
   color.by,
+  facet.by = NULL,
   log.2 = FALSE,
   filter.sc = TRUE,
   density = TRUE,

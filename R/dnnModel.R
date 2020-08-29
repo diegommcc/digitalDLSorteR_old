@@ -655,10 +655,6 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #'
 #' Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion
 #' of cell types present in a bulk sample. See in Details the available models.
-#' For situations where there are cell types exclusive to each other because
-#' it does not make sense that they appear together, see arguments
-#' \code{simplify.set} and \code{simplify.majority}.
-#'
 #' This method uses a pre-trained Deep Neural Network model to enumerate
 #' and quantify the cell types present in bulk RNA-Seq samples. For the moment,
 #' the available models allow to deconvolute the immune infiltration breast cancer
@@ -672,6 +668,10 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #' own model from scRNA-seq,
 #' see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
 #' while the last uses \code{DigitalDLSorter} objects.
+#'
+#' For situations where there are cell types exclusive to each other because
+#' it does not make sense that they appear together, see arguments
+#' \code{simplify.set} and \code{simplify.majority}.
 #'
 #' @param data A \code{matrix} or a \code{data.frame} with bulk gene expression
 #' of samples. Rows must be genes in symbol notation and columns must be samples.
@@ -732,7 +732,7 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #'
 deconvDigitalDLSorter <- function(
   data,
-  model = "breast",
+  model = "breast.generic",
   batch.size = 128,
   normalize = TRUE,
   simplify.set = NULL,
@@ -742,12 +742,12 @@ deconvDigitalDLSorter <- function(
   if (!is.matrix(data) && !is.data.frame(data)) {
     stop("'data' must be a matrix or data.frame")
   }
-  if (model == "breast.specific") {
+  if (model == "breast.chung.specific") {
     model.dnn <- digitalDLSorteR::breast.chung.specific
-  } else if (model == "breast.generic") {
+  } else if (model == "breast.chung.generic") {
     model.dnn <- digitalDLSorteR::breast.chung.generic
   } else {
-    stop("model provided does not exist")
+    stop("Model provided does not exist")
   }
   model.dnn <- .loadModelFromJSON(model.dnn)
 

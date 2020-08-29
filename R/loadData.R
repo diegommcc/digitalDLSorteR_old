@@ -163,7 +163,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   # removing genes without any expression
   row.zero <- Matrix::rowSums(counts) > 0
   if (!all(row.zero)) {
-    message(paste("=== Removing", length(row.zero),
+    message(paste("=== Removing", sum(!row.zero),
                   "genes without expression in any cell"))
     counts <- counts[row.zero, ]
     genes.metadata <- genes.metadata[genes.metadata[, gene.ID.column] %in%
@@ -214,9 +214,10 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   SCEobject,
   cell.ID.column,
   gene.ID.column,
-  min.counts,
-  min.cells,
-  filtering = TRUE
+  min.counts = 0,
+  min.cells = 0,
+  filtering = TRUE,
+  new.data = TRUE
 ) {
   # extract cells.metadata
   cells.metadata <- SingleCellExperiment::colData(SCEobject)
@@ -224,6 +225,16 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     stop("No data provided in colData slot. Metadata about cells is needed, ",
          "please look ?loadRealSCProfiles or ?loadFinalSCProfiles")
   }
+  if (!missing(cell.ID.column) && new.data) {
+    # check if given IDs exist in cells.metadata. In cells.metadata is not
+    # necessary because the data are provided from an SCE object
+    .checkColumn(metadata = cells.metadata,
+                 ID.column = cell.ID.column,
+                 type.metadata = "cells.metadata",
+                 arg = "cell.ID.column")
+  }
+
+
   # extract count matrix
   if (length(SummarizedExperiment::assays(SCEobject)) == 0) {
     stop("No data in SingleCellExperiment object provided")
@@ -233,21 +244,22 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   counts <- SummarizedExperiment::assay(SCEobject)
   # extract genes.metadata
   genes.metadata <- SingleCellExperiment::rowData(SCEobject)
-  if (any(dim(genes.metadata) == 0)) {
-    warning("No data provided in rowData slot. Building a rowData from rownames of counts matrix")
-    if (class(gene.ID.column) == "numeric") gene.ID.column <- "gene_names"
-    genes.metadata <- DataFrame(gene.ID.column = rownames(counts))
+  if (!missing(gene.ID.column) && new.data) {
+    if (any(dim(genes.metadata) == 0)) {
+      warning("No data provided in rowData slot. Building a rowData from rownames of counts matrix")
+      if (class(gene.ID.column) == "numeric") gene.ID.column <- "gene_names"
+      genes.metadata <- DataFrame(gene.ID.column = rownames(counts))
+    }
+
+    # check if given IDs exist in genes.metadata. In cells.metadata is not
+    # necessary because the data are provided from an SCE object
+    .checkColumn(metadata = genes.metadata,
+                 ID.column = gene.ID.column,
+                 type.metadata = "genes.metadata",
+                 arg = "gene.ID.column")
   }
-
-  # check if IDs given exist in genes.metadata. In cells.metadata is not
-  # neccesary because the data are provided from an SCE object
-  .checkColumn(metadata = genes.metadata,
-               ID.column = gene.ID.column,
-               type.metadata = "genes.metadata",
-               arg = "gene.ID.column")
-
   # filter genes by min.counts and min.cells only when process data
-  if (isTRUE(filtering)) {
+  if (filtering) {
     filtered.genes <- .filterGenes(counts = counts,
                                    genes.metadata = genes.metadata,
                                    gene.ID.column = gene.ID.column,
