@@ -7,11 +7,10 @@ author:
     affiliation: Second Author's Affiliation
     email: corresponding@author.com
 package: digitalDLSorteR
-output: 
-  BiocStyle::html_document
-    css: "style.css"
-    toc: true
-    toc_float: true
+output: BiocStyle::html_document
+css: "style.css"
+toc: true
+toc_float: true
 classoption: a4paper
 geometry: margin=3cm
 fontsize: 12pt
