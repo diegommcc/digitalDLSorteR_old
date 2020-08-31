@@ -6,14 +6,12 @@
 \title{Pre-trained DigitalDLSorter DNN model for deconvolution of TILs present in
 breast cancer environment (generic version).}
 \format{A \code{DigitalDLSorterDNN} object with the following slots:
-\describe{
-   \item{model}{Trained DNN model.}
-   \item{training.history}{Evolution of metrics and loss function during training.}
-   \item{eval.stats}{Metrics and loss results on test data.}
-   \item{predict.results}{Predictions of cell types on test data.}
-   \item{cell.types}{Cell types considered by DNN model.}
-   \item{features}{Features (genes) considered by model.}
-}}
+  \describe{ \item{model}{Trained DNN model.}
+  \item{training.history}{Evolution of metrics and loss function during
+  training.} \item{eval.stats}{Metrics and loss results on test data.}
+  \item{predict.results}{Predictions of cell types on test data.}
+  \item{cell.types}{Cell types considered by DNN model.}
+  \item{features}{Features (genes) considered by model.} }}
 \source{
 \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}
 }
@@ -21,25 +19,24 @@ breast cancer environment (generic version).}
 breast.chung.generic
 }
 \description{
-DigitalDLSorter DNN model built and trained with single-cell data
-from Chung et al., 2017 (GSE75688). This model allows the enumeration and
-quantification of immune infiltrated cell types in breast cancer environment.
-This data set consists in single-cell profiles from 11 patients from different
-tumor etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
+DigitalDLSorter DNN model built and trained with single-cell data from Chung
+et al., 2017 (GSE75688). This model allows the enumeration and quantification
+of immune infiltrated cell types in breast cancer environment. This data set
+consists in single-cell profiles from 11 patients from different tumor
+etiology and stages (see Torroja and Sanchez-Cabo, 2019 for more details).
 The analysis and characterization of the cells was carried out by the authors
 of \code{digitalDLSorteR} package.
 }
 \details{
 The cell types considered in this model are 7. They are the generic groups
-from cell types considered in specific version: B cells,
-T CD4+ cells, T CD8+ cells, monocytes, dendritic cells, stromal cells and
-tumor cells.
+from cell types considered in specific version: B cells, T CD4+ cells, T CD8+
+cells, monocytes, dendritic cells, stromal cells and tumor cells.
 
 The genes considered are 23.260 in SYMBOL notation.
 
 The model consists in 2 hidden layers with 200 neurons per layer trained with
-'kullback_leibler_divergence' loss function  batch size equal to 128 and
-a number of epochs equal to 25.
+'kullback_leibler_divergence' loss function  batch size equal to 128 and a
+number of epochs equal to 25.
 }
 \references{
 Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,
@@ -47,8 +44,8 @@ K. T., et al. (2017). Single-cell RNA-seq enables comprehensive tumour and
 immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
 doi: \url{10.1038/ncomms15081}.
 
-Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
-\url{10.3389/fgene.2019.00978}
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+algorithm to quantify immune cell populations based on scRNA-Seq data.
+Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \keyword{datasets}

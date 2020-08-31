@@ -3,8 +3,8 @@
 \name{training.history}
 \alias{training.history}
 \alias{training.history<-}
-\title{Get and set \code{training.history} slot in a \code{DigitalDLSorterDNN}
-object.}
+\title{Get and set \code{training.history} slot in a
+  \code{DigitalDLSorterDNN} object.}
 \usage{
 training.history(object)
 
@@ -17,6 +17,6 @@ training.history(object) <- value
 DNN model}
 }
 \description{
-Get and set \code{training.history} slot in a \code{DigitalDLSorterDNN}
-object.
+Get and set \code{training.history} slot in a
+  \code{DigitalDLSorterDNN} object.
 }

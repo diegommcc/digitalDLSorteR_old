@@ -15,8 +15,9 @@ plotTrainingHistory(
 
 \item{title}{Title of plot.}
 
-\item{metrics}{Which metrics to plot. If it is equal to \code{NULL} (by default),
-all metrics available on \code{\link{DigitalDNSorter}} object  will be plotted.}
+\item{metrics}{Which metrics to plot. If it is equal to \code{NULL} (by
+default), all metrics available on \code{\link{DigitalDNSorter}} object
+will be plotted.}
 }
 \description{
 Plot training history of a trained DigitalDLSorter DNN model.
@@ -25,5 +26,6 @@ Plot training history of a trained DigitalDLSorter DNN model.
 
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModelObj}}
+\code{\link{trainDigitalDLSorterModel}}
+  \code{\link{deconvDigitalDLSorterModelObj}}
 }

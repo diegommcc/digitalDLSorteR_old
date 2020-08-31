@@ -38,29 +38,29 @@ color.list <- function() {
 #' Calculate evaluation metrics for bulk RNA-seq samples from test data in order
 #' to know the performance of the model. By default, absolute error (AbsErr),
 #' proportional absolute error (ppAbsErr), squared error (SqrErr) and
-#' proportional squared error (ppSqrErr) are calculated for
-#' each test sample. Moreover, each one of these metrics are aggregated using
-#' their mean values by three criteria: each cell type
-#' (\code{CellType}), probability bins of 0.1 (\code{pBin}), number of different
-#' cell types present in the sample \code{nMix} and a combination of \code{pBin} and
-#' \code{nMix} (\code{pBinNMix}). Finally, the process is repeated only for bulk
-#' samples, removing single-cell profiles from the evaluation. Evaluation metrics
-#' are available in \code{eval.stats.samples} slot of
-#' \code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
-#' object).
+#' proportional squared error (ppSqrErr) are calculated for each test sample.
+#' Moreover, each one of these metrics are aggregated using their mean values by
+#' three criteria: each cell type (\code{CellType}), probability bins of 0.1
+#' (\code{pBin}), number of different cell types present in the sample
+#' \code{nMix} and a combination of \code{pBin} and \code{nMix}
+#' (\code{pBinNMix}). Finally, the process is repeated only for bulk samples,
+#' removing single-cell profiles from the evaluation. Evaluation metrics are
+#' available in \code{eval.stats.samples} slot of \code{DigitalDLSorterDNN}
+#' object (\code{trained.model} of \code{DigitalDLSorter} object).
 #'
 #' @param object \code{DigitalDLSorter} object with \code{single.cell.final} and
-#' \code{DigitalDLSorterDNN} slots.
+#'   \code{DigitalDLSorterDNN} slots.
 #' @param metrics Metrics used for evaluating the performance of the model. Mean
-#' absolute error (MAE) and mean squared error (MSE) by default.
+#'   absolute error (MAE) and mean squared error (MSE) by default.
 #'
-#' @return A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot containing a
-#' \code{DigitalDLSorterDNN} object with \code{eval.stats.samples} slot.
+#' @return A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
+#'   containing a \code{DigitalDLSorterDNN} object with
+#'   \code{eval.stats.samples} slot.
 #'
 #' @export
 #'
 #' @seealso \code{\link{distErrorPlot}} \code{\link{corrExpPredPlot}}
-#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'   \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
 #' DDLSChung <- calculateEvalMetrics(
@@ -253,49 +253,52 @@ se <- function(x) sqrt(var(x)/length(x))
 #' Generate box plot or violin plot showing how errors are distributed.
 #'
 #' Generate violin plot or box plot showing how errors are distributed by
-#' proportion bins of 0.1. The errors can be displayed all mixed or split based on
-#' cell type (\code{CellType}) or number of cell types present in the sample
-#' (\code{nMix}). See \code{facet.by} argument and examples for more information.
+#' proportion bins of 0.1. The errors can be displayed all mixed or split based
+#' on cell type (\code{CellType}) or number of cell types present in the sample
+#' (\code{nMix}). See \code{facet.by} argument and examples for more
+#' information.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
-#' containing metrics in \code{eval.stats.samples} slot.
+#'   containing metrics in \code{eval.stats.samples} slot.
 #' @param error Which error is going to represent. The available errors are
-#' absolute error (\code{"AbsErr"}), proportional absolute error
-#' (\code{"ppAbsErr"}), squared error (\code{"SqrErr"}) or proportional
-#' squared error (\code{"ppSqrErr"}).
+#'   absolute error (\code{"AbsErr"}), proportional absolute error
+#'   (\code{"ppAbsErr"}), squared error (\code{"SqrErr"}) or proportional
+#'   squared error (\code{"ppSqrErr"}).
 #' @param colors Vector of colors to use. Only vectors with a number of colors
-#' equal to or greater than the levels of \code{color.by} will be accepted.
-#' By default it is used a list of custom colors provided by the package.
-#' @param x.by Variable used for x axis. When \code{facet.by} is not \code{NULL},
-#' the best option is \code{pBin} (probability bin). The options
-#' are \code{nMix} (by number of different cell types), \code{CellType}
-#' (by cell type) and \code{pBin}.
+#'   equal to or greater than the levels of \code{color.by} will be accepted. By
+#'   default it is used a list of custom colors provided by the package.
+#' @param x.by Variable used for x axis. When \code{facet.by} is not
+#'   \code{NULL}, the best option is \code{pBin} (probability bin). The options
+#'   are \code{nMix} (by number of different cell types), \code{CellType} (by
+#'   cell type) and \code{pBin}.
 #' @param facet.by Variable used to display data in different panels. If it is
-#' \code{NULL}, the plot is not separated into different panels. The options
-#' are \code{nMix} (by number of different cell types) and \code{CellType}
-#' (by cell type).
-#' @param color.by Variable used to color data. The options
-#' are \code{nMix} and \code{CellType}.
+#'   \code{NULL}, the plot is not separated into different panels. The options
+#'   are \code{nMix} (by number of different cell types) and \code{CellType} (by
+#'   cell type).
+#' @param color.by Variable used to color data. The options are \code{nMix} and
+#'   \code{CellType}.
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
-#' display errors associated with bulk samples (\code{TRUE} by default).
+#'   display errors associated with bulk samples (\code{TRUE} by default).
 #' @param error.labels Boolean indicating if show average error as annotation.
 #' @param pos.x.label Position on the X axis of the errors annotations.
 #' @param pos.y.label Position on the Y axis of the errors annotations.
 #' @param size.point Size of points (0.1 by default).
 #' @param alpha.point Alpha of points (0.1 by default).
-#' @param type Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last by default.
+#' @param type Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last
+#'   by default.
 #' @param ylimit Upper limit in y axis if it is needed. \code{NULL} by default.
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
-#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than
+#'   \code{NULL}.
 #' @param title Title of the plot.
 #' @param theme ggplot theme.
 #' @param ... Additional argument for \code{facet_wrap} ggplot function if
-#' \code{facet.by} is not equal to \code{NULL}.
+#'   \code{facet.by} is not equal to \code{NULL}.
 #'
 #' @export
 #'
 #' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'   \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
 #' distErrorPlot(
@@ -454,45 +457,50 @@ distErrorPlot <- function(
 #' Generate correlation plot between predicted and expected cell type
 #' proportions from test samples. The correlation plots can be displayed all
 #' mixed or split based on cell type (\code{CellType}) or the number of cell
-#' types present in the sample (\code{nMix}). See \code{facet.by} argument
-#' and examples for more information. Moreover, a correlation value selected by
-#' user is displayed as annotation on the plots. See \code{corr} argument for details.
+#' types present in the sample (\code{nMix}). See \code{facet.by} argument and
+#' examples for more information. Moreover, a correlation value selected by user
+#' is displayed as annotation on the plots. See \code{corr} argument for
+#' details.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
-#' containing metrics in \code{eval.stats.samples} slot.
+#'   containing metrics in \code{eval.stats.samples} slot.
 #' @param colors Vector of colors to use. Only vectors with a number of colors
-#' equal to or greater than the levels of \code{color.by} will be accepted.
-#' By default it is used a list of custom colors provided by the package.
+#'   equal to or greater than the levels of \code{color.by} will be accepted. By
+#'   default it is used a list of custom colors provided by the package.
 #' @param facet.by Variable used to display data in different panels. If it is
-#' \code{NULL}, the plot is not separated into different panels. The options
-#' are \code{nMix} (by number of different cell types) and \code{CellType}
-#' (by cell type).
-#' @param color.by Variable used to color data. The options
-#' are \code{nMix} and \code{CellType}.
+#'   \code{NULL}, the plot is not separated into different panels. The options
+#'   are \code{nMix} (by number of different cell types) and \code{CellType} (by
+#'   cell type).
+#' @param color.by Variable used to color data. The options are \code{nMix} and
+#'   \code{CellType}.
 #' @param corr Correlation value displayed as annotation. The available metrics
-#' are Pearson's correlation coefficient (\code{'pearson'}) and concordance
-#' correlation coefficient (\code{'ccc'}). The argument can be equal to
-#' \code{'pearson'}, \code{'ccc'} or \code{'both'} (by default).
+#'   are Pearson's correlation coefficient (\code{'pearson'}) and concordance
+#'   correlation coefficient (\code{'ccc'}). The argument can be equal to
+#'   \code{'pearson'}, \code{'ccc'} or \code{'both'} (by default).
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
-#' display correlations of results associated with bulk samples (\code{TRUE} by default).
+#'   display correlations of results associated with bulk samples (\code{TRUE}
+#'   by default).
 #' @param error.labels Boolean indicating if show average error as annotation.
-#' @param pos.x.label Position on the X axis of the errors annotations. 0.95 by default.
-#' @param pos.y.label Position on the Y axis of the errors annotations. 0.1 by default.
-#' @param sep.labels Space separating annotations if \code{corr} is equal to \code{'both'}.
-#' 0.15 by default.
+#' @param pos.x.label Position on the X axis of the errors annotations. 0.95 by
+#'   default.
+#' @param pos.y.label Position on the Y axis of the errors annotations. 0.1 by
+#'   default.
+#' @param sep.labels Space separating annotations if \code{corr} is equal to
+#'   \code{'both'}. 0.15 by default.
 #' @param size.point Size of points (0.1 by default).
 #' @param alpha.point Alpha of points (0.1 by default).
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
-#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than
+#'   \code{NULL}.
 #' @param title Title of the plot.
 #' @param theme ggplot theme.
 #' @param ... Additional argument for \code{facet_wrap} ggplot function if
-#' \code{facet.by} is not equal to \code{NULL}.
+#'   \code{facet.by} is not equal to \code{NULL}.
 #'
 #' @export
 #'
 #' @seealso \code{\link{calculateEvalMetrics}} \code{\link{distErrorPlot}}
-#' \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+#'   \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
 #' ## correlations by cell type
@@ -648,43 +656,46 @@ corrExpPredPlot <- function(
 #' Generate Bland-Altman agreement plot between predicted and expected cell type
 #' proportions from test samples.
 #'
-#' Generate  Bland-Altman agreement plot between predicted and expected cell type
-#' proportions from test samples. The  Bland-Altman agreement plots can be displayed all
-#' mixed or split based on cell type (\code{CellType}) or the number of cell
-#' types present in the sample (\code{nMix}). See \code{facet.by} argument
-#' and examples for more information.
+#' Generate  Bland-Altman agreement plot between predicted and expected cell
+#' type proportions from test samples. The  Bland-Altman agreement plots can be
+#' displayed all mixed or split based on cell type (\code{CellType}) or the
+#' number of cell types present in the sample (\code{nMix}). See \code{facet.by}
+#' argument and examples for more information.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
-#' containing metrics in \code{eval.stats.samples} slot.
+#'   containing metrics in \code{eval.stats.samples} slot.
 #' @param colors Vector of colors to use. Only vectors with a number of colors
-#' equal to or greater than the levels of \code{color.by} will be accepted.
-#' By default it is used a list of custom colors provided by the package.
+#'   equal to or greater than the levels of \code{color.by} will be accepted. By
+#'   default it is used a list of custom colors provided by the package.
 #' @param facet.by Variable used to display data in different panels. If it is
-#' \code{NULL}, the plot is not separated into different panels. The options
-#' are \code{nMix} (by number of different cell types) and \code{CellType}
-#' (by cell type).
-#' @param color.by Variable used to color data. The options
-#' are \code{nMix} and \code{CellType}.
+#'   \code{NULL}, the plot is not separated into different panels. The options
+#'   are \code{nMix} (by number of different cell types) and \code{CellType} (by
+#'   cell type).
+#' @param color.by Variable used to color data. The options are \code{nMix} and
+#'   \code{CellType}.
 #' @param log2 If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
-#' by default).
+#'   by default).
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
-#' display correlations of results associated with bulk samples (\code{TRUE} by default).
-#' @param density Boolean indicating if show density lines (\code{TRUE} by default).
+#'   display correlations of results associated with bulk samples (\code{TRUE}
+#'   by default).
+#' @param density Boolean indicating if show density lines (\code{TRUE} by
+#'   default).
 #' @param color.density Color of density lines if \code{density} argument is
-#' equal to \code{TRUE}.
+#'   equal to \code{TRUE}.
 #' @param size.point Size of points (0.1 by default).
 #' @param alpha.point Alpha of points (0.1 by default).
 #' @param nrow Number of rows if \code{facet.by} is different than \code{NULL}.
-#' @param ncol Number of columns if \code{facet.by} is different than \code{NULL}.
+#' @param ncol Number of columns if \code{facet.by} is different than
+#'   \code{NULL}.
 #' @param title Title of the plot.
 #' @param theme ggplot theme.
 #' @param ... Additional argument for \code{facet_wrap} ggplot function if
-#' \code{facet.by} is not equal to \code{NULL}.
+#'   \code{facet.by} is not equal to \code{NULL}.
 #'
 #' @export
 #'
 #' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-#' \code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
+#'   \code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
 #' ## Bland-Altman plot by cell type
@@ -807,18 +818,19 @@ blandAltmanLehPlot <- function(
 #' Generate bar error plot and its dispersion by cell types or by number of
 #' different cell types in test bulk samples.
 #'
-#' Generate bar error plot and its dispersion by cell types (\code{CellType})
-#' or by number of different cell types (\code{nMix}) in test bulk samples.
+#' Generate bar error plot and its dispersion by cell types (\code{CellType}) or
+#' by number of different cell types (\code{nMix}) in test bulk samples.
 #'
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot
-#' containing metrics in \code{eval.stats.samples} slot.
-#' @param error MAE or MSE.
-#' By default it is used a list of custom colors provided by the package.
+#'   containing metrics in \code{eval.stats.samples} slot.
+#' @param error MAE or MSE. By default it is used a list of custom colors
+#'   provided by the package.
 #' @param by Variable used to display errors.
-#' @param dispersion Standard error (\code{'se'}) or standard deviation (\code{'sd'}).
-#' The first by default.
+#' @param dispersion Standard error (\code{'se'}) or standard deviation
+#'   (\code{'sd'}). The first by default.
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
-#' display correlations of results associated with bulk samples (\code{TRUE} by default).
+#'   display correlations of results associated with bulk samples (\code{TRUE}
+#'   by default).
 #' @param angle Angle of ticks.
 #' @param title Title of the plot.
 #' @param theme ggplot theme.
@@ -826,7 +838,7 @@ blandAltmanLehPlot <- function(
 #' @export
 #'
 #' @seealso \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-#' \code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
+#'   \code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
 #'
 #' @examples
 #' barErrorPlot(

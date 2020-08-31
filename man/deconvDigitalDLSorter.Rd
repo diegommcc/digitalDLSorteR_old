@@ -7,7 +7,7 @@ DigitalDLSorter model.}
 \usage{
 deconvDigitalDLSorter(
   data,
-  model = "breast",
+  model = "breast.generic",
   batch.size = 128,
   normalize = TRUE,
   simplify.set = NULL,
@@ -17,54 +17,58 @@ deconvDigitalDLSorter(
 }
 \arguments{
 \item{data}{A \code{matrix} or a \code{data.frame} with bulk gene expression
-of samples. Rows must be genes in symbol notation and columns must be samples.}
+of samples. Rows must be genes in symbol notation and columns must be
+samples.}
 
-\item{model}{Pre-trained DNN model to use for deconvoluting process.
-For the moment, the available models are for RNA-Seq samples from breast
-cancer (\code{'breast.chung.generic'} and \code{'breast.chung.specific'})
+\item{model}{Pre-trained DNN model to use for deconvoluting process. For the
+moment, the available models are for RNA-Seq samples from breast cancer
+(\code{'breast.chung.generic'} and \code{'breast.chung.specific'})
 environment.}
 
-\item{batch.size}{Number of samples loadad in-memory each time of deconvolution
-process. If unspecified, \code{batch.size} will default to 128.}
+\item{batch.size}{Number of samples loadad in-memory each time of
+deconvolution process. If unspecified, \code{batch.size} will default to
+128.}
 
 \item{normalize}{Normalize data before deconvolution. \code{TRUE} by default.}
 
 \item{simplify.set}{List specifying which cell types should be compressed
-into a new label whose name will be the list name item. See examples for details.}
+into a new label whose name will be the list name item. See examples for
+details.}
 
-\item{simplify.majority}{List specifying which cell types should be compressed
-into the cell type with greater proportions in each sample. Unlike
-\code{simplify.set}, it allows to maintain the complexity of the results
-while compressing the information, because it is not created a new label.}
+\item{simplify.majority}{List specifying which cell types should be
+compressed into the cell type with greater proportions in each sample.
+Unlike \code{simplify.set}, it allows to maintain the complexity of the
+results while compressing the information, because it is not created a new
+label.}
 
 \item{verbose}{Show informative messages during the execution.}
 }
 \value{
 A \code{data.frame} with samples (\eqn{i}) as rows and cell types
-(\eqn{j}) as columns. Each entry represents the predicted proportion
-of \eqn{j} cell type in \eqn{i} sample.
+  (\eqn{j}) as columns. Each entry represents the predicted proportion of
+  \eqn{j} cell type in \eqn{i} sample.
 }
 \description{
 Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion
 of cell types present in a bulk sample. See in Details the available models.
-For situations where there are cell types exclusive to each other because
-it does not make sense that they appear together, see arguments
-\code{simplify.set} and \code{simplify.majority}.
-}
-\details{
-This method uses a pre-trained Deep Neural Network model to enumerate
-and quantify the cell types present in bulk RNA-Seq samples. For the moment,
-the available models allow to deconvolute the immune infiltration breast cancer
+This method uses a pre-trained Deep Neural Network model to enumerate and
+quantify the cell types present in bulk RNA-Seq samples. For the moment, the
+available models allow to deconvolute the immune infiltration breast cancer
 (Chung et al., 2017) at two levels: specific cell types
 (\code{'breast.chung.specific'}) and generic cell types
-(\code{'breast.chung.generic'}). See \code{\link{breast.chung.generic}}
-and \code{\link{breast.chung.specific}} documentation for details.
-
+(\code{'breast.chung.generic'}). See \code{\link{breast.chung.generic}} and
+\code{\link{breast.chung.specific}} documentation for details.
+}
+\details{
 This function is oriented for users that only want to use the method for
 deconvoluting their bulk RNA-Seq samples. For users that are building their
-own model from scRNA-seq,
-see \code{\link{deconvDigitalDLSorterObj}}. The former works with base classes,
-while the last uses \code{DigitalDLSorter} objects.
+own model from scRNA-seq, see \code{\link{deconvDigitalDLSorterObj}}. The
+former works with base classes, while the last uses \code{DigitalDLSorter}
+objects.
+
+For situations where there are cell types exclusive to each other because it
+does not make sense that they appear together, see arguments
+\code{simplify.set} and \code{simplify.majority}.
 }
 \examples{
 results1 <- deconvDigitalDLSorter(

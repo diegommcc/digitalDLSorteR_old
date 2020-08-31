@@ -17,16 +17,17 @@ NULL
 #' ZINB-WaVE is a flexible model for zero-inflated count data. This function
 #' carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
 #' (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
-#' following a zero-inflated negative binomial (ZINB) distribution. The estimated
-#' parameters will be used for the simulation of new single-cell expression profiles
-#' by sampling a negative binomial distribution and introducing dropouts from a
-#' binomial distribution.
-#' To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function from
-#' \code{splatter} package (Zappia et al., 2017),
-#' that is a wrapper around \code{zinbFit} function from \code{zinbwave} package
-#' (Risso et al., 2018). For more details about the model, see Risso et al., 2018.
+#' following a zero-inflated negative binomial (ZINB) distribution. The
+#' estimated parameters will be used for the simulation of new single-cell
+#' expression profiles by sampling a negative binomial distribution and
+#' introducing dropouts from a binomial distribution.
+#' To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function
+#' from \code{splatter} package (Zappia et al., 2017),  that is a wrapper around
+#' \code{zinbFit} function from \code{zinbwave} package (Risso et al., 2018).
+#' For more details about the model, see Risso et al., 2018.
 #
-#' @param object \code{\link{DigitalDLSorter}} object with a \code{single.cell.real} slot.
+#' @param object \code{\link{DigitalDLSorter}} object with a
+#' \code{single.cell.real} slot.
 #' @param cell.ID.column Name or number of the column in cells metadata
 #' corresponding with cell names in expression matrix.
 #' @param gene.ID.column Name or number of the column in genes metadata
@@ -38,12 +39,13 @@ NULL
 #' @param gene.cov.columns Name or number of columns in genes metadata that will
 #' be used as covariates in the model during estimation.
 #' @param set.type Cell type to evaluate. 'All' by default.
-#' @param threads Number of threads used for the estimation. For setting the parallel
-#' environment \code{BiocParallel} package is used.
+#' @param threads Number of threads used for the estimation. For setting the
+#' parallel environment \code{BiocParallel} package is used.
 #' @param verbose Show informative messages during the execution.
-#' @return A \code{DigitalDLSorter} object with \code{zinb.params} slot containing
-#' a \code{ZinbParams} object. This object contains the estimated ZINB parameters
-#' from real single-cell data.
+#' @return A \code{DigitalDLSorter} object with \code{zinb.params} slot
+#' containing
+#' a \code{ZinbParams} object. This object contains the estimated ZINB
+#' parameters from real single-cell data.
 #'
 #' @export
 #'
@@ -61,17 +63,17 @@ NULL
 #' )
 #'
 #' @references
-#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
-#' for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
-#' doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible
+#' method for signal extraction from single-cell RNA-seq data. Nat Commun 9,
+#' 284. doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
 #'
-#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
-#' \url{10.3389/fgene.2019.00978}
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+#' algorithm to quantify immune cell populations based on scRNA-Seq data.
+#' Frontiers in Genetics 10,
+#' 978. doi: \url{10.3389/fgene.2019.00978}
 #'
 #' Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell RNA
-#' sequencing data. Genome
-#' Biol. 2017; 18: 174.
+#' sequencing data. Genome Biol. 2017; 18: 174.
 #'
 estimateZinbwaveParams <- function(
   object,
@@ -271,7 +273,8 @@ estimateZinbwaveParams <- function(
 ################################################################################
 
 
-#' Simulate new single-cell expression profiles using the estimated ZINB parameters.
+#' Simulate new single-cell expression profiles using the estimated ZINB
+#' parameters.
 #'
 #' Simulate single-cell expression profiles by randomly sampling from a negative
 #' binomial distribution using ZINB parameters estimated by ZINB-WaVE model
@@ -279,8 +282,10 @@ estimateZinbwaveParams <- function(
 #' ZINB-WaVE model estimated.
 #'
 #' Before this step, see \code{\link{estimateZinbwaveParams}}.
-#' As described in Torroja and Sanchez-Cabo, 2019, this function simulates a determined
-#' number of transcriptional profiles for each cell type provided by randomly sampling
+#' As described in Torroja and Sanchez-Cabo, 2019, this function simulates a
+#' determined
+#' number of transcriptional profiles for each cell type provided by randomly
+#' sampling
 #' from a negative binomial distribution with \eqn{\mu} and \eqn{\theta}
 #' estimated parameters and introducing dropouts by sampling from a binomial
 #' distribution with pi probability. All paramteres are estimated from
@@ -288,8 +293,8 @@ estimateZinbwaveParams <- function(
 #' It uses the ZINB-WaVE model (Risso et al., 2018). For more details about
 #' the model, see \code{\link{estimateZinbwaveParams}}.
 #
-#' @param object \code{\link{DigitalDLSorter}} object with \code{single.cell.real} and
-#' \code{zinb.params} slots.
+#' @param object \code{\link{DigitalDLSorter}} object with
+#' \code{single.cell.real} and \code{zinb.params} slots.
 #' @param cell.ID.column Name or number of the column in cells metadata
 #' corresponding with cell names in expression matrix.
 #' @param cell.type.column Name or number of the column in cells metadata
@@ -316,12 +321,13 @@ estimateZinbwaveParams <- function(
 #' )
 #'
 #' @references
-#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
-#' for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
-#' doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+#' Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible
+#' method for signal extraction from single-cell RNA-seq data. Nat Commun 9,
+#' 284. doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
 #'
-#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-#' immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+#' Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+#' algorithm to quantify immune cell populations based on scRNA-Seq data.
+#' Frontiers in Genetics 10, 978. doi:
 #' \url{10.3389/fgene.2019.00978}
 #'
 simSingleCellProfiles <- function(

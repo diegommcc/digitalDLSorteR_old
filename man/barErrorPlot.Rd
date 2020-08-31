@@ -20,16 +20,17 @@ barErrorPlot(
 \item{object}{\code{DigitalDLSorter} object with \code{trained.model} slot
 containing metrics in \code{eval.stats.samples} slot.}
 
-\item{error}{MAE or MSE.
-By default it is used a list of custom colors provided by the package.}
+\item{error}{MAE or MSE. By default it is used a list of custom colors
+provided by the package.}
 
 \item{by}{Variable used to display errors.}
 
-\item{dispersion}{Standard error (\code{'se'}) or standard deviation (\code{'sd'}).
-The first by default.}
+\item{dispersion}{Standard error (\code{'se'}) or standard deviation
+(\code{'sd'}). The first by default.}
 
 \item{filter.sc}{Boolean indicating if filter single-cell profiles and only
-display correlations of results associated with bulk samples (\code{TRUE} by default).}
+display correlations of results associated with bulk samples (\code{TRUE}
+by default).}
 
 \item{title}{Title of the plot.}
 
@@ -38,8 +39,8 @@ display correlations of results associated with bulk samples (\code{TRUE} by def
 \item{theme}{ggplot theme.}
 }
 \description{
-Generate bar error plot and its dispersion by cell types (\code{CellType})
-or by number of different cell types (\code{nMix}) in test bulk samples.
+Generate bar error plot and its dispersion by cell types (\code{CellType}) or
+by number of different cell types (\code{nMix}) in test bulk samples.
 }
 \examples{
 barErrorPlot(
@@ -56,5 +57,5 @@ barErrorPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-\code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
+  \code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
 }

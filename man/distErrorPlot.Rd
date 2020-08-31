@@ -9,7 +9,7 @@ distErrorPlot(
   error,
   colors,
   x.by = "pBin",
-  facet.by = "nMix",
+  facet.by = NULL,
   color.by = "nMix",
   filter.sc = TRUE,
   error.labels = FALSE,
@@ -36,21 +36,21 @@ absolute error (\code{"AbsErr"}), proportional absolute error
 squared error (\code{"ppSqrErr"}).}
 
 \item{colors}{Vector of colors to use. Only vectors with a number of colors
-equal to or greater than the levels of \code{color.by} will be accepted.
-By default it is used a list of custom colors provided by the package.}
+equal to or greater than the levels of \code{color.by} will be accepted. By
+default it is used a list of custom colors provided by the package.}
 
-\item{x.by}{Variable used for x axis. When \code{facet.by} is not \code{NULL},
-the best option is \code{pBin} (probability bin). The options
-are \code{nMix} (by number of different cell types), \code{CellType}
-(by cell type) and \code{pBin}.}
+\item{x.by}{Variable used for x axis. When \code{facet.by} is not
+\code{NULL}, the best option is \code{pBin} (probability bin). The options
+are \code{nMix} (by number of different cell types), \code{CellType} (by
+cell type) and \code{pBin}.}
 
 \item{facet.by}{Variable used to display data in different panels. If it is
 \code{NULL}, the plot is not separated into different panels. The options
-are \code{nMix} (by number of different cell types) and \code{CellType}
-(by cell type).}
+are \code{nMix} (by number of different cell types) and \code{CellType} (by
+cell type).}
 
-\item{color.by}{Variable used to color data. The options
-are \code{nMix} and \code{CellType}.}
+\item{color.by}{Variable used to color data. The options are \code{nMix} and
+\code{CellType}.}
 
 \item{filter.sc}{Boolean indicating if filter single-cell profiles and only
 display errors associated with bulk samples (\code{TRUE} by default).}
@@ -65,13 +65,15 @@ display errors associated with bulk samples (\code{TRUE} by default).}
 
 \item{alpha.point}{Alpha of points (0.1 by default).}
 
-\item{type}{Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last by default.}
+\item{type}{Type of plot, \code{'boxplot'} or \code{'violinplot'}. The last
+by default.}
 
 \item{ylimit}{Upper limit in y axis if it is needed. \code{NULL} by default.}
 
 \item{nrow}{Number of rows if \code{facet.by} is different than \code{NULL}.}
 
-\item{ncol}{Number of columns if \code{facet.by} is different than \code{NULL}.}
+\item{ncol}{Number of columns if \code{facet.by} is different than
+\code{NULL}.}
 
 \item{title}{Title of the plot.}
 
@@ -81,10 +83,11 @@ display errors associated with bulk samples (\code{TRUE} by default).}
 \code{facet.by} is not equal to \code{NULL}.}
 }
 \description{
-Generate violin plot showing how errors are distributed by
-proportion bins of 0.1. The errors can be displayed all mixed or split based on
-cell type (\code{CellType}) or number of cell types present in the sample
-(\code{nMix}). See \code{facet.by} argument and examples for more information.
+Generate violin plot or box plot showing how errors are distributed by
+proportion bins of 0.1. The errors can be displayed all mixed or split based
+on cell type (\code{CellType}) or number of cell types present in the sample
+(\code{nMix}). See \code{facet.by} argument and examples for more
+information.
 }
 \examples{
 distErrorPlot(
@@ -108,5 +111,5 @@ distErrorPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-\code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+  \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 }

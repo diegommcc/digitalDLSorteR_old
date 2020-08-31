@@ -7,12 +7,14 @@
 loadDeconvDataFromFile(object, file.path, name.data = NULL)
 }
 \arguments{
-\item{object}{\code{\link{DigitalDLSorter}} object with \code{trained.model} slot.}
+\item{object}{\code{\link{DigitalDLSorter}} object with \code{trained.model}
+slot.}
 
 \item{file.path}{File path where data is stored.}
 
-\item{name.data}{Name with which the data is stored in \code{\link{DigitalDLSorter}}
-object. If \code{name.data} is not provided, base name of file is used.}
+\item{name.data}{Name with which the data is stored in
+\code{\link{DigitalDLSorter}} object. If \code{name.data} is not provided,
+base name of file is used.}
 }
 \description{
 Load data to deconvolute from text file. Accepted formats are tsv and tsv.gz.
@@ -22,5 +24,6 @@ You must specify the correct extension.
 
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}} \code{\link{deconvDigitalDLSorterModel}}
+\code{\link{trainDigitalDLSorterModel}}
+  \code{\link{deconvDigitalDLSorterModel}}
 }

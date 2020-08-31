@@ -67,9 +67,9 @@ samples).}
 stores the results in \code{deconv.results} slot. If not, forget it.}
 
 \item{simplified}{Vector with cell types that will be compressed into the
-cell type with more probability in each sample by majority voting. This option
-is intended for cases with exclusive cell types that they have not sense that
-appear in the same sample.}
+cell type with more probability in each sample by majority voting. This
+option is intended for cases with exclusive cell types that they have not
+sense that appear in the same sample.}
 }
 \description{
 This function allows to plot a bar plot with the deconvoluted cell type
@@ -84,5 +84,6 @@ barPlotCellTypes(DDLS.Chung)
 
 }
 \seealso{
-\code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
+\code{\link{deconvDigitalDLSorter}}
+  \code{\link{deconvDigitalDLSorterObj}}
 }

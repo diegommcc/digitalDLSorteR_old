@@ -16,9 +16,9 @@ final.data(object, type.data = "both") <- value
 \item{type.data}{Element of the list. Can be 'train', 'test' or 'both' (the
 last by default).}
 
-\item{value}{A \code{list} with two elements, train and test, each one being a
-\code{SummarizedExperiment} object with simulated bulk RNA-Seq samples prepared for
-training. This samples have been normalized and shuffled.}
+\item{value}{A \code{list} with two elements, train and test, each one being
+a \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples
+prepared for training. This samples have been normalized and shuffled.}
 }
 \description{
 Get and set \code{final.data} slot in a \code{DigitalDLSorter}

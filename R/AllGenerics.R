@@ -126,8 +126,8 @@ setMethod(f = "model<-",
 
 ## training.history
 
-#' @title Get and set \code{training.history} slot in a \code{DigitalDLSorterDNN}
-#' object.
+#' @title Get and set \code{training.history} slot in a
+#'   \code{DigitalDLSorterDNN} object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
 #'
@@ -154,8 +154,8 @@ setMethod(f = "training.history<-",
 
 ## eval.stats.model
 
-#' @title Get and set \code{eval.stats.model} slot in a \code{DigitalDLSorterDNN}
-#' object.
+#' @title Get and set \code{eval.stats.model} slot in a
+#'   \code{DigitalDLSorterDNN} object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
 #'
@@ -168,7 +168,7 @@ setMethod(f = "eval.stats.model",
           definition = function(object) object@eval.stats.model)
 
 #' @param value A \code{list} object with the resulting metrics after prediction
-#' on test data with DNN model.
+#'   on test data with DNN model.
 #' @rdname eval.stats.model
 #' @export eval.stats.model<-
 #'
@@ -183,7 +183,7 @@ setMethod(f = "eval.stats.model<-",
 ## predict.results
 
 #' @title Get and set \code{predict.results} slot in a \code{DigitalDLSorterDNN}
-#' object.
+#'   object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
 #'
@@ -263,8 +263,8 @@ setMethod(f = "features<-",
 
 ## eval.stats.samples
 
-#' @title Get and set \code{eval.stats.samples} slot in a \code{DigitalDLSorterDNN}
-#' object.
+#' @title Get and set \code{eval.stats.samples} slot in a
+#'   \code{DigitalDLSorterDNN} object.
 #'
 #' @param object A \code{DigitalDLSorterDNN} object.
 #'
@@ -458,8 +458,8 @@ setMethod(f = "bulk.sim",
             else stop(paste("No", type.data, "in bulk.sim slot"))
           })
 
-#' @param value A \code{list} with two elements, train and test, each one being a
-#' \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples.
+#' @param value A \code{list} with two elements, train and test, each one being
+#'   a \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples.
 #'
 #' @rdname bulk.sim
 #' @export bulk.sim<-
@@ -497,9 +497,9 @@ setMethod(f = "final.data",
             else stop(paste("No", type.data, "in bulk.sim slot"))
           })
 
-#' @param value A \code{list} with two elements, train and test, each one being a
-#' \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples prepared for
-#' training. This samples have been normalized and shuffled.
+#' @param value A \code{list} with two elements, train and test, each one being
+#'   a \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples
+#'   prepared for training. This samples have been normalized and shuffled.
 #' @rdname final.data
 #' @export final.data<-
 #'
@@ -609,7 +609,8 @@ setMethod(f = "deconv.results",
             }
           })
 
-#' @param value A \code{list} whose names are the reference of the results stored.
+#' @param value A \code{list} whose names are the reference of the results
+#'   stored.
 #' @rdname deconv.results
 #' @export deconv.results<-
 #'
@@ -657,22 +658,25 @@ setMethod(f = "project<-",
 
 #' Save \code{DigitalDLSorter} object as RDS file.
 #'
-#' Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS files.
-#' We developed this generic with the aim of changing the behavior of the base
-#' function and saving the structure and weights of DNN model as R native objects.
-#' This is because \code{keras} models are not able to be stored natively as R objects
-#' (e.g. RData or RDS files). By saving the structure as JSON character object and
-#' weights as list object, it is possible recovering the model and carrying
-#' out predictions. If \code{trained.model} slot is empty, the function will have
-#' the usual behavior.
+#' Save \code{DigitalDLSorter} and \code{DigitalDLSorterDNN} objects as RDS
+#' files. We developed this generic with the aim of changing the behavior of
+#' the base
+#' function and saving the structure and weights of DNN model as R native
+#' objects. This is because \code{keras} models are not able to be stored
+#' natively as R objects (e.g. RData or RDS files). By saving the structure as
+#' JSON character object and weights as list object, it is possible recovering
+#' the model and carrying out predictions. If \code{trained.model} slot is
+#' empty, the function will have the usual behavior.
 #'
 #' With this option, the state of optimizer is not saved, only architecture and
 #' weights. It is possible to save completely the model as HDF5 file with
-#' \code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
-#' object with \code{\link{loadTrainedModelFromH5}} function.
+#' \code{\link{saveTrainedModelAsH5}} function and to load into
+#' \code{DigitalDLSorter} object with \code{\link{loadTrainedModelFromH5}}
+#' function.
 #'
 #' Moreover, if you want to save the object as RDA file, it is possible
-#' by converting the model to an allowed R object with \code{\link{preparingToSave}}
+#' by converting the model to an allowed R object with
+#' \code{\link{preparingToSave}}
 #' function.
 #
 #' @inheritParams saveRDS
@@ -680,7 +684,6 @@ setMethod(f = "project<-",
 #' @export
 #'
 #' @seealso \code{\link{saveTrainedModelAsH5}} \code{\link{preparingToSave}}
-#'
 #'
 setGeneric("saveRDS", function(
   object,
@@ -756,22 +759,22 @@ setMethod("saveRDS", "DigitalDLSorter", definition = function(
 #' proportions of a given bulk RNA-seq sample using ggplot2.
 #'
 #' @param data \code{DigitalDLSorter} object with \code{deconv.results} slot or
-#' \code{data.frame}/\code{matrix} with cell types as columns and samples as
-#' rows.
+#'   \code{data.frame}/\code{matrix} with cell types as columns and samples as
+#'   rows.
 #' @param colors Vector with colors that will be used.
 #' @param simplified Vector with cell types that will be compressed into the
-#' cell type with more probability in each sample by majority voting. This option
-#' is intended for cases with exclusive cell types that they have not sense that
-#' appear in the same sample.
+#'   cell type with more probability in each sample by majority voting. This
+#'   option is intended for cases with exclusive cell types that they have not
+#'   sense that appear in the same sample.
 #' @param color.line Color of border bars.
 #' @param x.label Label of x axis.
 #' @param rm.x.text Logical value indicating if remove x axis ticks (names of
-#' samples).
+#'   samples).
 #' @param title Title of plot.
 #' @param legend.title Title of legend plot.
 #' @param angle Angle of text ticks.
 #' @param name.data If a DigitalDLSorter is given, name of the element that
-#' stores the results in \code{deconv.results} slot. If not, forget it.
+#'   stores the results in \code{deconv.results} slot. If not, forget it.
 #'
 #' @export
 #'
@@ -784,7 +787,8 @@ setMethod("saveRDS", "DigitalDLSorter", definition = function(
 #'
 #' @rdname barPlotCellTypes
 #'
-#' @seealso \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
+#' @seealso \code{\link{deconvDigitalDLSorter}}
+#'   \code{\link{deconvDigitalDLSorterObj}}
 #'
 setGeneric("barPlotCellTypes", function(
   data,

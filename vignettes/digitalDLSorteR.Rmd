@@ -12,6 +12,9 @@ output:
     toc: true
     toc_float: true
     css: "style.css"
+  BiocStyle::pdf_document:
+    toc: true
+    toc_float: true
 classoption: a4paper
 geometry: margin=3cm
 fontsize: 12pt
@@ -110,7 +113,7 @@ small subset of TCGA samples from breast sample. We are using the generic versio
 library(digitalDLSorteR)
 
 # this line is to ensure compatibility with all machines
-# tensorflow::tf$compat$v1$disable_eager_execution()
+tensorflow::tf$compat$v1$disable_eager_execution()
 
 deconvResults <- deconvDigitalDLSorter(
   data = TCGA.breast.small,
@@ -419,7 +422,6 @@ about the steps done.
 DDLSChungSmall
 ```
 
-
 This way of use will load all bulk samples in-memory. If the number of bulk 
 samples increases, It is possible to use HDF5 files as a back-end for storing 
 data through packages `r Biocpkg("DelayedArray")` and `r Biocpkg("HDF5Array")`. 
@@ -684,7 +686,8 @@ pieces of information are the minimum neccessary to perform new predictions
 with the model. When the model is to be used to make predictions, it is compiled 
 back to a keras object. 
 
-```{r eval=FALSE}
+```{r saveRDS, eval=FALSE}
+## this code will not be run
 saveRDS(object = DDLSChungSmall, file = "valid/path")
 ```
 
@@ -693,19 +696,22 @@ them, it is necessary to transform the keras model object by the same form that
 has been exposed before through `prepareDataForTraining` function. If this step 
 is not carried out before saving, trained model will be lost. 
 
-```{r eval=FALSE}
+```{r prepareModel, eval=FALSE}
+## this code will not be run
 DDLSChungSmall <- prepareDataForTraining(DDLSChungSmall)
 save(DDLSChungSmall, file = "valid/path")
 ```
 
-However, the optimizier stage is not saved by these ways. In order to offer 
+However, the optimizer stage is not saved by these ways. In order to offer 
 the possibility of saving the complete model, digitalDLSorteR offers the
-functions `saveTrainedModelAsH5` for its saving to disk and loadTrainedModelFromH5 
+functions `saveTrainedModelAsH5` for its saving to disk and `loadTrainedModelFromH5`
 for its recovery. Note that only keras model is being saved as HDF5 file by this 
 way. 
 
-```{r}
-
+```{r saveHDF5Model, eval=FALSE}
+## this code will not be run
+saveTrainedModelAsH5(DDLSChungSmall, file.path = "valid/path")
+DDLSChungSmall <- loadTrainedModelFromH5(DDLSChungSmall)
 ```
 
 

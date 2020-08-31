@@ -14,23 +14,23 @@ calculateEvalMetrics(object, metrics = c("MAE", "MSE"))
 absolute error (MAE) and mean squared error (MSE) by default.}
 }
 \value{
-A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot containing a
-\code{DigitalDLSorterDNN} object with \code{eval.stats.samples} slot.
+A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
+  containing a \code{DigitalDLSorterDNN} object with
+  \code{eval.stats.samples} slot.
 }
 \description{
 Calculate evaluation metrics for bulk RNA-seq samples from test data in order
 to know the performance of the model. By default, absolute error (AbsErr),
 proportional absolute error (ppAbsErr), squared error (SqrErr) and
-proportional squared error (ppSqrErr) are calculated for each cell type in
-each test sample. Moreover, each one of these metrics are aggregated using
-their mean values by four criteria: each test sample (\code{Sample}), each cell type
-(\code{CellType}), probability bins by 0.1 (\code{pBin}), number of different
-cell types present in the sample \code{nMix} and a combination of \code{pBin} and
-\code{nMix} (\code{pBinNMix}). Finally, the process is repeated only for bulk
-samples, removing single-cell profiles from the evaluation. Evaluation metrics
-are available in \code{eval.stats.samples} slot of
-\code{DigitalDLSorterDNN} object (\code{trained.model} of \code{DigitalDLSorter}
-object).
+proportional squared error (ppSqrErr) are calculated for each test sample.
+Moreover, each one of these metrics are aggregated using their mean values by
+three criteria: each cell type (\code{CellType}), probability bins of 0.1
+(\code{pBin}), number of different cell types present in the sample
+\code{nMix} and a combination of \code{pBin} and \code{nMix}
+(\code{pBinNMix}). Finally, the process is repeated only for bulk samples,
+removing single-cell profiles from the evaluation. Evaluation metrics are
+available in \code{eval.stats.samples} slot of \code{DigitalDLSorterDNN}
+object (\code{trained.model} of \code{DigitalDLSorter} object).
 }
 \examples{
 DDLSChung <- calculateEvalMetrics(
@@ -40,5 +40,5 @@ DDLSChung <- calculateEvalMetrics(
 }
 \seealso{
 \code{\link{distErrorPlot}} \code{\link{corrExpPredPlot}}
-\code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+  \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 }

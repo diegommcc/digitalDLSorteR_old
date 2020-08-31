@@ -27,23 +27,25 @@ it is not provided, the first data set will be used.}
 \item{normalize}{Normalize data before deconvolution. \code{TRUE} by default.}
 
 \item{simplify.set}{List specifying which cell types should be compressed
-into a new label whose name will be the list item. See examples for details.
-The results are stored in a list with normal and simpli.majority results
-(if provided). The name of the element in the list is \code{'simpli.set'}.}
+into a new label whose name will be the list item. See examples for
+details. The results are stored in a list with normal and simpli.majority
+results (if provided). The name of the element in the list is
+\code{'simpli.set'}.}
 
-\item{simplify.majority}{List specifying which cell types should be compressed
-into the cell types with greater proportion in each sample. Unlike
-\code{simplify.set}, it allows to maintain the complexity of the results
-while compressing the information, because it is not created a new label.
-The results are stored in a list with normal and simpli.set results
-(if provided). The name of the element in the list is \code{'simpli.majority'}.}
+\item{simplify.majority}{List specifying which cell types should be
+compressed into the cell types with greater proportion in each sample.
+Unlike \code{simplify.set}, it allows to maintain the complexity of the
+results while compressing the information, because it is not created a new
+label. The results are stored in a list with normal and simpli.set results
+(if provided). The name of the element in the list is
+\code{'simpli.majority'}.}
 
 \item{verbose}{Show informative messages during the execution.}
 }
 \value{
 A \code{data.frame} with samples (\eqn{i}) as rows and cell types
-(\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
-type in \eqn{i} sample.
+  (\eqn{j}) as columns. Each entry represents the proportion of \eqn{j} cell
+  type in \eqn{i} sample.
 }
 \description{
 Deconvolute bulk gene expression samples (bulk RNA-Seq) enumerating and
@@ -73,9 +75,9 @@ DDLSChung <- deconvDigitalDLSorterObj(
 
 }
 \references{
-Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
-\url{10.3389/fgene.2019.00978}
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep
+Learning algorithm to quantify immune cell populations based on scRNA-Seq
+data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
 \code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}

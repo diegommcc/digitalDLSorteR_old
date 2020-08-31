@@ -16,8 +16,8 @@ bulk.sim(object, type.data = "both") <- value
 \item{type.data}{Element of the list. Can be 'train', 'test' or 'both' (the
 last by default).}
 
-\item{value}{A \code{list} with two elements, train and test, each one being a
-\code{SummarizedExperiment} object with simulated bulk RNA-Seq samples.}
+\item{value}{A \code{list} with two elements, train and test, each one being
+a \code{SummarizedExperiment} object with simulated bulk RNA-Seq samples.}
 }
 \description{
 Get and set \code{bulk.sim} slot in a \code{DigitalDLSorter}

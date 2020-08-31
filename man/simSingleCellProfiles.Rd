@@ -8,7 +8,7 @@ simSingleCellProfiles(
   object,
   cell.ID.column,
   cell.type.column,
-  n.cells = 100,
+  n.cells,
   verbose = TRUE
 )
 }

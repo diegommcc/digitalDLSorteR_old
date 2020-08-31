@@ -4,7 +4,7 @@
 \alias{predict.results}
 \alias{predict.results<-}
 \title{Get and set \code{predict.results} slot in a \code{DigitalDLSorterDNN}
-object.}
+  object.}
 \usage{
 predict.results(object)
 
@@ -17,5 +17,5 @@ predict.results(object) <- value
 }
 \description{
 Get and set \code{predict.results} slot in a \code{DigitalDLSorterDNN}
-object.
+  object.
 }

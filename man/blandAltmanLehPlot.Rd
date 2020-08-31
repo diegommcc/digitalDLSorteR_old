@@ -8,8 +8,8 @@ proportions from test samples.}
 blandAltmanLehPlot(
   object,
   colors,
-  facet.by,
   color.by,
+  facet.by = NULL,
   log.2 = FALSE,
   filter.sc = TRUE,
   density = TRUE,
@@ -28,21 +28,23 @@ blandAltmanLehPlot(
 containing metrics in \code{eval.stats.samples} slot.}
 
 \item{colors}{Vector of colors to use. Only vectors with a number of colors
-equal to or greater than the levels of \code{color.by} will be accepted.
-By default it is used a list of custom colors provided by the package.}
+equal to or greater than the levels of \code{color.by} will be accepted. By
+default it is used a list of custom colors provided by the package.}
+
+\item{color.by}{Variable used to color data. The options are \code{nMix} and
+\code{CellType}.}
 
 \item{facet.by}{Variable used to display data in different panels. If it is
 \code{NULL}, the plot is not separated into different panels. The options
-are \code{nMix} (by number of different cell types) and \code{CellType}
-(by cell type).}
-
-\item{color.by}{Variable used to color data. The options
-are \code{nMix} and \code{CellType}.}
+are \code{nMix} (by number of different cell types) and \code{CellType} (by
+cell type).}
 
 \item{filter.sc}{Boolean indicating if filter single-cell profiles and only
-display correlations of results associated with bulk samples (\code{TRUE} by default).}
+display correlations of results associated with bulk samples (\code{TRUE}
+by default).}
 
-\item{density}{Boolean indicating if show density lines (\code{TRUE} by default).}
+\item{density}{Boolean indicating if show density lines (\code{TRUE} by
+default).}
 
 \item{color.density}{Color of density lines if \code{density} argument is
 equal to \code{TRUE}.}
@@ -51,7 +53,8 @@ equal to \code{TRUE}.}
 
 \item{alpha.point}{Alpha of points (0.1 by default).}
 
-\item{ncol}{Number of columns if \code{facet.by} is different than \code{NULL}.}
+\item{ncol}{Number of columns if \code{facet.by} is different than
+\code{NULL}.}
 
 \item{nrow}{Number of rows if \code{facet.by} is different than \code{NULL}.}
 
@@ -66,11 +69,11 @@ equal to \code{TRUE}.}
 by default).}
 }
 \description{
-Generate  Bland-Altman agreement plot between predicted and expected cell type
-proportions from test samples. The  Bland-Altman agreement plots can be displayed all
-mixed or split based on cell type (\code{CellType}) or the number of cell
-types present in the sample (\code{nMix}). See \code{facet.by} argument
-and examples for more information.
+Generate  Bland-Altman agreement plot between predicted and expected cell
+type proportions from test samples. The  Bland-Altman agreement plots can be
+displayed all mixed or split based on cell type (\code{CellType}) or the
+number of cell types present in the sample (\code{nMix}). See \code{facet.by}
+argument and examples for more information.
 }
 \examples{
 ## Bland-Altman plot by cell type
@@ -90,5 +93,5 @@ blandAltmanLehPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-\code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
+  \code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
 }
