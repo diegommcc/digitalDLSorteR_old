@@ -21,7 +21,7 @@ abstract: |
   the prediction of cell composition in bulk RNA-seq samples quickly and easily. 
   Secondly, digitalDLSorteR provides all the necessary functions for the 
   construction of new deconvolution models from scRNA-seq data. In this 
-  vignette, both ways of use are explained with examples built into the package. 
+  vignette, both ways of use are explained with data loaded into the package. 
 vignette: |
   %\VignetteIndexEntry{digitalLDSorteR: R package for deconvolution of bulk RNA-Seq samples based on Deep Learning}
   %\VignetteEngine{knitr::rmarkdown}
@@ -40,11 +40,12 @@ require(BiocStyle)
 
 _digitalDLSorteR_ is a R package that implements a Deep Learning based method to 
 enumerate and quantify the cell type composition of bulk RNA-Seq samples. Our 
-method makes use of a Deep Neural Network (DNN) model to adjust any cell type
+method makes use of Deep Neural Network (DNN) models to adjust any cell type
 composition defined from a single-cell RNA-Seq (scRNA-Seq) data. 
 
-The method is based on a pipeline that starts from scRNA-Seq data and, after a few
-steps, a Deep Neural Network (DNN) model is trained with simulated bulk RNA-seq 
+The foundation of the method consists in a process that starts from scRNA-Seq 
+data and, after a few steps, a Deep Neural Network (DNN) model is trained with 
+simulated bulk RNA-seq 
 samples whose cell composition is known. The trained model is able to 
 deconvolute any bulk RNA-seq sample determining the proportion of the 
 different cell types present in it. The main advantage of this method is the
@@ -57,11 +58,11 @@ the tissue and disease context.
 
 The package can be used in two ways: for deconvoluting bulk RNA-seq
 samples using a pre-trained model provided by us or for building your own models
-trained from your own scRNA-seq samples with its own peculiarities. These 
-new models can be published in order to make them available for other users
+trained from your own scRNA-seq samples. These 
+new models may be published in order to make them available for other users
 that work with similar data (e.g. neural environment, prostate cancer environment,
-etc). For the moment, the available models allows the deconvolution of tumor
-infiltrated lymphocytes (TILs) from breast cancer classified by our team.
+etc.). For the moment, the available models allows the deconvolution of tumor
+infiltrated lymphocytes (TILs) from breast cancer classified by our team. 
 
 
 # Using pre-trained models for deconvoluting bulk RNA-seq samples
@@ -72,43 +73,44 @@ the package returns the predicted cell composition of each sample. As mentioned
 above, for the moment, only one model for deconvoluting breast cancer samples is
 available. This model was generated from GSE75688 (Chung et al., 2017) data set
 whose cells were characterized by our team. It is oriented to the quantification
-of immune cell types in cancer samples. It presents advantages over other tools,
+of immune cell types in cancer samples. This presents advantages over other tools,
 since it has been trained from scRNA-Seq data from the tumor itself, preserving
 the specific characteristics of the tumor microenvironment as opposite to other
-approaches in which cells were isolated from blood. 
-
-Moreover, we have provided two resolution levels for the deconvolution task:
+approaches in which cells were isolated from blood. Moreover, we have 
+provided two resolution levels for the deconvolution task:
 
 * First, a model trained with cell types characterized at high resolution level:
-ER+, HER2+, ER+/HER2+, TNBC, stromal, monocyte, TCD4mem (memory CD4+ T cells), 
-BGC (germinal center B cells), Bmem (memory B cells), DC (dendritic cells),
-macrophage, TCD8 (CD8+ T cells) and TCD4reg (regulatory CD4+ T cells).
+ER+, HER2+, ER+/HER2+, TNBC, stromal, monocyte, TCD4mem (memory CD4+ T cell), 
+BGC (germinal center B cell), Bmem (memory B cell), DC (dendritic cell),
+macrophage, TCD8 (CD8+ T cell) and TCD4reg (regulatory CD4+ T cell). Note that 
+intrinsic subtypes of breast cancer are taken into account independently.
 
 * Second, a model trained with cell types less specific: B cells, T CD4+ cells,
-T CD8+ cells, monocytes, dendritic cells, stromal cells and tumor cells.
+T CD8+ cells, monocytes, dendritic cells, stromal cells and tumor cells. Each one
+is a more general group which includes the above cell types.
 
 For more information about the data set, see the provided documentation in the
 package. 
 
-## Example of the use of the package
+## Package usage example
 
 Using the package in this way, it is only necessary to load the samples that you
 want to deconvolute in R and use them as `data` argument for 
 `deconvDigitalDLSorter` function. This object must be a `matrix` or a `data.frame`
 with genes as rows and samples as columns. Genes must be annotated as SYMBOL, 
 since the model was trained with this notation. Data must be TPMs, since model
-was trained with this type of data. If data are not normalize, set `normalize`
+was trained with this type of data. If data is not normalized, set `normalize`
 argument equal to `TRUE` (by default). Moreover, you must specify the model that 
 will be used in `model` argument. In this example, we are going to deconvolute a 
 small subset of TCGA samples from breast sample. We are using the generic version 
-(`model = "breast.chung.generic"`), but it is also possible the use of a 
-specific (`model = "breast.chung.specific"`):
+(`model = "breast.chung.generic"`), but it is also possible the use of specific 
+(`model = "breast.chung.specific"`):
 
 ```{r deconvoluteTCGA, message=FALSE}
 library(digitalDLSorteR)
 
 # this line is to ensure compatibility with all machines
-tensorflow::tf$compat$v1$disable_eager_execution()
+# tensorflow::tf$compat$v1$disable_eager_execution()
 
 deconvResults <- deconvDigitalDLSorter(
   data = TCGA.breast.small,
@@ -119,11 +121,10 @@ deconvResults <- deconvDigitalDLSorter(
 head(deconvResults)
 ```
 
-`deconvDigitalDLSorter` returns a data frame with the provided samples ($i$) in 
+`deconvDigitalDLSorter` returns a data frame with the provided samples ($k$) in 
 rows and cell types considered by the model ($j$) in columns. Each entry 
-corresponds with the proportion of $j$ cell type in $i$ sample. In order to 
-evaluate the results quickly by a bar plot, you can use the function 
-`barplotCellTypes` as follows:
+corresponds with the proportion of $k$ cell type in $i$ sample. In order to 
+evaluate the results quickly by a bar plot, you can use `barplotCellTypes` function as follows:
 
 ```{r resultsDeconvTCGA}
 barPlotCellTypes(
@@ -134,37 +135,42 @@ barPlotCellTypes(
 )
 ```
 
-# Build your own model for deconvolution of bulk RNA-Seq samples in a determined 
-environment
+# Build your own model from scRNA-seq data
 
 _digitalDLSorteR_ allows to train new models from different scRNA-Seq data 
 in order to offer the possibility to generate models more suitable for 
 determined biological environments. For this, the steps described in the 
 following pipeline must be followed. As example, we are going to generate a 
 'toy' model from scRNA-seq data used for building the `breast.chung` model 
-available in the package. 
-
+available in the package. You must bear in mind that both the original data 
+and the parameters used do not allow obtaining an accurate model in order to 
+reduce execution times.
 
 ## Load data into a `DigitalDLSorter` object
 
 First, we have to load data into a `DigitalDLSorter` object, the core of the 
 package. This S4 class contains all slots necessaries for storing the different 
 data generated during the building of the model. The 
-information that you must provided consists in three elements: 
+information that you must provide consists in three elements: 
 
-* Single-cell counts: a matrix with genes in rows and cells in columns.
+* Single-cell counts: a matrix with genes in rows and cells in columns. Both must 
+present the corresponding row and column names.
 * Cells metadata: a table with annotations (columns) for each cell (rows). The 
 information expected in this element are metadata that could be used as 
-covariates in the next steps (gender, type of sample...), a column with the 
-ID used for each cell and a column with the corresponding cell type.
+covariates in the next steps (gender, type of sample...), one column with the 
+ID used for each cell and one column with the corresponding cell types.
 * Genes metadata with annotations (columns) for each gene (rows). In the same 
 way that in cells metadata, the information that is expected in this element 
 are a column with the notation used for each gene in counts matrix and others 
-covariates like gene length. You can inspect the `sc.chung.breast` object to 
-see the required structure.^[Data used for the examples are stored into the package as a 
+covariates like gene length, GC content, etc. You can inspect 
+`single.cell.real(DDLSChungSmall)` object in order to 
+understand the required structure if you use a `SingleCellExperiment` object as 
+input.
+
+**Note:** Data used for the examples are stored into the package as a 
 `SingleCellExperiment` object. This object contains the results of different 
 steps in order to avoid some steps whose execution is extensive, specifically 
-the estimation of new scRNA-seq profiles]
+the estimation of new scRNA-seq profiles.
 
 If your data contains a low number of cells or some cell types are poorly 
 represented, you must load data with `loadRealSCProfiles` function. Data is loaded
@@ -175,8 +181,9 @@ you can use `loadFinalSCProfiles`, that loads data into `single.cell.final` slot
 In this vignette, we are going to present the large protocol.
 
 ```{r loadData, eval=FALSE}
-DDLSChung <- loadRealSCProfiles(
-  single.cell.real = sc.chung.breast,
+## this code will not be run
+DDLSChungSmall <- loadRealSCProfiles(
+  single.cell.real = sc.chung.breast, # SingleCellExperiment object
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",
   min.cells = 0,
@@ -186,11 +193,11 @@ DDLSChung <- loadRealSCProfiles(
 ```
 In this case, we are loading single-cell profiles from a `SingleCellExperiment` 
 object, but it is also possible to load it from tsv files and sparse matrices. 
-The code would be as follows (this box-code will not be run):
+The code would be as follows:
 
 ```{r loadFromFile, eval=FALSE}
 ## this code will not be run
-filesChung <- c("countsMatrix.tsv.gz",
+filesChung <- c("countsMatrix.tsv.gz", 
                 "cellsMetadata.tsv.gz",
                 "genesMetadata.tsv.gz")
 
@@ -210,7 +217,7 @@ profiles
 If data is loaded into `single.cell.real` slot, new simulated single-cell profiles
 based on real profiles will be generated. The goal is the oversampling of low
 frequency cell types in order to increase their signal and 
-train the model in a balanced way. For this, _digitalDLSorteR_ uses the
+train the model in a balanced way. For this purpose, _digitalDLSorteR_ uses the
 ZINB-WaVE framework () to estimate the parameters of a ZINB (zero-inflated 
 negative binomial) distribution to simulate new single-cell profiles. This 
 model was chosen due to its ability to accommodate not only the variability 
@@ -219,15 +226,16 @@ experiment.
 
 The process is performed by `estimateZinbwaveParams` function. It implements 
 the ZINB-WaVE model by using `r Biocpkg("splatter")` package, a wrapper of 
-`r Biocpkg("zinbwave")` package. You must specify the column in cells metadata
-that corresponds with cell types. Moreover, you can add cell covariates based 
+`r Biocpkg("zinbwave")` package. You must specify the column 
+that corresponds with cell types in cells metadata. Moreover, you can add cell covariates based 
 on your experimental design such as patient or gender and gene covariates such 
 as gene length. This process may take a few minutes to run because it 
 is poorly optimized in the original packages, so be patient. For this vignette, 
-ZINB-WaVE model is loaded from _digitalDLSorteR_ package in order to avoid the 
+ZINB-WaVE model is pre-loaded from _digitalDLSorteR_ package in order to avoid the 
 wait. In any case, you can adjust the number of threads to use in some steps 
-of the estimation with `threads` argument. It is used for this proposal 
-`r Biocpkg("BiocParallel")` package. 
+during the estimation with `threads` argument. `r Biocpkg("BiocParallel")` 
+package is used for this proposal.
+ 
 
 ```{r zinbwaveEstimation, eval=FALSE}
 ## this code will not be run
@@ -244,7 +252,7 @@ DDLSChungSmall <- estimateZinbwaveParams(
 ```
 
 The resulting model is stored in `zinb.params` slot. You can access with its 
-getter function:
+getter function or show the content of `DigitalDLSorter` object:
 
 ```{r}
 DDLSChungSmall
@@ -336,7 +344,15 @@ we recommend, depending on the number of starting
 single-cell profiles and the available computational resources, about 30000 
 samples and the default proportions. 
 
-You can access to the distribution of proportions generated by each method using 
+You can investigate the cell composition matrix created in this step:
+
+```{r}
+head(getProbMatrix(DDLSChungSmall, type.data = "train"))
+tail(getProbMatrix(DDLSChungSmall, type.data = "train"))
+```
+
+However, it is more suitable to know full distribution of proportions 
+generated by each method using 
 `showProbPlot` function. This function show different ways for visualizing this
 information. In the following code, we are going to display the former and the 
 last distributions of train samples:
@@ -350,7 +366,7 @@ lapply(c(1, 6), function(x) {
 
 Probably, distributions presents different medians between cell types or 
 similar things. This is because of the low number of samples that are being 
-simulated.
+simulated. 
 
 
 ## Simulate bulk RNA-seq profiles with known cell composition
@@ -368,8 +384,7 @@ bulk matrix expression will be simulated according the Equation \#eq:bulk:
 \end{equation}
 
 \begin{equation*}
-  \arraycolsep=1.4pt\def\arraystretch{1.3}
-  \textrm{de forma que} \left\{
+  \textrm{such as} \left\{
 \begin{array}{l}
   i = 1 \ldots M;\\
   j = 1 \ldots N \\
@@ -405,7 +420,7 @@ DDLSChungSmall
 ```
 
 
-This way of use will load all bulk samples in -memory. If the number of bulk 
+This way of use will load all bulk samples in-memory. If the number of bulk 
 samples increases, It is possible to use HDF5 files as a back-end for storing 
 data through packages `r Biocpkg("DelayedArray")` and `r Biocpkg("HDF5Array")`. 
 These packages allows to store data on-disk while this data is accessible from R 
@@ -456,18 +471,21 @@ DDLSChungSmall <- prepareDataForTraining(
 With data stored in `final.data` slot, Deep Neural Network will be trained 
 and evaluated. This step is performed by `trainDigitalDLSorterModel` function and
 uses `r CRANpkg("keras")` framework for all steps related with Deep Learning. 
-`r CRANpkg("keras")` package is an interface to keras module of Python for 
+`r CRANpkg("keras")` package is an interface to keras module from Python for 
 high level Deep Learning. If you want to know more information about architecture
 and hyperparameters of the Deep Neural Network implemented in _digitalDLSorteR_, 
 see Torroja and Sanchez-Cabo, 2019. 
 
-The use is very simple, only is needed specify the number of epochs and the 
-batch size used. In this example, we are going to use 5 epochs in order to 
+The use is very simple, only is needed the specification of the number of epochs 
+and the batch size used. In this example, we are going to use 5 epochs in order to 
 reduce execution times, but for a good training, you should test different 
 values. With 20 epochs should be enough. Moreover, you can specify the 
 loss function and the metrics used during training. We are groin to use all default
 parameters: Kullback-Leibler divergence as loss function and 
-accuracy and mean absolute error as metrics. 
+accuracy and mean absolute error as metrics. In the following versions, the 
+possibility of contributing Keras models with different architecture through 
+arguments will be implemented.
+
 
 ```{r}
 DDLSChungSmall <- trainDigitalDLSorterModel(
@@ -563,8 +581,8 @@ distErrorPlot(
 )
 ```
 
-It is also possible to represent the mean error values with their
-corresponding dispersion values with `barErrorPlot` plot.
+Finally, with `barErrorPlot` you can represent the mean error values with their
+corresponding dispersion ranges as follows:
 
 ```{r barError}
 barErrorPlot(DDLSChungSmall, error = "MAE", by = "CellType")
@@ -574,10 +592,14 @@ barErrorPlot(DDLSChungSmall, error = "MAE", by = "CellType")
 
 ### Correlation plots between predicted and expected proportions
 
-We can generate correlations plots in order to evaluate how well the 
-predictions fit the actual proportions. By default, Pearson's coefficient 
-correlation $R$ and concordance correlation coefficient (CCC) are shown as 
-annotations in plots.
+Ideally, the model should provide predictions that fit linearly to the 
+real proportions. Thus, you can generate correlations plots in order to 
+evaluate how well the predictions fit the actual proportions. By default, 
+Pearson's coefficient correlation ($R$) and concordance correlation coefficient
+(CCC) are shown as annotations in plots. The latter is a more realistic measure 
+of the situation, as it decreases as the points move away from the perfect
+diagonal.
+
 
 ```{r corr1}
 corrExpPredPlot(
@@ -588,7 +610,8 @@ corrExpPredPlot(
 )
 ```
 
-As in the previous case, the charts can be divided according to some variable:
+As in the previous case, charts can be divided according to different variables. 
+Now, we are going to split results by `CellType` and by `nMix`:
 
 ```{r corr2}
 corrExpPredPlot(
@@ -611,9 +634,17 @@ corrExpPredPlot(
 )
 ```
 
+
 ### Bland-Altman agreement plots
 
-`blandAltmanLehPlot` has the same behavior that the previous examples:
+`blandAltmanLehPlot` allows to display the Bland-Altman agreement plot. This is
+a graphic method to compare the agreement between two different set of values. 
+The differences between predictions and real proportions are plotted against 
+the averages of the two values. The central dashed line represents the mean different, 
+while the two red dashed lines are the limits of agreement, which are defined 
+as the mean difference plus and minus 1.96 times the standard deviation of 
+the differences. 95% of the differences are expected to fall between these 
+two limits. It is also possible the representation in $log_2$ space.
 
 ```{r bland1}
 blandAltmanLehPlot(
@@ -626,6 +657,8 @@ blandAltmanLehPlot(
 )
 ```
 
+Moreover, this function has the same behavior as the previous ones:
+
 ```{r bland2}
 blandAltmanLehPlot(
   DDLSChungSmall, 
@@ -636,6 +669,43 @@ blandAltmanLehPlot(
   filter.sc = TRUE,
   density = TRUE,
 )
+```
+
+## Save `DigitalDLSorter` object and trained models
+
+Finally, we have provided different ways to save models on-disk and to recover 
+it into the `DigitalDLSorter`. First, you can save `DigitalDLSorter` objects as 
+rds and rda file. For rds files, due to this type of files only accepts native 
+R objects, they are not able to store complicated data structures as keras 
+Python object. In order to make it possible, _digitalDLSorteR_ has a 
+`saveRDS` generic function ehich converts keras model object into a list with 
+the architecture of the network and the weights after training. These two 
+pieces of information are the minimum neccessary to perform new predictions 
+with the model. When the model is to be used to make predictions, it is compiled 
+back to a keras object. 
+
+```{r eval=FALSE}
+saveRDS(object = DDLSChungSmall, file = "valid/path")
+```
+
+In relation to rda files, since it is possible to store more than one object in 
+them, it is necessary to transform the keras model object by the same form that
+has been exposed before through `prepareDataForTraining` function. If this step 
+is not carried out before saving, trained model will be lost. 
+
+```{r eval=FALSE}
+DDLSChungSmall <- prepareDataForTraining(DDLSChungSmall)
+save(DDLSChungSmall, file = "valid/path")
+```
+
+However, the optimizier stage is not saved by these ways. In order to offer 
+the possibility of saving the complete model, digitalDLSorteR offers the
+functions `saveTrainedModelAsH5` for its saving to disk and loadTrainedModelFromH5 
+for its recovery. Note that only keras model is being saved as HDF5 file by this 
+way. 
+
+```{r}
+
 ```
 
 
