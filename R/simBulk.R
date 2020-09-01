@@ -88,7 +88,7 @@ NULL
 #' @return A \code{\link{DigitalDLSorter}} object with \code{prob.cell.types}
 #' slot containing a \code{\link{ProbMatrixCellTypes}} object. For more
 #' information about the structure of this class, see
-#' \code{\link{?ProbMatrixCellTypes}}. The most
+#' \code{\link{ProbMatrixCellTypes}}. The most
 #' important element is the cell composition matrix, which is formed by \eqn{n}
 #' rows (being \eqn{n} the number of bulk samples that will be generated) and
 #' \eqn{k} columns (being \eqn{k} the number of cell types present in the
@@ -96,7 +96,7 @@ NULL
 #'
 #' @export
 #'
-#' @seealso \code{\link{generateBulkSamples}}, \code{\link{ProbMatrixCellType}}.
+#' @seealso \code{\link{generateBulkSamples}}, \code{\link{ProbMatrixCellTypes}}.
 #'
 #' @examples
 #' ## generate a data.frame with frequency ranges of each cell type
@@ -800,7 +800,7 @@ generateTrainAndTestBulkProbMatrix <- function(
 #' @export
 #'
 #' @seealso \code{\link{generateTrainAndTestBulkProbMatrix}}
-#'   \code{\link{ProbMatrixCellType}}
+#'   \code{\link{ProbMatrixCellTypes}}
 #'
 #' @examples
 #' ## loading all data in memory
@@ -1027,8 +1027,8 @@ setBulks <- function (x, c, i) {
 #'
 #' @export
 #'
-#' @seealso \code{\link{generateBulkSamples}},
-#'   \code{\link{generateTrainAndTestProbMatrix}}.
+#' @seealso \code{\link{generateBulkSamples}}
+#'   \code{\link{generateTrainAndTestBulkProbMatrix}}
 #'
 #' @examples
 #' ## loading all data in memory

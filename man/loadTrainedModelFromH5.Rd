@@ -26,6 +26,6 @@ valid trained model.
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
-  \code{\link{deconvDigitalDLSorterModelObj}}
+  \code{\link{deconvDigitalDLSorterObj}}
   \code{\link{saveTrainedModelAsH5}}
 }

@@ -18,7 +18,8 @@ estimateZinbwaveParams(
 )
 }
 \arguments{
-\item{object}{\code{\link{DigitalDLSorter}} object with a \code{single.cell.real} slot.}
+\item{object}{\code{\link{DigitalDLSorter}} object with a
+\code{single.cell.real} slot.}
 
 \item{cell.ID.column}{Name or number of the column in cells metadata
 corresponding with cell names in expression matrix.}
@@ -37,15 +38,16 @@ be used as covariates in the model during estimation.}
 
 \item{set.type}{Cell type to evaluate. 'All' by default.}
 
-\item{threads}{Number of threads used for the estimation. For setting the parallel
-environment \code{BiocParallel} package is used.}
+\item{threads}{Number of threads used for the estimation. For setting the
+parallel environment \code{BiocParallel} package is used.}
 
 \item{verbose}{Show informative messages during the execution.}
 }
 \value{
-A \code{DigitalDLSorter} object with \code{zinb.params} slot containing
-a \code{ZinbParams} object. This object contains the estimated ZINB parameters
-from real single-cell data.
+A \code{DigitalDLSorter} object with \code{zinb.params} slot
+containing
+a \code{ZinbParams} object. This object contains the estimated ZINB
+parameters from real single-cell data.
 }
 \description{
 Estimate parameters for the ZINB-WaVE model from a real single-cell
@@ -55,14 +57,14 @@ data set using ZINB-WaVE model.
 ZINB-WaVE is a flexible model for zero-inflated count data. This function
 carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
 (the count of feature \eqn{j} for sample \eqn{i}) as a random variable
-following a zero-inflated negative binomial (ZINB) distribution. The estimated
-parameters will be used for the simulation of new single-cell expression profiles
-by sampling a negative binomial distribution and introducing dropouts from a
-binomial distribution.
-To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function from
-\code{splatter} package (Zappia et al., 2017),
-that is a wrapper around \code{zinbFit} function from \code{zinbwave} package
-(Risso et al., 2018). For more details about the model, see Risso et al., 2018.
+following a zero-inflated negative binomial (ZINB) distribution. The
+estimated parameters will be used for the simulation of new single-cell
+expression profiles by sampling a negative binomial distribution and
+introducing dropouts from a binomial distribution.
+To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function
+from \code{splatter} package (Zappia et al., 2017),  that is a wrapper around
+\code{zinbFit} function from \code{zinbwave} package (Risso et al., 2018).
+For more details about the model, see Risso et al., 2018.
 }
 \examples{
 DDLSChung <- estimateZinbwaveParams(
@@ -77,17 +79,17 @@ DDLSChung <- estimateZinbwaveParams(
 
 }
 \references{
-Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
-for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
-doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible
+method for signal extraction from single-cell RNA-seq data. Nat Commun 9,
+284. doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
 
-Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
-\url{10.3389/fgene.2019.00978}
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+algorithm to quantify immune cell populations based on scRNA-Seq data.
+Frontiers in Genetics 10,
+978. doi: \url{10.3389/fgene.2019.00978}
 
 Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell RNA
-sequencing data. Genome
-Biol. 2017; 18: 174.
+sequencing data. Genome Biol. 2017; 18: 174.
 }
 \seealso{
 \code{\link{simSingleCellProfiles}}

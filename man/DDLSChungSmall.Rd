@@ -4,7 +4,9 @@
 \name{DDLSChungSmall}
 \alias{DDLSChungSmall}
 \title{\code{\link{DigitalDLSorter}} 'toy' object.}
-\format{An object of class \code{DigitalDLSorter} of length 1.}
+\format{
+An object of class \code{DigitalDLSorter} of length 1.
+}
 \source{
 \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}
 }

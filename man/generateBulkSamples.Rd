@@ -94,5 +94,5 @@ version 1.16.1.
 }
 \seealso{
 \code{\link{generateTrainAndTestBulkProbMatrix}}
-  \code{\link{ProbMatrixCellType}}
+  \code{\link{ProbMatrixCellTypes}}
 }

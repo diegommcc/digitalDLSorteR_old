@@ -51,7 +51,7 @@ working on RStudio.}
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
   containing a \code{\link{DigitalDLSorterDNN}} object. For more information
-  about the structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+  about the structure of this class, see \code{\link{DigitalDLSorterDNN}}.
 }
 \description{
 Train \code{\link{DigitalDLSorter}} Deep Neural Network model with data store
@@ -88,5 +88,5 @@ data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
 \code{\link{plotTrainingHistory}}
-  \code{\link{deconvDigitalDLSorterModel}}
+  \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
 }

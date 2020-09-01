@@ -15,8 +15,8 @@ getProbMatrix(object, type.data)
 A \code{matrix} object.
 }
 \description{
-Getter function for cell composition matrix. This function allows you
-access to the cell composition matrix of train or test bulk data.
+Getter function for cell composition matrix. This function allows you access
+to the cell composition matrix of train or test bulk data.
 }
 \seealso{
 \code{\link{generateTrainAndTestBulkProbMatrix}}

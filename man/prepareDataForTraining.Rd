@@ -94,6 +94,6 @@ DDLSChung <- prepareDataForTraining(
 
 }
 \seealso{
-\code{\link{generateBulkSamples}},
-  \code{\link{generateTrainAndTestProbMatrix}}.
+\code{\link{generateBulkSamples}}
+  \code{\link{generateTrainAndTestBulkProbMatrix}}
 }

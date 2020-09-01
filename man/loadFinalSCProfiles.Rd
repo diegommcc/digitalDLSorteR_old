@@ -14,11 +14,12 @@ loadFinalSCProfiles(
 )
 }
 \arguments{
-\item{single.cell.final}{If data is provided from files, \code{single.cell.real}
-must be a vector with three elements: single-cell counts, cells metadata and
-genes metadata. If data is provided from a \code{SingleCellExperiment} object,
-singlecell counts must be in \code{assay} slot, cells metadata in
-\code{colData} and genes metadata in \code{rowData}.}
+\item{single.cell.final}{If data is provided from files,
+\code{single.cell.real} must be a vector with three elements: single-cell
+counts, cells metadata and genes metadata. If data is provided from a
+\code{SingleCellExperiment} object, singlecell counts must be in
+\code{assay} slot, cells metadata in \code{colData} and genes metadata in
+\code{rowData}.}
 
 \item{cell.ID.column}{Name or number of the column in cells.metadata
 corresponding with cell names in expression matrix.}
@@ -33,30 +34,27 @@ corresponding with the notation used for features/genes.}
 \item{project}{Name of the project for \code{DigitaDLSorter} object.}
 }
 \description{
-Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk
-or from a \code{SingleCellExperiment} object. Provided data must be composed
-by three pieces of information:
-\itemize{
-  \item Single-cell counts: genes in rows and cells in columns.
-  \item Cells metadata: with annotations (columns) for each cell (rows).
-  \item Genes metadata with annotations (columns) for each gene (rows).
-}
-In the case that data is provided from files, \code{single.cell.real}
-argument must be a vector of three elements ordered so that the first file
-corresponds to counts, the second to cells metadata and the last to genes
-metadata.
-On the other hand, if data is provided as \code{SingleCellExperiment}, the
-object must contains single-cell counts in \code{assay} slot, cells metadata
-in \code{colData} slot and genes metadata in \code{rowData}.
+Load scRNA-Seq data into a \code{DigitalDLSorter} from file stored on disk or
+from a \code{SingleCellExperiment} object. Provided data must be composed by
+three pieces of information: \itemize{ \item Single-cell counts: genes in
+rows and cells in columns. \item Cells metadata: with annotations (columns)
+for each cell (rows). \item Genes metadata with annotations (columns) for
+each gene (rows). } In the case that data is provided from files,
+\code{single.cell.real} argument must be a vector of three elements ordered
+so that the first file corresponds to counts, the second to cells metadata
+and the last to genes metadata. On the other hand, if data is provided as
+\code{SingleCellExperiment}, the object must contains single-cell counts in
+\code{assay} slot, cells metadata in \code{colData} slot and genes metadata
+in \code{rowData}.
 }
 \details{
-#' The difference with \code{\link{loadFinalSCProfiles}} is that data loaded with
-this functions will be used for estimating ZINB-WaVE parameters and simulating
-new single-cell profiles in order to increase the signal of cell types. On the
-other side, \code{\link{loadFinalSCProfiles}} loads data on \code{single.cell.final}
-slot, so this scRNA-seq profiles will be used directly for simulating bulk samples.
-In this case, data must be enough cells for each cell type and enough cells
-for simulating bulk profiles.
+#' The difference with \code{\link{loadFinalSCProfiles}} is that data loaded
+with this functions will be used for estimating ZINB-WaVE parameters and
+simulating new single-cell profiles in order to increase the signal of cell
+types. On the other side, \code{\link{loadFinalSCProfiles}} loads data on
+\code{single.cell.final} slot, so this scRNA-seq profiles will be used
+directly for simulating bulk samples. In this case, data must be enough cells
+for each cell type and enough cells for simulating bulk profiles.
 }
 \examples{
 DDLSChung <- loadFinalSCProfiles(

@@ -22,8 +22,9 @@ With this option, the state of optimizer is not saved, only architecture and
 weights.
 
 It is possible to save completely the model as HDF5 file with
-\code{\link{saveTrainedModelAsH5}} function and to load into \code{DigitalDLSorter}
-object with \code{\link{loadTrainedModelFromH5}} function.
+\code{\link{saveTrainedModelAsH5}} function and to load into
+\code{DigitalDLSorter} object with \code{\link{loadTrainedModelFromH5}}
+function.
 
 It is also possible to save a \code{DigitalDLSorter} object as RDS file with
 \code{saveRDS} function without any type of previous preparation.

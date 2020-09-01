@@ -69,7 +69,7 @@ of the model evaluation.}
 \item{\code{deconv.data}}{Optional slot where is possible to store new bulk samples
 for its deconvolution. It is a list whose name is the name of the data
 provided. It is possible to store more than one dataset to make
-predictions. See \code{\link{deconvDigitalDLSorterModelObj}} for details.}
+predictions. See \code{\link{deconvDigitalDLSorterObj}} for details.}
 
 \item{\code{deconv.results}}{Slot where the results from the deconvolution process
 over \code{\link{deconv.data}} data are stored. It is a list whose name is

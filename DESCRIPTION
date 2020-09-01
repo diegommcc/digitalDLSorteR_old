@@ -2,7 +2,7 @@ Package: digitalDLSorteR
 Type: Package
 Title: Deconvolution of bulk-RNAseq samples based on Deep Neural Network
 Version: 0.1.0
-Author: 
+Author: Author
 Maintainer: <yourself@somewhere.net>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
@@ -34,11 +34,12 @@ Suggests:
     BiocStyle,
     knitr,
     rmarkdown
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Collate: 
     'AllClasses.R'
     'AllGenerics.R'
     'data.R'
+    'digitalDLSorteR.R'
     'dnnModel.R'
     'evalMetrics.R'
     'loadData.R'

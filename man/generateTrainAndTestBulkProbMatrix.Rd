@@ -65,7 +65,7 @@ generating bulk samples.}
 A \code{\link{DigitalDLSorter}} object with \code{prob.cell.types}
 slot containing a \code{\link{ProbMatrixCellTypes}} object. For more
 information about the structure of this class, see
-\code{\link{?ProbMatrixCellTypes}}. The most
+\code{\link{ProbMatrixCellTypes}}. The most
 important element is the cell composition matrix, which is formed by \eqn{n}
 rows (being \eqn{n} the number of bulk samples that will be generated) and
 \eqn{k} columns (being \eqn{k} the number of cell types present in the
@@ -149,5 +149,5 @@ algorithm to quantify immune cell populations based on scRNA-Seq data.
 Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
-\code{\link{generateBulkSamples}}, \code{\link{ProbMatrixCellType}}.
+\code{\link{generateBulkSamples}}, \code{\link{ProbMatrixCellTypes}}.
 }

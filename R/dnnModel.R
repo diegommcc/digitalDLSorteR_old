@@ -49,12 +49,12 @@ NULL
 #'   model (\code{TRUE} by default).
 #' @return A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
 #'   containing a \code{\link{DigitalDLSorterDNN}} object. For more information
-#'   about the structure of this class, see \code{\link{?DigitalDLSorterDNN}}.
+#'   about the structure of this class, see \code{\link{DigitalDLSorterDNN}}.
 #'
 #' @export
 #'
 #' @seealso \code{\link{plotTrainingHistory}}
-#'   \code{\link{deconvDigitalDLSorterModel}}
+#'   \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
 #' \dontrun{
@@ -321,7 +321,7 @@ trainDigitalDLSorterModel <- function(
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
-#'   \code{\link{loadTrainedModel}}
+#'   \code{\link{loadTrainedModelFromH5}}
 #'
 #'
 saveTrainedModelAsH5 <- function(
@@ -383,7 +383,7 @@ saveTrainedModelAsH5 <- function(
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
-#'   \code{\link{deconvDigitalDLSorterModelObj}}
+#'   \code{\link{deconvDigitalDLSorterObj}}
 #'   \code{\link{saveTrainedModelAsH5}}
 #'
 #' @examples
@@ -446,7 +446,7 @@ loadTrainedModelFromH5 <- function(
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
-#'   \code{\link{deconvDigitalDLSorterModelObj}}
+#'   \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
 #'
@@ -487,7 +487,7 @@ plotTrainingHistory <- function(
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
-#'   \code{\link{deconvDigitalDLSorterModel}}
+#'   \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
 #'
@@ -538,7 +538,7 @@ loadDeconvDataFromFile <- function(
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
-#'   \code{\link{deconvDigitalDLSorterModel}}
+#'   \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
 #'
@@ -847,7 +847,7 @@ deconvDigitalDLSorter <- function(
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{DigitalDLSorter}}
 #'
 #' @examples
 #' ## simplify arguments

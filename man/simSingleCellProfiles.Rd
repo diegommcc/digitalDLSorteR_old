@@ -2,7 +2,8 @@
 % Please edit documentation in R/simSingleCell.R
 \name{simSingleCellProfiles}
 \alias{simSingleCellProfiles}
-\title{Simulate new single-cell expression profiles using the estimated ZINB parameters.}
+\title{Simulate new single-cell expression profiles using the estimated ZINB
+parameters.}
 \usage{
 simSingleCellProfiles(
   object,
@@ -13,8 +14,8 @@ simSingleCellProfiles(
 )
 }
 \arguments{
-\item{object}{\code{\link{DigitalDLSorter}} object with \code{single.cell.real} and
-\code{zinb.params} slots.}
+\item{object}{\code{\link{DigitalDLSorter}} object with
+\code{single.cell.real} and \code{zinb.params} slots.}
 
 \item{cell.ID.column}{Name or number of the column in cells metadata
 corresponding with cell names in expression matrix.}
@@ -41,8 +42,10 @@ ZINB-WaVE model estimated.
 }
 \details{
 Before this step, see \code{\link{estimateZinbwaveParams}}.
-As described in Torroja and Sanchez-Cabo, 2019, this function simulates a determined
-number of transcriptional profiles for each cell type provided by randomly sampling
+As described in Torroja and Sanchez-Cabo, 2019, this function simulates a
+determined
+number of transcriptional profiles for each cell type provided by randomly
+sampling
 from a negative binomial distribution with \eqn{\mu} and \eqn{\theta}
 estimated parameters and introducing dropouts by sampling from a binomial
 distribution with pi probability. All paramteres are estimated from
@@ -61,12 +64,13 @@ DDLSChung <- simSingleCellProfiles(
 
 }
 \references{
-Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible method
-for signal extraction from single-cell RNA-seq data. Nat Commun 9, 284.
-doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible
+method for signal extraction from single-cell RNA-seq data. Nat Commun 9,
+284. doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
 
-Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning algorithm to quantify
-immune cell populations based on scRNA-Seq data. Frontiers in Genetics 10, 978. doi:
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+algorithm to quantify immune cell populations based on scRNA-Seq data.
+Frontiers in Genetics 10, 978. doi:
 \url{10.3389/fgene.2019.00978}
 }
 \seealso{

@@ -80,5 +80,5 @@ Learning algorithm to quantify immune cell populations based on scRNA-Seq
 data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
-\code{\link{trainDigitalDLSorter}} \code{\link{DigitalDLSorter}}
+\code{\link{trainDigitalDLSorterModel}} \code{\link{DigitalDLSorter}}
 }

@@ -25,5 +25,5 @@ You must specify the correct extension.
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
-  \code{\link{deconvDigitalDLSorterModel}}
+  \code{\link{deconvDigitalDLSorterObj}}
 }
