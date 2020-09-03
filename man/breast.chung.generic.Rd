@@ -7,12 +7,12 @@
 breast cancer environment (generic version).}
 \format{
 A \code{DigitalDLSorterDNN} object with the following slots:
-  \describe{ \item{model}{Trained DNN model.}
-  \item{training.history}{Evolution of metrics and loss function during
-  training.} \item{eval.stats}{Metrics and loss results on test data.}
-  \item{predict.results}{Predictions of cell types on test data.}
-  \item{cell.types}{Cell types considered by DNN model.}
-  \item{features}{Features (genes) considered by model.} }
+\describe{ \item{model}{Trained DNN model.}
+\item{training.history}{Evolution of metrics and loss function during
+training.} \item{eval.stats}{Metrics and loss results on test data.}
+\item{predict.results}{Predictions of cell types on test data.}
+\item{cell.types}{Cell types considered by DNN model.}
+\item{features}{Features (genes) considered by model.} }
 }
 \source{
 \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}

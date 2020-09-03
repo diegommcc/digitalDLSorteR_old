@@ -4,7 +4,7 @@
 \alias{eval.stats.samples}
 \alias{eval.stats.samples<-}
 \title{Get and set \code{eval.stats.samples} slot in a
-  \code{DigitalDLSorterDNN} object.}
+\code{DigitalDLSorterDNN} object.}
 \usage{
 eval.stats.samples(object, metrics = "All")
 
@@ -18,5 +18,5 @@ performance of the model over each sample from test data.}
 }
 \description{
 Get and set \code{eval.stats.samples} slot in a
-  \code{DigitalDLSorterDNN} object.
+\code{DigitalDLSorterDNN} object.
 }

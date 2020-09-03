@@ -79,11 +79,11 @@ the name of the data from which they come.}
 
 \item{\code{version}}{Version of DigitalDLSorteR this object was built under.
 
-  The package can be used in two ways: to build new models of deconvolution
-  from scRNA-seq data or to deconvolute bulk RNA-seq samples using
-  pre-trtained models integrated into the package. If you want to build new
-  models, see \code{\link{loadRealSCProfiles}} or
-  \code{\link{loadFinalSCProfiles}} functions. If yoy want to use pre-trained
-  models, see \code{\link{deconvDigitalDLSorter}} function.}
+The package can be used in two ways: to build new models of deconvolution
+from scRNA-seq data or to deconvolute bulk RNA-seq samples using
+pre-trtained models integrated into the package. If you want to build new
+models, see \code{\link{loadRealSCProfiles}} or
+\code{\link{loadFinalSCProfiles}} functions. If yoy want to use pre-trained
+models, see \code{\link{deconvDigitalDLSorter}} function.}
 }}
 

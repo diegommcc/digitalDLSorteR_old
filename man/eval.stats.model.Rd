@@ -4,7 +4,7 @@
 \alias{eval.stats.model}
 \alias{eval.stats.model<-}
 \title{Get and set \code{eval.stats.model} slot in a
-  \code{DigitalDLSorterDNN} object.}
+\code{DigitalDLSorterDNN} object.}
 \usage{
 eval.stats.model(object)
 
@@ -18,5 +18,5 @@ on test data with DNN model.}
 }
 \description{
 Get and set \code{eval.stats.model} slot in a
-  \code{DigitalDLSorterDNN} object.
+\code{DigitalDLSorterDNN} object.
 }

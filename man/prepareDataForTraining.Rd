@@ -41,11 +41,11 @@ execution times are improved.}
 }
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{final.data} slot
-  containing a list with one or two entries (depending on selected
-  \code{type.data} argument): 'train' and 'test'. Each entry contains a
-  \code{SummarizedExperiment} object with single-cell and bulk samples
-  combined in \code{assay} slot, sample names in \code{rowData} slot and
-  feature names in \code{colData} slot.
+containing a list with one or two entries (depending on selected
+\code{type.data} argument): 'train' and 'test'. Each entry contains a
+\code{SummarizedExperiment} object with single-cell and bulk samples
+combined in \code{assay} slot, sample names in \code{rowData} slot and
+feature names in \code{colData} slot.
 }
 \description{
 Prepare training and test final data for training and evaluating Deep Neural
@@ -95,5 +95,5 @@ DDLSChung <- prepareDataForTraining(
 }
 \seealso{
 \code{\link{generateBulkSamples}}
-  \code{\link{generateTrainAndTestBulkProbMatrix}}
+\code{\link{generateTrainAndTestBulkProbMatrix}}
 }

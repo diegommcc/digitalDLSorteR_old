@@ -35,11 +35,11 @@ and loaded in memory.}
 }
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{bulk.sim} slot
-  containing a list with one or two entries (depending on selected
-  \code{type.data} argument): 'train' and 'test'. Each entry contains a
-  \code{SummarizedExperiment} object with simulated bulk samples in
-  \code{assay} slot, sample names in \code{colData} slot and feature names in
-  \code{rowData} slot.
+containing a list with one or two entries (depending on selected
+\code{type.data} argument): 'train' and 'test'. Each entry contains a
+\code{SummarizedExperiment} object with simulated bulk samples in
+\code{assay} slot, sample names in \code{colData} slot and feature names in
+\code{rowData} slot.
 }
 \description{
 Generate training and test bulk profiles using the cell composition matrix
@@ -94,5 +94,5 @@ version 1.16.1.
 }
 \seealso{
 \code{\link{generateTrainAndTestBulkProbMatrix}}
-  \code{\link{ProbMatrixCellTypes}}
+\code{\link{ProbMatrixCellTypes}}
 }

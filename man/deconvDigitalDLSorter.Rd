@@ -45,8 +45,8 @@ label.}
 }
 \value{
 A \code{data.frame} with samples (\eqn{i}) as rows and cell types
-  (\eqn{j}) as columns. Each entry represents the predicted proportion of
-  \eqn{j} cell type in \eqn{i} sample.
+(\eqn{j}) as columns. Each entry represents the predicted proportion of
+\eqn{j} cell type in \eqn{i} sample.
 }
 \description{
 Deconvolute bulk gene expression samples (RNA-Seq) quantifying the proportion

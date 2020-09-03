@@ -37,7 +37,7 @@ to see available loss functions.}
 
 \item{metrics}{Vector of metrics used to evaluate the performance of the
 model during training and on test data (\code{c("accuracy",
-"mean_absolute_error", "categorical_accuracy")} by default)}
+  "mean_absolute_error", "categorical_accuracy")} by default)}
 
 \item{verbose}{Boolean indicating if show the progression of the model during
 training. Besides, it is shown information about the architecture of the
@@ -50,8 +50,8 @@ working on RStudio.}
 }
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
-  containing a \code{\link{DigitalDLSorterDNN}} object. For more information
-  about the structure of this class, see \code{\link{DigitalDLSorterDNN}}.
+containing a \code{\link{DigitalDLSorterDNN}} object. For more information
+about the structure of this class, see \code{\link{DigitalDLSorterDNN}}.
 }
 \description{
 Train \code{\link{DigitalDLSorter}} Deep Neural Network model with data store
@@ -88,5 +88,5 @@ data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
 \code{\link{plotTrainingHistory}}
-  \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
+\code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
 }

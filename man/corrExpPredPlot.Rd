@@ -105,5 +105,5 @@ corrExpPredPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{distErrorPlot}}
-  \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+\code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 }

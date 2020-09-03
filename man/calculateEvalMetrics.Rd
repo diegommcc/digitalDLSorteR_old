@@ -15,8 +15,8 @@ absolute error (MAE) and mean squared error (MSE) by default.}
 }
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
-  containing a \code{DigitalDLSorterDNN} object with
-  \code{eval.stats.samples} slot.
+containing a \code{DigitalDLSorterDNN} object with
+\code{eval.stats.samples} slot.
 }
 \description{
 Calculate evaluation metrics for bulk RNA-seq samples from test data in order
@@ -40,5 +40,5 @@ DDLSChung <- calculateEvalMetrics(
 }
 \seealso{
 \code{\link{distErrorPlot}} \code{\link{corrExpPredPlot}}
-  \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
+\code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 }

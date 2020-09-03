@@ -21,5 +21,5 @@ model.
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
-  \code{\link{loadTrainedModelFromH5}}
+\code{\link{loadTrainedModelFromH5}}
 }

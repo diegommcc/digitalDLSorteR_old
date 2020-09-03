@@ -27,5 +27,5 @@ Plot training history of a trained DigitalDLSorter DNN model.
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
-  \code{\link{deconvDigitalDLSorterObj}}
+\code{\link{deconvDigitalDLSorterObj}}
 }

@@ -23,5 +23,5 @@ Load data in \code{\link{DigitalDLSorter}} object to deconvolute from
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
-  \code{\link{deconvDigitalDLSorterObj}}
+\code{\link{deconvDigitalDLSorterObj}}
 }

@@ -93,5 +93,5 @@ blandAltmanLehPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-  \code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
+\code{\link{distErrorPlot}} \code{\link{barErrorPlot}}
 }

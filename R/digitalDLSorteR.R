@@ -33,6 +33,6 @@ NULL
 #'
 #'
 #' @docType package
-#' @name digitLDLSorteR
+#' @name digitalDLSorteR
 NULL
 #> NULL

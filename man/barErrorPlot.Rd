@@ -57,5 +57,5 @@ barErrorPlot(
 }
 \seealso{
 \code{\link{calculateEvalMetrics}} \code{\link{corrExpPredPlot}}
-  \code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
+\code{\link{distErrorPlot}} \code{\link{blandAltmanLehPlot}}
 }

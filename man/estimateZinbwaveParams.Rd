@@ -30,8 +30,8 @@ corresponding with the notation used for features/genes.}
 \item{cell.type.column}{Name or number of the column in cells metadata
 corresponding with cell type of each cell.}
 
-\item{cell.cov.columns}{Name or number of columns in cells metadata that
-will be used as covariates in the model during the estimation.}
+\item{cell.cov.columns}{Name or number of columns in cells metadata that will
+be used as covariates in the model during the estimation.}
 
 \item{gene.cov.columns}{Name or number of columns in genes metadata that will
 be used as covariates in the model during estimation.}
@@ -45,30 +45,30 @@ parallel environment \code{BiocParallel} package is used.}
 }
 \value{
 A \code{DigitalDLSorter} object with \code{zinb.params} slot
-containing
-a \code{ZinbParams} object. This object contains the estimated ZINB
-parameters from real single-cell data.
+containing a \code{ZinbParams} object. This object contains the estimated
+ZINB parameters from real single-cell data.
 }
 \description{
-Estimate parameters for the ZINB-WaVE model from a real single-cell
-data set using ZINB-WaVE model.
+Estimate parameters for the ZINB-WaVE model from a real single-cell data set
+using ZINB-WaVE model.
 }
 \details{
 ZINB-WaVE is a flexible model for zero-inflated count data. This function
-carries out the model fit to real single-cell data modeling \eqn{Y_{ij}}
-(the count of feature \eqn{j} for sample \eqn{i}) as a random variable
-following a zero-inflated negative binomial (ZINB) distribution. The
-estimated parameters will be used for the simulation of new single-cell
-expression profiles by sampling a negative binomial distribution and
-introducing dropouts from a binomial distribution.
-To do this, \code{\link{DigitalDLSorter}} uses \code{zinbEstimate} function
-from \code{splatter} package (Zappia et al., 2017),  that is a wrapper around
-\code{zinbFit} function from \code{zinbwave} package (Risso et al., 2018).
-For more details about the model, see Risso et al., 2018.
+carries out the model fit to real single-cell data modeling \eqn{Y_{ij}} (the
+count of feature \eqn{j} for sample \eqn{i}) as a random variable following a
+zero-inflated negative binomial (ZINB) distribution. The estimated parameters
+will be used for the simulation of new single-cell expression profiles by
+sampling a negative binomial distribution and introducing dropouts from a
+binomial distribution. To do this, \code{\link{DigitalDLSorter}} uses
+\code{zinbEstimate} function from \code{splatter} package (Zappia et al.,
+2017),  that is a wrapper around \code{zinbFit} function from \code{zinbwave}
+package (Risso et al., 2018). For more details about the model, see Risso et
+al., 2018.
 }
 \examples{
-DDLSChung <- estimateZinbwaveParams(
-  object = DDLSChung,
+\dontrun{
+DDLSChungSmall <- estimateZinbwaveParams(
+  object = DDLSChungSmall,
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",
   cell.type.column = "Cell_type",
@@ -76,20 +76,20 @@ DDLSChung <- estimateZinbwaveParams(
   gene.cov.columns = "gene_length",
   verbose = TRUE
 )
+}
 
 }
 \references{
-Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general and flexible
-method for signal extraction from single-cell RNA-seq data. Nat Commun 9,
-284. doi: \url{\https://doi.org/10.1038/s41467-017-02554-5}.
+Risso, D., Perraudeau, F., Gribkova, S. et al. (2018). A general
+and flexible method for signal extraction from single-cell RNA-seq data.
+Nat Commun 9, 284. doi: \url{doi.org/10.1038/s41467-017-02554-5}.
 
 Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
 algorithm to quantify immune cell populations based on scRNA-Seq data.
-Frontiers in Genetics 10,
-978. doi: \url{10.3389/fgene.2019.00978}
+Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 
-Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell RNA
-sequencing data. Genome Biol. 2017; 18: 174.
+Zappia, L., Phipson, B. y Oshlack, A. Splatter: simulation of single-cell
+RNA sequencing data. Genome Biol. 2017; 18: 174.
 }
 \seealso{
 \code{\link{simSingleCellProfiles}}

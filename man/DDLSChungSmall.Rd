@@ -28,12 +28,12 @@ For more information about the complete data set, see
 }
 \references{
 Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,
-  K. T., et al. (2017). Single-cell RNA-seq enables comprehensive tumour and
-  immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
-  doi: \url{10.1038/ncomms15081}.
+K. T., et al. (2017). Single-cell RNA-seq enables comprehensive tumour and
+immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
+doi: \url{10.1038/ncomms15081}.
 
-  Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
-  algorithm to quantify immune cell populations based on scRNA-Seq data.
-  Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
+Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+algorithm to quantify immune cell populations based on scRNA-Seq data.
+Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \keyword{datasets}
