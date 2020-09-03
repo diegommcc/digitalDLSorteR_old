@@ -72,6 +72,8 @@ NULL
 #' using predefined ranges will be generated.
 #' @param proportions.test As \code{proportions.train} for test samples.
 #' @param train.freq Proportion of cells used for training set (2/3 by default).
+#' @param n.cells Number of cells that are aggregated in order to simulate one
+#' bulk RNA-seq sample (100 by default).
 #' @param num.bulk.samples Integer which allows to establish the number of bulk
 #' samples that will be generated taking into account training and test data.
 #' If it is NULL (by default), approximately
@@ -139,6 +141,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   proportions.train = c(10, 5, 20, 15, 10, 40),
   proportions.test = c(10, 5, 20, 15, 10, 40),
   train.freq = 2/3,
+  n.cells = 100,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
   verbose = TRUE
@@ -157,8 +160,8 @@ generateTrainAndTestBulkProbMatrix <- function(
   } else if (sum(abs(proportions.train)) != 100 ||
              sum(abs(proportions.test)) != 100) {
     stop("Proportions provided must add up to 100")
-  } else if (any(proportions.train == 0) || any(proportions.test == 0)) {
-    stop("None of proportions can be equal to zero")
+  } else if (any(proportions.train <= 0) || any(proportions.test <= 0)) {
+    stop("Proportions can not be equal to or lesser than zero")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
     warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n\n",
@@ -1010,12 +1013,12 @@ setBulks <- function (x, c, i) {
 #' @param file.backend A valid file path where to save the HDF5 file used as
 #'   back-end. If it is equal to \code{NULL} (by default), the data are loaded
 #'   in memory.
-#' @param number.cols HDF5 file is saved by column chunks in order to improve
-#'   the time executions during the DNN training. This is because
-#'   \code{\link{trainDigitalDLSorterModel}} only access to data by columns. You
-#'   can provided the number of columns that are stored together in each chunk.
-#'   Note that the more columns the more RAM is used, although time times are
-#'   improved.
+#' @param number.rows HDF5 file is saved by row chunks in order to improve the
+#'   execution times during training. This is because
+#'   \code{\link{trainDigitalDLSorterModel}} only access to data by rows
+#'   (samples). You can provided the number of rows that are stored together
+#'   in each chunk. Note that the more columns the more RAM is used, although
+#'   execution times are improved.
 #' @param verbose Show informative messages during the execution.
 #'
 #' @return A \code{\link{DigitalDLSorter}} object with \code{final.data} slot
@@ -1053,7 +1056,7 @@ prepareDataForTraining <- function(
   type.data,
   combine = "both",
   file.backend = NULL,
-  number.cols = NULL,
+  number.rows = NULL,
   compression.level = NULL,
   verbose = TRUE
 ) {
@@ -1102,11 +1105,11 @@ prepareDataForTraining <- function(
     if (file.exists(file.backend)){
       stop("file.backend already exists. Please provide a correct file path")
     }
-    if (is.null(number.cols)) {
-      number.cols <- 50
+    if (is.null(number.rows)) {
+      number.rows <- 50
     } else {
-      if (number.cols < 1 || number.cols > 100 || number.cols%%1 != 0) {
-        stop("number.cols must be an integer between 1 and 100")
+      if (number.rows < 1 || number.rows > 100 || number.rows%%1 != 0) {
+        stop("number.rows must be an integer between 1 and 100")
       }
     }
     if (verbose) {
@@ -1134,7 +1137,7 @@ prepareDataForTraining <- function(
           type.data = x,
           combine = combine,
           file.backend = file.backend,
-          number.cols = number.cols,
+          number.rows = number.rows,
           compression.level = compression.level,
           verbose = verbose
         )
@@ -1151,7 +1154,7 @@ prepareDataForTraining <- function(
       type.data = type.data,
       combine = combine,
       file.backend = file.backend,
-      number.cols = number.cols,
+      number.rows = number.rows,
       compression.level = compression.level,
       verbose = verbose
     )
@@ -1181,7 +1184,7 @@ prepareDataForTraining <- function(
   type.data = type.data,
   combine = combine,
   file.backend = file.backend,
-  number.cols = number.cols,
+  number.rows = number.rows,
   compression.level = compression.level,
   verbose = verbose
 ) {
@@ -1277,7 +1280,7 @@ prepareDataForTraining <- function(
     filepath = file.backend,
     name = type.data,
     verbose = verbose,
-    chunkdim = c(number.cols, ncol(counts)),
+    chunkdim = c(number.rows, ncol(counts)),
     level = compression.level
   )
 
@@ -1295,7 +1298,7 @@ prepareDataForTraining <- function(
   type.data = type.data,
   combine = combine,
   file.backend = NULL,
-  number.cols = number.cols,
+  number.rows = number.rows,
   compression.level = NULL,
   verbose = verbose
 ) {

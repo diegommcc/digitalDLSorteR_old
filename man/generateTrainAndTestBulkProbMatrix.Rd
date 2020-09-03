@@ -11,6 +11,7 @@ generateTrainAndTestBulkProbMatrix(
   proportions.train = c(10, 5, 20, 15, 10, 40),
   proportions.test = c(10, 5, 20, 15, 10, 40),
   train.freq = 2/3,
+  n.cells = 100,
   num.bulk.samples = NULL,
   exclusive.types = NULL,
   verbose = TRUE
@@ -45,6 +46,9 @@ using predefined ranges will be generated.}
 \item{proportions.test}{As \code{proportions.train} for test samples.}
 
 \item{train.freq}{Proportion of cells used for training set (2/3 by default).}
+
+\item{n.cells}{Number of cells that are aggregated in order to simulate one
+bulk RNA-seq sample (100 by default).}
 
 \item{num.bulk.samples}{Integer which allows to establish the number of bulk
 samples that will be generated taking into account training and test data.

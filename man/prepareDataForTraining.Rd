@@ -10,7 +10,7 @@ prepareDataForTraining(
   type.data,
   combine = "both",
   file.backend = NULL,
-  number.cols = NULL,
+  number.rows = NULL,
   compression.level = NULL,
   verbose = TRUE
 )
@@ -30,12 +30,12 @@ combined.}
 back-end. If it is equal to \code{NULL} (by default), the data are loaded
 in memory.}
 
-\item{number.cols}{HDF5 file is saved by column chunks in order to improve
-the time executions during the DNN training. This is because
-\code{\link{trainDigitalDLSorterModel}} only access to data by columns. You
-can provided the number of columns that are stored together in each chunk.
-Note that the more columns the more RAM is used, although time times are
-improved.}
+\item{number.rows}{HDF5 file is saved by row chunks in order to improve the
+execution times during training. This is because
+\code{\link{trainDigitalDLSorterModel}} only access to data by rows
+(samples). You can provided the number of rows that are stored together
+in each chunk. Note that the more columns the more RAM is used, although
+execution times are improved.}
 
 \item{verbose}{Show informative messages during the execution.}
 }

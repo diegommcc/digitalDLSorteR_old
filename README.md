@@ -31,7 +31,7 @@ This is the default CPU-based installation, but it is possible a more customized
 ### Common errors with Keras
 
 Depending on Tensorflow version used as back-end, it is probably to experiment 
-an error realted to eager execution. Eager execution is an imperative, define-by-run interface where operations are executed immediately as they are called. However, it is only available on Tensorflow versions greater than 1.9. 
+an error realted to eager execution. Eager execution is an imperative, define-by-run interface where operations are executed immediately as they are called. However, it is only available on Tensorflow versions later than 1.9. 
 You can disable this option by the following line of code or change your 
 Tensorflow version used as back-end.
 
