@@ -4,8 +4,11 @@ Title: Deconvolution of bulk-RNAseq samples based on Deep Neural Network
 Version: 0.1.0
 Author: Author
 Maintainer: <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: digitalDLSorteR is an R package that implements a Deep Learning 
+    based method to enumerate and quantify the cell type composition of bulk 
+    RNA-seq samples. Our method makes use of Deep Neural Network (DNN) models 
+    to adjust any cell type composition starting from single-cell RNA-seq 
+    (scRNA-seq) data.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
@@ -33,14 +36,15 @@ Imports:
 Suggests:
     BiocStyle,
     knitr,
-    rmarkdown
+    rmarkdown,
+    testthat
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
 Collate: 
+    'digitalDLSorteR.R'
     'AllClasses.R'
     'AllGenerics.R'
     'data.R'
-    'digitalDLSorteR.R'
     'dnnModel.R'
     'evalMetrics.R'
     'loadData.R'
