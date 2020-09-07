@@ -149,7 +149,7 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
     stop(paste("There are", diff,
                "genes that don't match between counts matrix and metadata"))
   } else if (diff != 0){
-    warning(paste("There are", diff,
+    stop(paste("There are", diff,
                   "genes that don't match between counts matrix and metadata"))
   } else if (disc != 0) {
     message("=== Intersection between matrix counts and genes.metadata:")
@@ -195,8 +195,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
   dim.bef <- dim(counts)
   counts <- counts[Matrix::rowSums(counts > min.counts) >= min.cells, ]
   if (dim(counts)[1] == 0) {
-    stop(paste("Resulting counts matrix after filtering with min.genes = ",
-               min.counts, "and min.cells = ", min.cells,
+    stop(paste("Resulting counts matrix after filtering with min.genes =",
+               min.counts, "and min.cells =", min.cells,
                "does not have entries"))
   }
   message("=== Filtering features by min.counts and min.cells:")
@@ -233,22 +233,24 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                  type.metadata = "cells.metadata",
                  arg = "cell.ID.column")
   }
-
-
   # extract count matrix
   if (length(SummarizedExperiment::assays(SCEobject)) == 0) {
-    stop("No data in SingleCellExperiment object provided")
+    stop("No counts data in SingleCellExperiment object provided")
   } else if (length(SummarizedExperiment::assays(SCEobject)) > 1) {
     warning("There are more than one assay, only the first will be used. Remember it must be the original data and not log-transformed data")
   }
   counts <- SummarizedExperiment::assay(SCEobject)
+  if (is.null(rownames(counts)) || is.null(colnames(counts))) {
+    stop("Counts matrix must have rownames corresponding to features and colnames corresponding to cells")
+  }
   # extract genes.metadata
   genes.metadata <- SingleCellExperiment::rowData(SCEobject)
   if (!missing(gene.ID.column) && new.data) {
     if (any(dim(genes.metadata) == 0)) {
-      warning("No data provided in rowData slot. Building a rowData from rownames of counts matrix")
-      if (class(gene.ID.column) == "numeric") gene.ID.column <- "gene_names"
-      genes.metadata <- DataFrame(gene.ID.column = rownames(counts))
+      stop("No data provided in rowData slot. Metadata about genes is needed, ",
+           "please look ?loadRealSCProfiles or ?loadFinalSCProfiles")
+      # if (class(gene.ID.column) == "numeric") gene.ID.column <- "gene_names"
+      # genes.metadata <- S4Vectors::DataFrame(gene.ID.column = rownames(counts))
     }
 
     # check if given IDs exist in genes.metadata. In cells.metadata is not
@@ -294,7 +296,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
                                      cell.ID.column = cell.ID.column,
                                      gene.ID.column = gene.ID.column,
                                      min.counts = min.counts,
-                                     min.cells = min.cells)
+                                     min.cells = min.cells,
+                                     filtering = FALSE)
   } else if (length(single.cell) == 0) {
     stop(paste(arg, "argument is empty"))
   } else if (length(single.cell) == 3) {
@@ -368,7 +371,8 @@ CreateSCEObject <- function(counts, cells.metadata, genes.metadata) {
 #' @seealso \code{\link{simSingleCellProfiles}}
 #'
 #' @examples
-#' DDLSChung <- loadRealSCProfiles(
+#' sc.chung.breast <- single.cell.real(DDLSChungSmall)
+#' DDLSChungSmall <- loadRealSCProfiles(
 #'   single.cell.real = sc.chung.breast,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
@@ -448,7 +452,8 @@ loadRealSCProfiles <- function(
 #' @seealso \code{\link{simSingleCellProfiles}}
 #'
 #' @examples
-#' DDLSChung <- loadFinalSCProfiles(
+#' sc.chung.breast <- single.cell.real(DDLSChungSmall)
+#' DDLSChungSmall <- loadFinalSCProfiles(
 #'   single.cell.real = sc.chung.breast,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
@@ -466,7 +471,7 @@ loadFinalSCProfiles <- function(
   project = "DigitalDLSorterProject"
 ) {
   single.cell.final <- .loadSingleCellData(
-    single.cell = single.cell.real,
+    single.cell = single.cell.final,
     cell.ID.column = cell.ID.column,
     gene.ID.column = gene.ID.column,
     min.cells = min.cells,
@@ -479,5 +484,6 @@ loadFinalSCProfiles <- function(
     project = project,
     version = packageVersion(pkg = "digitalDLSorteR")
   )
+
   return(ddls.object)
 }

@@ -6,7 +6,6 @@ NULL
 ####################### Generate cell composition matrix #######################
 ################################################################################
 
-
 #' Generate training and test cell composition matrix.
 #'
 #' Generate training and test cell composition matrices for the simulation of
@@ -162,6 +161,8 @@ generateTrainAndTestBulkProbMatrix <- function(
     stop("Proportions provided must add up to 100")
   } else if (any(proportions.train <= 0) || any(proportions.test <= 0)) {
     stop("Proportions can not be equal to or lesser than zero")
+  } else if (length(proportions.train) != 6 || length(proportions.train) != 6) {
+    stop("Proportions must be a vector of six elements")
   }
   if (!is.null(prob.cell.types(object)) | !length(prob.cell.types(object)) == 0) {
     warning("prob.cell.types slot already has the probability matrices. Note that it will be overwritten\n\n",
@@ -197,14 +198,22 @@ generateTrainAndTestBulkProbMatrix <- function(
   } else if (!all(prob.design[, cell.type.column] %in%
                   unique(list.data[[2]][, cell.type.column]))) {
     stop("There are some cell types in prob.design that does not appear in cells.metadata. Check that the prob.design matrix is correctly built")
-  } else if (any(prob.design$from < 0) | any(prob.design$from > 99)) {
-    stop("from column in prob.design must be greater than or equal to 0 and lesser than or equal to 99")
-  } else if (any(prob.design$to < 1) | any(prob.design$to > 100)) {
-    stop("to column in prob.design must be greater than or equal to 1 and lesser than or equal to 100")
+  } else if (any(prob.design$from < 0) || any(prob.design$from > 99)) {
+    stop("'from' column in prob.design must be greater than or equal to 0 and lesser than or equal to 99")
+  } else if (any(prob.design$to < 1) || any(prob.design$to > 100)) {
+    stop("'to' column in prob.design must be greater than or equal to 1 and lesser than or equal to 100")
   } else if (any(prob.design$from > prob.design$to)) {
     stop("'from' entries must be lesser than 'to' entries")
+  } else if (any(abs(prob.design$from) + abs(prob.design$to) > 100)) {
+    stop("The sum between the 'from' and 'to' entries must not be greater than 100")
   }
-
+  ## check if n.cells is invalid
+  if (n.cells <= 0) {
+    stop("n.cells must be greater than zero")
+  } else if (n.cells < length(unique(list.data[[2]][, cell.type.column]))) {
+    stop("n.cells must be equal to or greater than the number of cell types in",
+         "experiment. In any case, we recommend using numbers greater than 50")
+  }
   # proportions of different set of samples
   nums.train <- .setHundredLimit(
     ceiling((10500 * proportions.train) / 100),
@@ -219,7 +228,7 @@ generateTrainAndTestBulkProbMatrix <- function(
   s.cells <- dim(list.data[[1]])[2]
   if (!is.null(num.bulk.samples)) {
     if (s.cells > num.bulk.samples) {
-      stop(paste0("If num.bulk.samples is provided, it must be greater than or equal to the total of simulated cells (",
+      stop(paste0("If num.bulk.samples is provided, it must be greater than or equal to the total of final cells (",
                   s.cells, " in this case)"))
     }
     s.cells <- ceiling(num.bulk.samples / 17.65)
@@ -362,27 +371,14 @@ generateTrainAndTestBulkProbMatrix <- function(
                   collapse = "\n"), "\n")
   }
   # GENERATE PROBS MATRIX NAMES ------------------------------------------------
-  setCount <- function (x, setList, sn) {
-    names(x) <- sn
-    sc <- c()
-    for (cType in names(x)) {
-      n <- ceiling(x[cType])
-      if (n > 0) {
-        repl <- ifelse(n > length(setList[[cType]]), TRUE, FALSE)
-        sc <- c(sc, sample(setList[[cType]], size = n, replace = repl))
-      }
-    }
-    return(sc[seq(100)])
-  }
-
-
 
   train.prob.matrix.names <- t(apply(
     X = train.prob.matrix,
     MARGIN = 1,
     FUN = setCount,
     setList = train.set.list,
-    sn = colnames(train.prob.matrix)
+    sn = colnames(train.prob.matrix),
+    n.cells = n.cells
   ))
 
   test.prob.matrix.names <- t(apply(
@@ -390,7 +386,8 @@ generateTrainAndTestBulkProbMatrix <- function(
     MARGIN = 1,
     FUN = setCount,
     setList = test.set.list,
-    sn = colnames(test.prob.matrix)
+    sn = colnames(test.prob.matrix),
+    n.cells = n.cells
   ))
 
   # generate object of ProbMatrixCellTypes class
@@ -462,6 +459,21 @@ generateTrainAndTestBulkProbMatrix <- function(
   return(plot.list)
 }
 
+
+setCount <- function(x, setList, sn, n.cells) {
+  names(x) <- sn
+  sc <- c()
+  x.set <- .setHundredLimit(x = (x * n.cells) / 100, limit = n.cells)
+  for (cType in names(x)) {
+    n <- ceiling(x.set[cType])
+    # n <- ceiling(x[cType])
+    if (n > 0) {
+      repl <- ifelse(n > length(setList[[cType]]), TRUE, FALSE)
+      sc <- c(sc, sample(setList[[cType]], size = n, replace = repl))
+    }
+  }
+  return(sc[seq(n.cells)])
+}
 
 .cellExcluder <- function(vec, index.ex) {
   sel <- sample(index.ex, length(index.ex) - 1)
