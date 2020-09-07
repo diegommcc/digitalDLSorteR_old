@@ -453,8 +453,8 @@ loadRealSCProfiles <- function(
 #'
 #' @examples
 #' sc.chung.breast <- single.cell.real(DDLSChungSmall)
-#' DDLSChungSmall <- loadFinalSCProfiles(
-#'   single.cell.real = sc.chung.breast,
+#' DDLSChungSmallFinal <- loadFinalSCProfiles(
+#'   single.cell.final = sc.chung.breast,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
 #'   min.cells = 0,

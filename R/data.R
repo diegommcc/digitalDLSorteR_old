@@ -113,6 +113,33 @@
 "DDLSChungSmall"
 
 
+#' \code{\link{DigitalDLSorter}} 'toy' object (completed version)
+#'
+#' \code{\link{DigitalDLSorter}} 'toy' object containing a subset from the
+#' original data set used for generating \code{breast.chung.generic} and
+#' \code{breast.chung.specific} models in order to show some examples in
+#' vignette and documentation. Moreover, it contains the corresponding
+#' \code{ZinbParams} object in \code{zinb.params} slot. Data is stored as a
+#' \code{SingleCellExperiment} object with counts in \code{assay} slot, cells
+#' metadata in \code{colData} slot and genes metadata in \code{rowData} slot.
+#' This version contains all steps of pipeline.
+#'
+#' For more information about the complete data set, see
+#' \code{breast.chung.generic} or \code{breast.chung.specific}.
+#'
+#' @source \url{https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE75688}
+#'
+#' @references Chung, W., Eum, H. H., Lee, H. O., Lee, K. M., Lee, H. B., Kim,
+#'   K. T., et al. (2017). Single-cell RNA-seq enables comprehensive tumour and
+#'   immune cell profiling in primary breast cancer. Nat. Commun. 8 (1), 15081.
+#'   doi: \url{10.1038/ncomms15081}.
+#'
+#'   Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep Learning
+#'   algorithm to quantify immune cell populations based on scRNA-Seq data.
+#'   Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
+#'
+"DDLSSmallCompleted"
+
 #' Breast cancer bulk RNA-Seq samples from TCGA Research Network.
 #'
 #' Subset of Breast cancer bulk RNA-Seq samples from TCGA Research Network.

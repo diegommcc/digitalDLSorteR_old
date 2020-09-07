@@ -91,16 +91,15 @@ information.
 }
 \examples{
 distErrorPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   error = "AbsErr",
   facet.by = "CellType",
   color.by = "nMix",
-  error.labels = TRUE,
-  theme = theme_bw()
+  error.labels = TRUE
 )
 
 distErrorPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   error = "AbsErr",
   x.by = "CellType",
   facet.by = NULL,

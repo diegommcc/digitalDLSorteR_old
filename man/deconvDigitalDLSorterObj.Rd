@@ -60,19 +60,21 @@ own data. If you want to use a pre-trained model, see
 \code{\link{deconvDigitalDLSorter}}.
 }
 \examples{
+## to ensure compatibility
+\dontrun{
+tensorflow::tf$compat$v1$disable_eager_execution()
 ## simplify arguments
-simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+simplify <- list(Tumor = c("ER+", "HER2+", "ER+ and HER2+", "TNBC"),
                  Bcells = c("Bmem", "BGC"))
 
 ## all results are stored in DigitalDLSorter object
-DDLSChung <- deconvDigitalDLSorterObj(
-  object = DDLSChung,
-  name.data = "TCGA.small",
-  normalize = TRUE,
+DDLSSmallCompleted <- deconvDigitalDLSorterObj(
+  object = DDLSSmallCompleted,
+  name.data = "TCGA.breast",
   simplify.set = simplify,
   simplify.majority = simplify
 )
-
+}
 }
 \references{
 Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep
@@ -80,5 +82,6 @@ Learning algorithm to quantify immune cell populations based on scRNA-Seq
 data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 }
 \seealso{
-\code{\link{trainDigitalDLSorterModel}} \code{\link{DigitalDLSorter}}
+\code{\link{trainDigitalDLSorterModel}}
+\code{\link{DigitalDLSorter}}
 }

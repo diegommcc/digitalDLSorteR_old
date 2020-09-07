@@ -52,8 +52,8 @@ uses the ZINB-WaVE model (Risso et al., 2018). For more details about the
 model, see \code{\link{estimateZinbwaveParams}}.
 }
 \examples{
-DDLSChungSmall <- simSingleCellProfiles(
-  object = DDLSChungSmall,
+DDLSSmallCompleted <- simSingleCellProfiles(
+  object = DDLSSmallCompleted,
   cell.ID.column = "Cell_ID",
   cell.type.column = "Cell_type",
   n.cells = 10,

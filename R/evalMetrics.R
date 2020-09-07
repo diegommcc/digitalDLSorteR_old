@@ -2,6 +2,7 @@
 #' @importFrom tidyr gather
 #' @importFrom RColorBrewer brewer.pal
 #' @importFrom ggpubr stat_cor
+#' @importFrom stats aggregate as.formula sd var
 NULL
 
 
@@ -63,8 +64,8 @@ color.list <- function() {
 #'   \code{\link{blandAltmanLehPlot}} \code{\link{barErrorPlot}}
 #'
 #' @examples
-#' DDLSChung <- calculateEvalMetrics(
-#'   object = DDLSChung
+#' DDLSSmallCompleted <- calculateEvalMetrics(
+#'   object = DDLSSmallCompleted
 #' )
 #'
 calculateEvalMetrics <- function(
@@ -302,16 +303,15 @@ se <- function(x) sqrt(var(x)/length(x))
 #'
 #' @examples
 #' distErrorPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   error = "AbsErr",
 #'   facet.by = "CellType",
 #'   color.by = "nMix",
-#'   error.labels = TRUE,
-#'   theme = theme_bw()
+#'   error.labels = TRUE
 #' )
 #'
 #' distErrorPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   error = "AbsErr",
 #'   x.by = "CellType",
 #'   facet.by = NULL,
@@ -480,7 +480,6 @@ distErrorPlot <- function(
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
 #'   display correlations of results associated with bulk samples (\code{TRUE}
 #'   by default).
-#' @param error.labels Boolean indicating if show average error as annotation.
 #' @param pos.x.label Position on the X axis of the errors annotations. 0.95 by
 #'   default.
 #' @param pos.y.label Position on the Y axis of the errors annotations. 0.1 by
@@ -505,14 +504,14 @@ distErrorPlot <- function(
 #' @examples
 #' ## correlations by cell type
 #' corrExpPredPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   facet.by = "CellType",
 #'   color.by = "CellType",
 #'   corr = "both"
 #' )
 #' ## correlations of all samples mixed
 #' corrExpPredPlot(
-#'   DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   facet.by = NULL,
 #'   color.by = "CellType",
 #'   corr = "ccc",
@@ -674,7 +673,7 @@ corrExpPredPlot <- function(
 #'   cell type).
 #' @param color.by Variable used to color data. The options are \code{nMix} and
 #'   \code{CellType}.
-#' @param log2 If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
+#' @param log.2 If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
 #'   by default).
 #' @param filter.sc Boolean indicating if filter single-cell profiles and only
 #'   display correlations of results associated with bulk samples (\code{TRUE}
@@ -701,17 +700,17 @@ corrExpPredPlot <- function(
 #' @examples
 #' ## Bland-Altman plot by cell type
 #' blandAltmanLehPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   facet.by = "CellType",
-#'   color.by = "CellType",
-#'   corr = "both"
+#'   color.by = "CellType"
 #' )
 #' ## Bland-Altman plot of all samples mixed
 #' blandAltmanLehPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   facet.by = NULL,
 #'   color.by = "CellType",
-#'   alpha.point = 0.3
+#'   alpha.point = 0.3,
+#'   log2 = TRUE
 #' )
 blandAltmanLehPlot <- function(
   object,
@@ -843,13 +842,13 @@ blandAltmanLehPlot <- function(
 #'
 #' @examples
 #' barErrorPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   error = "MSE",
 #'   by = "CellType"
 #' )
 #'
 #' barErrorPlot(
-#'   object = DDLSChung,
+#'   object = DDLSSmallCompleted,
 #'   error = "MAE",
 #'   by = "nMix"
 #' )

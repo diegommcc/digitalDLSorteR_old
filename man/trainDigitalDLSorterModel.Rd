@@ -39,14 +39,14 @@ to see available loss functions.}
 model during training and on test data (\code{c("accuracy",
   "mean_absolute_error", "categorical_accuracy")} by default)}
 
-\item{verbose}{Boolean indicating if show the progression of the model during
-training. Besides, it is shown information about the architecture of the
-model (\code{TRUE} by default).}
-
-\item{view.metrics.plots}{Boolean indicating if show progression plots of
+\item{view.metrics.plot}{Boolean indicating if show progression plots of
 loss and metrics during training (\code{TRUE} by default). \code{keras} for
 R allows to see the progression of the model during training if you are
 working on RStudio.}
+
+\item{verbose}{Boolean indicating if show the progression of the model during
+training. Besides, it is shown information about the architecture of the
+model (\code{TRUE} by default).}
 }
 \value{
 A \code{\link{DigitalDLSorter}} object with \code{trained.model} slot
@@ -72,13 +72,13 @@ architecture of the DNN and its construction, see Torroja and Sanchez-Cabo,
 2019.
 }
 \examples{
-\dontrun{
-DDLSChung <- trainDigitalDLSorterModel(
-  object = DDLSChung,
+## to ensure compatibility
+tensorflow::tf$compat$v1$disable_eager_execution()
+DDLSSmallCompleted <- trainDigitalDLSorterModel(
+  object = DDLSSmallCompleted,
   batch.size = 128,
-  num.epochs = 20
+  num.epochs = 5 ## 20
 )
-}
 
 }
 \references{

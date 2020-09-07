@@ -18,9 +18,6 @@ object.}
 Load data in \code{\link{DigitalDLSorter}} object to deconvolute from
 \code{SummarizedExperiment} object.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
 \code{\link{deconvDigitalDLSorterObj}}

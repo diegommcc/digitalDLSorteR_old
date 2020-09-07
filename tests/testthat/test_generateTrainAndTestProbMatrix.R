@@ -231,6 +231,7 @@ test_that(
 
 
   ## with random numbers -------------------------------------------------------
+  set.seed(123)
   n.cells <- ceiling(runif(n = 1, min = 100, max = 500))
   num.bulk.samples <- ceiling(runif(n = 1, min = 200, max = 5000))
   DDLS.2 <- generateTrainAndTestBulkProbMatrix(

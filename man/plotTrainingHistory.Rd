@@ -16,14 +16,11 @@ plotTrainingHistory(
 \item{title}{Title of plot.}
 
 \item{metrics}{Which metrics to plot. If it is equal to \code{NULL} (by
-default), all metrics available on \code{\link{DigitalDNSorter}} object
+default), all metrics available on \code{\link{DigitalDNNSorter}} object
 will be plotted.}
 }
 \description{
 Plot training history of a trained DigitalDLSorter DNN model.
-}
-\examples{
-
 }
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}

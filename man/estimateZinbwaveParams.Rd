@@ -67,8 +67,8 @@ al., 2018.
 }
 \examples{
 \dontrun{
-DDLSChungSmall <- estimateZinbwaveParams(
-  object = DDLSChungSmall,
+DDLSSmallCompleted <- estimateZinbwaveParams(
+  object = DDLSSmallCompleted,
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",
   cell.type.column = "Cell_type",

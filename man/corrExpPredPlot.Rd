@@ -73,8 +73,6 @@ default.}
 
 \item{...}{Additional argument for \code{facet_wrap} ggplot function if
 \code{facet.by} is not equal to \code{NULL}.}
-
-\item{error.labels}{Boolean indicating if show average error as annotation.}
 }
 \description{
 Generate correlation plot between predicted and expected cell type
@@ -88,14 +86,14 @@ details.
 \examples{
 ## correlations by cell type
 corrExpPredPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   facet.by = "CellType",
   color.by = "CellType",
   corr = "both"
 )
 ## correlations of all samples mixed
 corrExpPredPlot(
-  DDLSChung,
+  object = DDLSSmallCompleted,
   facet.by = NULL,
   color.by = "CellType",
   corr = "ccc",

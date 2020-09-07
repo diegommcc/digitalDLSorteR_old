@@ -40,7 +40,7 @@ are generated without any parameter introduced by the user.
 }
 \examples{
 lapply(1:6, function(x) {
-  showProbPlot(DDLSChung,
+  showProbPlot(DDLSSmallCompleted,
                type.data = "train",
                set = x,
                type.plot = "boxplot")

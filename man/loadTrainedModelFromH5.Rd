@@ -21,9 +21,6 @@ Load from HDF5 file a trained DigitalDLSorter DNN model into a
 \code{\link{DigitalDLSorter}} object. Note that HDF5 file must be a keras
 valid trained model.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
 \code{\link{deconvDigitalDLSorterObj}}

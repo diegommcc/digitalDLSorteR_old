@@ -40,7 +40,7 @@ NULL
 #' @param metrics Vector of metrics used to evaluate the performance of the
 #'   model during training and on test data (\code{c("accuracy",
 #'   "mean_absolute_error", "categorical_accuracy")} by default)
-#' @param view.metrics.plots Boolean indicating if show progression plots of
+#' @param view.metrics.plot Boolean indicating if show progression plots of
 #'   loss and metrics during training (\code{TRUE} by default). \code{keras} for
 #'   R allows to see the progression of the model during training if you are
 #'   working on RStudio.
@@ -57,17 +57,17 @@ NULL
 #'   \code{\link{deconvDigitalDLSorter}} \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
-#' \dontrun{
-#' DDLSChung <- trainDigitalDLSorterModel(
-#'   object = DDLSChung,
+#' ## to ensure compatibility
+#' tensorflow::tf$compat$v1$disable_eager_execution()
+#' DDLSSmallCompleted <- trainDigitalDLSorterModel(
+#'   object = DDLSSmallCompleted,
 #'   batch.size = 128,
-#'   num.epochs = 20
+#'   num.epochs = 5 ## 20
 #' )
-#' }
 #'
 #' @references Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep
-#' Learning algorithm to quantify immune cell populations based on scRNA-Seq
-#' data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
+#'   Learning algorithm to quantify immune cell populations based on scRNA-Seq
+#'   data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 #'
 trainDigitalDLSorterModel <- function(
   object,
@@ -323,7 +323,6 @@ trainDigitalDLSorterModel <- function(
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
 #'   \code{\link{loadTrainedModelFromH5}}
 #'
-#'
 saveTrainedModelAsH5 <- function(
   object,
   file.path,
@@ -386,8 +385,6 @@ saveTrainedModelAsH5 <- function(
 #'   \code{\link{deconvDigitalDLSorterObj}}
 #'   \code{\link{saveTrainedModelAsH5}}
 #'
-#' @examples
-#'
 loadTrainedModelFromH5 <- function(
   object,
   file.path,
@@ -440,15 +437,13 @@ loadTrainedModelFromH5 <- function(
 #' @param object \code{DigitalDLSorter} object with \code{trained.model} slot.
 #' @param title Title of plot.
 #' @param metrics Which metrics to plot. If it is equal to \code{NULL} (by
-#'   default), all metrics available on \code{\link{DigitalDNSorter}} object
+#'   default), all metrics available on \code{\link{DigitalDNNSorter}} object
 #'   will be plotted.
 #'
 #' @export
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
 #'   \code{\link{deconvDigitalDLSorterObj}}
-#'
-#' @examples
 #'
 plotTrainingHistory <- function(
   object,
@@ -488,8 +483,6 @@ plotTrainingHistory <- function(
 #'
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
 #'   \code{\link{deconvDigitalDLSorterObj}}
-#'
-#' @examples
 #'
 loadDeconvDataFromFile <- function(
   object,
@@ -540,8 +533,6 @@ loadDeconvDataFromFile <- function(
 #' @seealso \code{\link{trainDigitalDLSorterModel}}
 #'   \code{\link{deconvDigitalDLSorterObj}}
 #'
-#' @examples
-#'
 loadDeconvDataFromSummarizedExperiment <- function(
   object,
   se.object,
@@ -562,10 +553,10 @@ loadDeconvDataFromSummarizedExperiment <- function(
   }
   # generate name for data if is not provided
   if (is.null(name.data)) {
-    if (is.null(decov.data(object))) {
+    if (is.null(deconv.data(object))) {
       name.data <- "deconv_1"
     } else {
-      name.data <- paste0("decon_", length(decov.data(object)) + 1)
+      name.data <- paste0("decon_", length(deconv.data(object)) + 1)
     }
   }
   # create or not a new list
@@ -720,6 +711,8 @@ loadDeconvDataFromSummarizedExperiment <- function(
 #' @seealso \code{\link{deconvDigitalDLSorterObj}}
 #'
 #' @examples
+#' ## to ensure compatibility
+#' tensorflow::tf$compat$v1$disable_eager_execution()
 #' results1 <- deconvDigitalDLSorter(
 #'   data = TCGA.breast.small,
 #'   model = "breast.chung.specific",
@@ -847,25 +840,28 @@ deconvDigitalDLSorter <- function(
 #'
 #' @export
 #'
-#' @seealso \code{\link{trainDigitalDLSorterModel}} \code{\link{DigitalDLSorter}}
+#' @seealso \code{\link{trainDigitalDLSorterModel}}
+#'   \code{\link{DigitalDLSorter}}
 #'
 #' @examples
+#' ## to ensure compatibility
+#' \dontrun{
+#' tensorflow::tf$compat$v1$disable_eager_execution()
 #' ## simplify arguments
-#' simplify <- list(Tumor = c("ER+", "HER2+", "ER+/HER2+", "TNBC"),
+#' simplify <- list(Tumor = c("ER+", "HER2+", "ER+ and HER2+", "TNBC"),
 #'                  Bcells = c("Bmem", "BGC"))
 #'
 #' ## all results are stored in DigitalDLSorter object
-#' DDLSChung <- deconvDigitalDLSorterObj(
-#'   object = DDLSChung,
-#'   name.data = "TCGA.small",
-#'   normalize = TRUE,
+#' DDLSSmallCompleted <- deconvDigitalDLSorterObj(
+#'   object = DDLSSmallCompleted,
+#'   name.data = "TCGA.breast",
 #'   simplify.set = simplify,
 #'   simplify.majority = simplify
 #' )
-#'
+#' }
 #' @references Torroja, C. y Sánchez-Cabo, F. (2019). digitalDLSorter: A Deep
-#' Learning algorithm to quantify immune cell populations based on scRNA-Seq
-#' data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
+#'   Learning algorithm to quantify immune cell populations based on scRNA-Seq
+#'   data. Frontiers in Genetics 10, 978. doi: \url{10.3389/fgene.2019.00978}
 #'
 deconvDigitalDLSorterObj <- function(
   object,
@@ -898,7 +894,6 @@ deconvDigitalDLSorterObj <- function(
   }
 
   deconv.counts <- assay(object@deconv.data[[name.data]])
-
   ## deconvolution
   results <- .deconvCore(
     deconv.counts = deconv.counts,
@@ -976,9 +971,7 @@ deconvDigitalDLSorterObj <- function(
                   "features that are not present in training data to zero\n"))
   }
   if (normalize) {
-    if (verbose) {
-      message("=== Normalizing data\n")
-    }
+    if (verbose) message("=== Normalizing data\n")
     deconv.counts <- edgeR::cpm.default(deconv.counts)
     # deconv.counts <- rescale(deconv.counts)
     deconv.counts <- scale(deconv.counts)

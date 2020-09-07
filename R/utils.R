@@ -55,7 +55,7 @@ getProbMatrix <- function(object, type.data) {
 #'
 #' @examples
 #' lapply(1:6, function(x) {
-#'   showProbPlot(DDLSChung,
+#'   showProbPlot(DDLSSmallCompleted,
 #'                type.data = "train",
 #'                set = x,
 #'                type.plot = "boxplot")

@@ -15,13 +15,19 @@ LazyData: true
 Depends: 
     R (>= 3.4.0)
 Imports:
+    Matrix,
+    methods,
+    tidyr,
     SingleCellExperiment,
     SummarizedExperiment,
     BiocParallel,
     splatter,
     zinbwave,
     DelayedArray,
+    DelayedMatrixStats,
+    stats,
     HDF5Array,
+    yardstick,
     pbapply,
     S4Vectors,
     dplyr,
@@ -30,6 +36,7 @@ Imports:
     gtools,
     edgeR,
     keras,
+    tensorflow,
     ggplot2,
     ggpubr,
     RColorBrewer
@@ -41,10 +48,10 @@ Suggests:
 RoxygenNote: 7.1.1
 Roxygen: list(markdown = TRUE)
 Collate: 
-    'digitalDLSorteR.R'
     'AllClasses.R'
     'AllGenerics.R'
     'data.R'
+    'digitalDLSorteR.R'
     'dnnModel.R'
     'evalMetrics.R'
     'loadData.R'

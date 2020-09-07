@@ -71,6 +71,8 @@ does not make sense that they appear together, see arguments
 \code{simplify.set} and \code{simplify.majority}.
 }
 \examples{
+## to ensure compatibility
+tensorflow::tf$compat$v1$disable_eager_execution()
 results1 <- deconvDigitalDLSorter(
   data = TCGA.breast.small,
   model = "breast.chung.specific",

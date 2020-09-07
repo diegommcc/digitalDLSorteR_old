@@ -50,6 +50,10 @@ rows.}
 
 \item{colors}{Vector with colors that will be used.}
 
+\item{simplify}{Type of simplification performed during deconvolution. It can
+be \code{simpli.set} or \code{simpli.maj} (\code{NULL} by default). It is
+only for \code{\link{DigitalDLSorter}} object.}
+
 \item{color.line}{Color of border bars.}
 
 \item{x.label}{Label of x axis.}
@@ -63,13 +67,10 @@ samples).}
 
 \item{angle}{Angle of text ticks.}
 
+\item{...}{Other arguments for specific methods.}
+
 \item{name.data}{If a DigitalDLSorter is given, name of the element that
 stores the results in \code{deconv.results} slot. If not, forget it.}
-
-\item{simplified}{Vector with cell types that will be compressed into the
-cell type with more probability in each sample by majority voting. This
-option is intended for cases with exclusive cell types that they have not
-sense that appear in the same sample.}
 }
 \description{
 This function allows to plot a bar plot with the deconvoluted cell type
@@ -77,10 +78,9 @@ proportions of a given bulk RNA-seq sample using ggplot2.
 }
 \examples{
 ## Using a matrix
-barPlotCellTypes(deconvResults)
-
+\dontrun{barPlotCellTypes(deconvResults)}
 ## Using a DigitalDLSorter object
-barPlotCellTypes(DDLS.Chung)
+barPlotCellTypes(DDLSSmallCompleted, name.data = "TCGA.breast")
 
 }
 \seealso{

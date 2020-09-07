@@ -59,7 +59,8 @@ directly for simulating bulk samples. In this case, data must be enough cells
 for each cell type and enough cells for simulating bulk profiles.
 }
 \examples{
-DDLSChung <- loadRealSCProfiles(
+sc.chung.breast <- single.cell.real(DDLSChungSmall)
+DDLSChungSmall <- loadRealSCProfiles(
   single.cell.real = sc.chung.breast,
   cell.ID.column = "Cell_ID",
   gene.ID.column = "external_gene_name",

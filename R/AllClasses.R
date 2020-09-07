@@ -1,4 +1,5 @@
 #' @importFrom methods setClass setOldClass setClassUnion
+#' @importFrom utils packageVersion
 #' @import SingleCellExperiment SummarizedExperiment
 #' @importClassesFrom splatter ZINBParams
 #' @importClassesFrom Matrix dgCMatrix

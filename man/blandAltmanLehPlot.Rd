@@ -39,6 +39,9 @@ default it is used a list of custom colors provided by the package.}
 are \code{nMix} (by number of different cell types) and \code{CellType} (by
 cell type).}
 
+\item{log.2}{If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
+by default).}
+
 \item{filter.sc}{Boolean indicating if filter single-cell profiles and only
 display correlations of results associated with bulk samples (\code{TRUE}
 by default).}
@@ -64,9 +67,6 @@ equal to \code{TRUE}.}
 
 \item{...}{Additional argument for \code{facet_wrap} ggplot function if
 \code{facet.by} is not equal to \code{NULL}.}
-
-\item{log2}{If show  Bland-Altman agreement plot in log2 space (\code{FALSE}
-by default).}
 }
 \description{
 Generate  Bland-Altman agreement plot between predicted and expected cell
@@ -78,17 +78,17 @@ argument and examples for more information.
 \examples{
 ## Bland-Altman plot by cell type
 blandAltmanLehPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   facet.by = "CellType",
-  color.by = "CellType",
-  corr = "both"
+  color.by = "CellType"
 )
 ## Bland-Altman plot of all samples mixed
 blandAltmanLehPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   facet.by = NULL,
   color.by = "CellType",
-  alpha.point = 0.3
+  alpha.point = 0.3,
+  log2 = TRUE
 )
 }
 \seealso{

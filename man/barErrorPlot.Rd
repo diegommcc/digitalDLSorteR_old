@@ -44,13 +44,13 @@ by number of different cell types (\code{nMix}) in test bulk samples.
 }
 \examples{
 barErrorPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   error = "MSE",
   by = "CellType"
 )
 
 barErrorPlot(
-  object = DDLSChung,
+  object = DDLSSmallCompleted,
   error = "MAE",
   by = "nMix"
 )

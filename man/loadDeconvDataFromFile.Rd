@@ -20,9 +20,6 @@ base name of file is used.}
 Load data to deconvolute from text file. Accepted formats are tsv and tsv.gz.
 You must specify the correct extension.
 }
-\examples{
-
-}
 \seealso{
 \code{\link{trainDigitalDLSorterModel}}
 \code{\link{deconvDigitalDLSorterObj}}

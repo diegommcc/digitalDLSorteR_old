@@ -37,6 +37,10 @@ execution times during training. This is because
 in each chunk. Note that the more columns the more RAM is used, although
 execution times are improved.}
 
+\item{compression.level}{The compression level used if file.backend provided
+(6 by default). It is an integer value between 0 (no compression) and 9
+(highest and slowest compression).}
+
 \item{verbose}{Show informative messages during the execution.}
 }
 \value{
@@ -76,15 +80,15 @@ large size of the simulated matrices.
 }
 \examples{
 ## loading all data in memory
-DDLSChung <- prepareDataForTraining(
-  object = DDLSChung,
+DDLSSmallCompleted <- prepareDataForTraining(
+  object = DDLSSmallCompleted,
   type.data = "both",
   verbose = TRUE
 )
 \dontrun{
 ## using HDF5 as backend
-DDLSChung <- prepareDataForTraining(
-  object = DDLSChung,
+DDLSChungSmall <- prepareDataForTraining(
+  object = DDLSChungSmall,
   type.data = "both",
   combine = "both",
   file.backend = "DDLSChung.final.data.combined.h5",

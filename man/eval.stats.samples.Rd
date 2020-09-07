@@ -13,6 +13,8 @@ eval.stats.samples(object, metrics = "All") <- value
 \arguments{
 \item{object}{A \code{DigitalDLSorterDNN} object.}
 
+\item{metrics}{Metrics to show (\code{'All'} by default)}
+
 \item{value}{A \code{list} with evaluation metrics used for evaluating the
 performance of the model over each sample from test data.}
 }

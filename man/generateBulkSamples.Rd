@@ -68,8 +68,8 @@ to the large size of the simulated matrices.
 }
 \examples{
 ## loading all data in memory
-DDLSChung <- generateBulkSamples(
-  DDLSChung,
+DDLSSmallCompleted <- generateBulkSamples(
+  DDLSSmallCompleted,
   threads = 2,
   type.data = "both"
 )

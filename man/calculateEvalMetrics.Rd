@@ -33,8 +33,8 @@ available in \code{eval.stats.samples} slot of \code{DigitalDLSorterDNN}
 object (\code{trained.model} of \code{DigitalDLSorter} object).
 }
 \examples{
-DDLSChung <- calculateEvalMetrics(
-  object = DDLSChung
+DDLSSmallCompleted <- calculateEvalMetrics(
+  object = DDLSSmallCompleted
 )
 
 }

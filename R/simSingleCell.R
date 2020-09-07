@@ -1,4 +1,4 @@
-#' @importFrom stats model.matrix rnbinom rbinom
+#' @importFrom stats model.matrix rnbinom rbinom as.formula
 #'
 NULL
 
@@ -52,8 +52,8 @@ NULL
 #'
 #' @examples
 #' \dontrun{
-#' DDLSChungSmall <- estimateZinbwaveParams(
-#'   object = DDLSChungSmall,
+#' DDLSSmallCompleted <- estimateZinbwaveParams(
+#'   object = DDLSSmallCompleted,
 #'   cell.ID.column = "Cell_ID",
 #'   gene.ID.column = "external_gene_name",
 #'   cell.type.column = "Cell_type",
@@ -310,8 +310,8 @@ estimateZinbwaveParams <- function(
 #' @seealso \code{\link{estimateZinbwaveParams}}
 #'
 #' @examples
-#' DDLSChungSmall <- simSingleCellProfiles(
-#'   object = DDLSChungSmall,
+#' DDLSSmallCompleted <- simSingleCellProfiles(
+#'   object = DDLSSmallCompleted,
 #'   cell.ID.column = "Cell_ID",
 #'   cell.type.column = "Cell_type",
 #'   n.cells = 10,

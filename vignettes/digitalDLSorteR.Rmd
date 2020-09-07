@@ -8,9 +8,6 @@ author:
     email: corresponding@author.com
 package: digitalDLSorteR
 output: 
-  BiocStyle::pdf_document:
-    toc: true
-    toc_float: true
   BiocStyle::html_document:
     toc: true
     toc_float: true
@@ -30,6 +27,8 @@ vignette: |
   %\VignettePackage{digitalDLSorteR}
   %\VignetteIndexEntry{digitalLDSorteR: R package for deconvolution of bulk RNA-seq samples based on Deep Learning}
   %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteDepends{tensorflow}
+  %\VignetteDepends{SummarizedExperiment}
 ---
 
 ```{r setup, include=FALSE}
@@ -708,6 +707,38 @@ blandAltmanLehPlot(
   density = TRUE,
 )
 ```
+
+## Load bulk RNA-seq data and deconvolve it
+
+With your trained model in `DigitalDLSorter` object, you can load new bulk 
+RNA-seq data into the object and deconvolve it.
+
+```{r deconvolveNewBulk}
+library(SummarizedExperiment)
+se.TCGA <- SummarizedExperiment(assay = list(counts = TCGA.breast.small))
+
+DDLSChungSmall <- loadDeconvDataFromSummarizedExperiment(
+  object = DDLSChungSmall,
+  se.object = se.TCGA, 
+  name.data = "TCGA.breast"
+)
+```
+
+Then, with `deconvDigitalDLSorterObj` function, you can deconvolve the new
+samples into the cell types considered by the model and represent the 
+predicted proportions with `barPlotCellTypes` function. The cell composition 
+matrix is stored in `deconv.results` slot.
+
+
+```{r}
+DDLSChungSmall <- deconvDigitalDLSorterObj(
+  object = DDLSChungSmall, 
+  name.data = "TCGA.breast"
+)
+
+barPlotCellTypes(DDLSChungSmall, name.data = "TCGA.breast", rm.x.text = TRUE)
+```
+
 
 ## Save `DigitalDLSorter` object and trained models
 
