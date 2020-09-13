@@ -781,7 +781,6 @@ saveTrainedModelAsH5(DDLSChungSmall, file.path = "valid/path")
 DDLSChungSmall <- loadTrainedModelFromH5(DDLSChungSmall)
 ```
 
-
 # Session info {.unnumbered}
 
 ```{r sessionInfo, echo=FALSE}

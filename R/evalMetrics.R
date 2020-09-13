@@ -9,12 +9,6 @@ NULL
 ## internal function to store default colors in order to avoid modify default
 ## colors in ggplot2
 color.list <- function() {
-  # color.list <- c(
-  #   RColorBrewer::brewer.pal(12, "Paired"), "#d45b91", "#374738",
-  #   RColorBrewer::brewer.pal(12, "Set3"),
-  #   RColorBrewer::brewer.pal(8, "Pastel2"), "#333333", "#5D5D5D",
-  #   "#888888", "#B3B3B3"
-  # )
   color.list.2 <- c(
     RColorBrewer::brewer.pal(12, "Paired"), "#d45b91", "#374738",
     RColorBrewer::brewer.pal(12, "Set3"),
@@ -92,20 +86,6 @@ calculateEvalMetrics <- function(
   ## extract information
   testProbsDeconv <- final.data(object, "test")@metadata[[1]]
   predictionsDeconv <- trained.model(object)@predict.results
-  # if (!is.null(simplify)) {
-  #   if (!any(simplify %in% colnames(testProbsDeconv))) {
-  #     stop("Cell types provided are not in prediction matrices")
-  #   }
-  #   index <- which(colnames(testProbsDeconv) %in% simplify)
-  #   .filf <- function(ma, index) {
-  #     ma <- t(apply(ma, FUN = .sumMajority, MARGIN = 1, index = index))
-  #     ma[, colSums(ma) == 0] <- NULL
-  #     return(ma)
-  #   }
-  #   res <- lapply(X = list(testProbsDeconv, predictionsDeconv), FUN = .filf, index = index)
-  #   testProbsDeconv <- res[[1]]
-  #   predictionsDeconv <- res[[2]]
-  # }
 
   ## results test
   tmd <- as_tibble(x = testProbsDeconv)
@@ -792,7 +772,7 @@ blandAltmanLehPlot <- function(
     plot <- plot + facet_wrap(as.formula(paste("~", facet.by)),
                               nrow = nrow, ncol = ncol, ...)
   }
-  plot <- plot + theme + scale_x_continuous(labels = c(-10, -7.5, -5, -2.5, 0)) +
+  plot <- plot + theme +
     geom_hline(aes(yintercept = mean(Diff)), linetype = "dashed") +
     geom_hline(aes(yintercept = mean(Diff) + 1.96 * sd(Diff)),
                linetype = "dashed", colour = "red") +
@@ -902,4 +882,3 @@ barErrorPlot <- function(
 
   return(plot)
 }
-

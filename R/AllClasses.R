@@ -16,7 +16,6 @@ setClassUnion("SingleCellExperimentOrNULL", c("SingleCellExperiment", "NULL"))
 setClassUnion("ZINBParamsOrNULL", c("ZINBParams", "NULL"))
 setClassUnion("KerasOrList", c("keras.engine.sequential.Sequential", "list"))
 
-
 ## ProbMatrixCellTypes class ----------------------------------------------------
 
 #' The Class ProbMatrixCellTypes.

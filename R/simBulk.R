@@ -836,9 +836,6 @@ generateBulkSamples <- function(
   } else if (!any(type.data == c("train", "test", "both"))) {
     stop("type.data argument must be one of the next options: train, test or both")
   }
-  # else if (object@prob.cell.types$train@cell.names) {
-  #   stop("prob.cell.types is not a valid object")
-  # }
   if (!is.null(file.backend)) {
     if (file.exists(file.backend)) {
       stop("file.backend already exists. Please provide a correct file path")
